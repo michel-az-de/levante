@@ -84,6 +84,7 @@ dotnet_diagnostic.CA1848.severity = none       # LoggerMessage delegates: overki
 dotnet_diagnostic.CA1812.severity = none       # classes instanciadas via DI/reflection
 dotnet_diagnostic.CA1515.severity = none       # tornar tipos internal (app exporta tipos publicos)
 dotnet_diagnostic.CA1014.severity = none       # CLSCompliant assembly
+dotnet_diagnostic.CA1716.severity = none       # nomes vs keywords VB (sem consumidores VB)
 
 # ---------------------------------------------------------------------------
 # SonarAnalyzer — silenciar o que conflita com nossas escolhas.
