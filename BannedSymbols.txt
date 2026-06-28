@@ -1,0 +1,7 @@
+# APIs banidas (Microsoft.CodeAnalysis.BannedApiAnalyzers, regra RS0030).
+# Formato: <doc-id-do-simbolo>;<mensagem>
+# Disciplina de tempo: tudo em UTC no dominio (ver docs/convencao-de-nomes.md).
+
+P:System.DateTime.Now;Use DateTime.UtcNow. O dominio guarda tempo em UTC.
+P:System.DateTime.Today;Use DateTime.UtcNow.Date.
+P:System.DateTimeOffset.Now;Use DateTimeOffset.UtcNow.
