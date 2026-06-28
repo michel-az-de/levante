@@ -1,0 +1,37 @@
+# Normalizacao de fim de linha: o repo guarda LF; checkout nativo no SO.
+* text=auto eol=lf
+
+# Scripts especificos de plataforma mantem o EOL nativo.
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+*.sh    text eol=lf
+
+# Codigo e config (texto explicito).
+*.cs       text diff=csharp
+*.csproj   text
+*.sln      text eol=crlf
+*.props    text
+*.targets  text
+*.json     text
+*.yml      text
+*.yaml     text
+*.md       text
+*.ts       text
+*.tsx      text
+*.css      text
+*.editorconfig text
+
+# Artefatos binarios.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff  binary
+*.woff2 binary
+*.pdf  binary
+
+# Arquivos gerados: marcados para reduzir ruido em diffs/linguistics.
+src/web/src/types/api.ts linguist-generated=true
+docs/mapa-tecnico.html   linguist-documentation=true

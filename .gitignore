@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Levante .gitignore (combinado .NET + Node)
+# ---------------------------------------------------------------------------
+
+# Configuracao local do agente / IDE
+.claude/
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ---------------------------------------------------------------------------
+# .NET / MSBuild
+# ---------------------------------------------------------------------------
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+*.dll
+*.pdb
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+coverage.opencover.xml
+*.trx
+
+# SBOM gerado
+bom.json
+bom.xml
+*.cdx.json
+
+# Ferramentas locais restauradas (mantemos o manifesto .config/dotnet-tools.json)
+.store/
+
+# Secrets locais (defesa em profundidade; nunca commitar)
+secrets.json
+*.secrets.json
+appsettings.*.local.json
+
+# ---------------------------------------------------------------------------
+# Node / Next.js (src/web)
+# ---------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Variaveis de ambiente do front (commitamos apenas .env.example)
+.env
+.env.local
+.env.*.local
+
+# ---------------------------------------------------------------------------
+# SO / diversos
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db

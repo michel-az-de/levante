@@ -1,0 +1,114 @@
+# Levante .editorconfig — estilo C# moderno + calibracao de analyzers.
+# Filosofia: warnings sao erros (Directory.Build.props). Aqui elevamos as
+# regras que importam para a casa e silenciamos ruido que quebraria o build
+# sem agregar valor no esqueleto. Endurecer progressivamente.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,js,jsx,ts,tsx,css,html}]
+indent_size = 2
+
+[*.{csproj,props,targets}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# ---------------------------------------------------------------------------
+# C#
+# ---------------------------------------------------------------------------
+[*.cs]
+indent_size = 4
+max_line_length = 120
+
+# using
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace:warning
+
+# C# moderno (CLAUDE.md, secao Estilo de codigo)
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:silent
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_collection_expression = when_types_loosely_match:suggestion
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+dotnet_style_namespace_match_folder = true:silent
+
+# this. desnecessario
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# Convencao de nomes (PascalCase tipos/membros publicos; _camelCase fields privados)
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_prefix
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+dotnet_naming_style.underscore_prefix.required_prefix = _
+
+# ---------------------------------------------------------------------------
+# Estilo IDE: o que importa vira warning (=> erro); ruido vira silent.
+# ---------------------------------------------------------------------------
+dotnet_diagnostic.IDE0005.severity = warning   # using desnecessario
+dotnet_diagnostic.IDE0161.severity = warning   # file-scoped namespace
+# IDE0058: valor de expressao nao usado — quebra APIs fluentes (MapGet().WithTags()).
+dotnet_diagnostic.IDE0058.severity = none
+dotnet_diagnostic.IDE0008.severity = none      # usar tipo explicito em vez de var
+dotnet_diagnostic.IDE0011.severity = none      # adicionar chaves
+dotnet_diagnostic.IDE0022.severity = none      # corpo de metodo com expressao
+dotnet_diagnostic.IDE0130.severity = none      # namespace x pasta (sln em src/api)
+
+# ---------------------------------------------------------------------------
+# Analyzers .NET (CA) — calibrados para ASP.NET Core / esqueleto.
+# ---------------------------------------------------------------------------
+dotnet_diagnostic.CA2007.severity = none       # ConfigureAwait: desnecessario em ASP.NET Core
+dotnet_diagnostic.CA1303.severity = none       # nao localizar strings (mensagens PT por design)
+dotnet_diagnostic.CA1848.severity = none       # LoggerMessage delegates: overkill na Fatia 0
+dotnet_diagnostic.CA1812.severity = none       # classes instanciadas via DI/reflection
+dotnet_diagnostic.CA1515.severity = none       # tornar tipos internal (app exporta tipos publicos)
+dotnet_diagnostic.CA1014.severity = none       # CLSCompliant assembly
+
+# ---------------------------------------------------------------------------
+# SonarAnalyzer — silenciar o que conflita com nossas escolhas.
+# ---------------------------------------------------------------------------
+dotnet_diagnostic.S1135.severity = suggestion  # comentarios TODO sao intencionais (GAPs)
+dotnet_diagnostic.S125.severity = none         # codigo comentado
+
+# ---------------------------------------------------------------------------
+# Meziantou.Analyzer — calibrar para ASP.NET Core.
+# ---------------------------------------------------------------------------
+dotnet_diagnostic.MA0004.severity = none       # ConfigureAwait (idem CA2007)
+dotnet_diagnostic.MA0048.severity = none       # nome de arquivo == tipo (DI/Program tem varios)
+dotnet_diagnostic.MA0051.severity = suggestion # tamanho de metodo
+
+# ---------------------------------------------------------------------------
+# Testes: relaxar regras que nao agregam em projetos de teste.
+# ---------------------------------------------------------------------------
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none       # underscores em nomes de teste
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.S2699.severity = none        # Shouldly: asserts fora do padrao Sonar
+dotnet_diagnostic.MA0004.severity = none
+
+# ---------------------------------------------------------------------------
+# Codigo gerado: nunca analisar.
+# ---------------------------------------------------------------------------
+[*.{Designer.cs,g.cs,g.i.cs}]
+generated_code = true
