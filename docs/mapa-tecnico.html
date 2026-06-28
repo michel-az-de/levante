@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Levante — mapa técnico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0F17; --bg2:#101826; --bg3:#16202F;
+    --line:#222E40; --line2:#2E3C52;
+    --brass:#C8A24C; --brass-dim:#7E6A33; --brass-deep:#4A3F22;
+    --stone:#EAE5D7; --stone-dim:#9BA6B5; --stone-faint:#697585;
+    --ok:#57A98C; --rec:#5E8DC4; --warn:#CF9A52; --open:#7E8794;
+    --sans:'Space Grotesk',system-ui,sans-serif;
+    --serif:'Fraunces',Georgia,serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--stone);
+    font-family:var(--sans); font-weight:400; line-height:1.5;
+    font-size:15px; letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line) .5px,transparent .5px),
+      linear-gradient(90deg,var(--line) .5px,transparent .5px);
+    background-size:44px 44px;
+    background-position:center top;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background:radial-gradient(120% 80% at 50% -10%,transparent 40%,rgba(10,15,23,.85) 100%);
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:clamp(28px,5vw,64px) clamp(18px,4vw,40px) 80px; position:relative}
+
+  /* header */
+  .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--brass); margin:0}
+  .brand{display:flex; align-items:center; gap:16px; margin:10px 0 6px}
+  .mark{width:26px; height:26px; flex:none; transform:rotate(45deg); border:1.5px solid var(--brass); position:relative}
+  .mark::after{content:""; position:absolute; inset:5px; background:var(--brass); opacity:.85}
+  h1{font-family:var(--serif); font-weight:500; font-size:clamp(40px,7vw,62px); line-height:.95; margin:0; color:var(--stone); letter-spacing:-.01em}
+  h1 .dot{color:var(--brass)}
+  .thesis{font-family:var(--mono); font-size:13px; color:var(--stone-dim); margin:0; letter-spacing:.01em}
+  .thesis b{color:var(--stone); font-weight:500}
+
+  .rule{height:1px; background:linear-gradient(90deg,var(--brass-dim),transparent); border:0; margin:34px 0 0}
+  section{margin-top:46px}
+  .sechead{display:flex; align-items:baseline; gap:14px; margin-bottom:22px}
+  .sechead .eyebrow{white-space:nowrap}
+  .sechead .ln{flex:1; height:1px; background:var(--line2)}
+  .sechead .meta{font-family:var(--mono); font-size:11px; color:var(--stone-faint); letter-spacing:.04em}
+
+  /* architecture lanes */
+  .lane{margin-bottom:18px}
+  .lane-tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--stone-faint); margin:0 0 9px}
+  .flow{display:flex; align-items:stretch; gap:6px; overflow-x:auto; padding-bottom:6px; scrollbar-width:thin; scrollbar-color:var(--line2) transparent}
+  .flow::-webkit-scrollbar{height:6px}
+  .flow::-webkit-scrollbar-thumb{background:var(--line2); border-radius:3px}
+  .node{flex:none; min-width:118px; background:var(--bg2); border:1px solid var(--line2); border-radius:9px; padding:11px 13px; display:flex; flex-direction:column; justify-content:center; gap:3px}
+  .node.spine{border-bottom:2px solid var(--brass-dim)}
+  .node.key{border-color:var(--brass-dim); background:#15171a}
+  .node .nt{font-family:var(--sans); font-weight:500; font-size:13.5px; color:var(--stone); white-space:nowrap}
+  .node .ns{font-family:var(--mono); font-size:10.5px; color:var(--stone-dim); white-space:nowrap}
+  .conn{flex:none; align-self:center; color:var(--stone-faint); font-size:15px; padding:0 1px}
+  .conn.api{display:flex; flex-direction:column; align-items:center; gap:2px; align-self:center; min-width:96px}
+  .conn.api span{font-family:var(--mono); font-size:9.5px; letter-spacing:.04em; color:var(--brass); white-space:nowrap}
+  .conn.api .ln{width:100%; height:0; border-top:1.5px dashed var(--brass-dim)}
+  .branchnote{font-family:var(--mono); font-size:10.5px; color:var(--stone-faint); margin:2px 0 14px; padding-left:2px}
+  .branchnote b{color:var(--brass)}
+
+  /* signature pipeline */
+  .pipe{display:grid; grid-template-columns:repeat(4,1fr); gap:2px; border:1px solid var(--line2); border-radius:11px; overflow:hidden; margin-top:6px}
+  .stage{padding:15px 16px; position:relative}
+  .stage:nth-child(1){background:#0E131B}
+  .stage:nth-child(2){background:#141414}
+  .stage:nth-child(3){background:#1b1810}
+  .stage:nth-child(4){background:#24200f}
+  .stage .sn{font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--stone)}
+  .stage:nth-child(4) .sn{color:var(--brass)}
+  .stage .sd{font-size:11.5px; color:var(--stone-dim); margin-top:5px; line-height:1.4}
+  .stage .si{font-family:var(--mono); font-size:9.5px; color:var(--stone-faint); position:absolute; top:13px; right:14px}
+  .pipecap{font-family:var(--mono); font-size:11px; color:var(--stone-faint); margin:10px 2px 0; letter-spacing:.02em}
+  .pipecap b{color:var(--stone-dim); font-weight:500}
+
+  /* legend */
+  .legend{display:flex; flex-wrap:wrap; gap:18px; margin:0 0 22px; font-size:13px; color:var(--stone-dim)}
+  .legend span{display:inline-flex; align-items:center; gap:8px}
+  .d{width:9px; height:9px; border-radius:50%; flex:none}
+  .ok{background:var(--ok)} .rec{background:var(--rec)} .warn{background:var(--warn)}
+  .open{background:transparent; border:1.5px solid var(--open)}
+
+  /* decision board */
+  .board{display:grid; grid-template-columns:repeat(auto-fill,minmax(258px,1fr)); gap:13px}
+  .cat{background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:15px 16px 13px}
+  .cat h3{font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--brass); margin:0 0 12px; font-weight:500; display:flex; align-items:center; gap:9px}
+  .cat h3 .hr{flex:1; height:1px; background:var(--line)}
+  .row{display:flex; align-items:flex-start; gap:9px; padding:3.5px 0; line-height:1.35}
+  .row .d{margin-top:5px}
+  .row .lbl{font-size:13px; color:var(--stone)}
+  .row .lbl em{font-style:normal; font-family:var(--mono); font-size:11px; color:var(--stone-faint); margin-left:2px}
+  .cat.gaps{border-color:var(--brass-deep)}
+  .cat.gaps h3{color:var(--brass)}
+
+  footer{margin-top:48px; padding-top:22px; border-top:1px solid var(--line); font-family:var(--mono); font-size:12px; color:var(--stone-faint); letter-spacing:.02em; display:flex; flex-wrap:wrap; gap:8px 22px}
+  footer b{color:var(--stone-dim); font-weight:500}
+
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{opacity:0; transform:translateY(10px); animation:rise .6s cubic-bezier(.2,.6,.2,1) forwards}
+    @keyframes rise{to{opacity:1; transform:none}}
+  }
+  .cat{transition:border-color .2s, transform .2s}
+  .cat:hover{border-color:var(--line2)}
+  @media(max-width:560px){
+    .pipe{grid-template-columns:1fr 1fr}
+    h1{font-size:44px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="reveal">
+    <p class="eyebrow">plataforma pessoal · arquiteto de soluções</p>
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <h1>Levante<span class="dot">.</span></h1>
+    </div>
+    <p class="thesis">da pedra bruta à pedra polida — <b>mapa técnico</b> de todas as propostas até aqui</p>
+  </header>
+
+  <hr class="rule">
+
+  <section class="reveal" style="animation-delay:.05s">
+    <div class="sechead">
+      <p class="eyebrow">arquitetura</p>
+      <span class="ln"></span>
+      <span class="meta">React/Next.js · .NET · MongoDB · Hiram</span>
+    </div>
+
+    <div class="lane">
+      <p class="lane-tag">Requisição · síncrono</p>
+      <div class="flow">
+        <div class="node"><span class="nt">Navegador</span></div>
+        <span class="conn">→</span>
+        <div class="node spine"><span class="nt">Next.js</span><span class="ns">SSR / SSG / ISR</span></div>
+        <span class="conn api"><span>OpenAPI · tipos TS</span><span class="ln"></span></span>
+        <div class="node spine"><span class="nt">.NET</span><span class="ns">Minimal API</span></div>
+        <span class="conn">→</span>
+        <div class="node spine"><span class="nt">Application</span><span class="ns">CQRS · Result</span></div>
+        <span class="conn">→</span>
+        <div class="node spine"><span class="nt">Domain</span><span class="ns">DDD · agregados</span></div>
+        <span class="conn">→</span>
+        <div class="node"><span class="nt">MongoDB</span><span class="ns">Atlas · replica set</span></div>
+      </div>
+    </div>
+
+    <p class="branchnote">⌎ a <b>Application</b> grava estado + evento na mesma transação, e a partir do Outbox o fluxo segue assíncrono:</p>
+
+    <div class="lane">
+      <p class="lane-tag">Eventos · assíncrono → notificações</p>
+      <div class="flow">
+        <div class="node"><span class="nt">Outbox</span><span class="ns">Mongo</span></div>
+        <span class="conn">→</span>
+        <div class="node"><span class="nt">Change Streams</span><span class="ns">relay</span></div>
+        <span class="conn">→</span>
+        <div class="node"><span class="nt">RabbitMQ</span></div>
+        <span class="conn">→</span>
+        <div class="node key"><span class="nt">Hiram</span><span class="ns">entrega</span></div>
+        <span class="conn">→</span>
+        <div class="node"><span class="nt">email · push · WhatsApp</span></div>
+      </div>
+    </div>
+
+    <div class="lane">
+      <p class="lane-tag">Integrações externas</p>
+      <div class="flow">
+        <div class="node"><span class="nt">GitHub API</span><span class="ns">repos · contrib</span></div>
+        <div class="node"><span class="nt">WhatsApp</span><span class="ns">click-to-chat</span></div>
+        <div class="node"><span class="nt">Newsletter</span><span class="ns">double opt-in</span></div>
+        <span class="conn" style="opacity:.4">·</span>
+        <div class="node" style="border-style:dashed; opacity:.85"><span class="nt">SEO · Analytics · LGPD</span><span class="ns">transversais</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reveal" style="animation-delay:.1s">
+    <div class="sechead">
+      <p class="eyebrow">esteira</p>
+      <span class="ln"></span>
+      <span class="meta">gates de CI</span>
+    </div>
+    <div class="pipe">
+      <div class="stage"><span class="si">01</span><span class="sn">rough-cut</span><span class="sd">compila · warnings as errors · versões centralizadas</span></div>
+      <div class="stage"><span class="si">02</span><span class="sn">dress</span><span class="sd">format · analyzers · arch tests · gitleaks</span></div>
+      <div class="stage"><span class="si">03</span><span class="sn">polish</span><span class="sd">testes · isolamento multi-tenant · cobertura</span></div>
+      <div class="stage"><span class="si">04</span><span class="sn">raise</span><span class="sd">SAST · NuGet audit · SBOM · deploy</span></div>
+    </div>
+    <p class="pipecap">pedra bruta → pedra polida. nada vira <b>raised</b> (produção) sem passar todos os gates.</p>
+  </section>
+
+  <section class="reveal" style="animation-delay:.15s">
+    <div class="sechead">
+      <p class="eyebrow">decisões</p>
+      <span class="ln"></span>
+      <span class="meta">estado de cada proposta</span>
+    </div>
+
+    <div class="legend">
+      <span><i class="d ok"></i>Travado</span>
+      <span><i class="d rec"></i>Recomendado</span>
+      <span><i class="d warn"></i>Licença / atenção</span>
+      <span><i class="d open"></i>GAP aberto</span>
+    </div>
+
+    <div class="board">
+
+      <div class="cat"><h3>marca &amp; produto<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">Levante <em>nome</em></span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Identidade maçônica oculta</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Ecossistema Levante + Hiram</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Convenção de nomes PT/EN</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Design system Trestleboard</span></div>
+      </div>
+
+      <div class="cat"><h3>frontend<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">React + Next.js</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">SSR / SSG / ISR <em>SEO</em></span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Sem SPA puro</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Tailwind + shadcn/Radix</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">OpenAPI → tipos TS <em>NSwag/Kiota</em></span></div>
+      </div>
+
+      <div class="cat"><h3>backend<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">.NET LTS (9/10)</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Minimal API</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Clean Architecture</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">DDD + SOLID</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">CQRS-lite</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Result pattern <em>não exception</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">FluentValidation</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Mapster <em>evitar AutoMapper</em></span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">Mediator <em>GAP-F</em></span></div>
+      </div>
+
+      <div class="cat"><h3>bounded contexts<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">Conteudo</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Engajamento</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Audiencia</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Analytics</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Identity</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Documents</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Portfolio</span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Integração <em>outbox</em></span></div>
+      </div>
+
+      <div class="cat"><h3>dados · mongodb<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">MongoDB Atlas <em>GAP-E</em></span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">Replica set <em>transações</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Driver nativo + Repository</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Collection time-series</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Atlas Search <em>full-text</em></span></div>
+      </div>
+
+      <div class="cat"><h3>integração &amp; hiram<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">Outbox transacional</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Change Streams <em>relay</em></span></div>
+        <div class="row"><i class="d ok"></i><span class="lbl">RabbitMQ → Hiram</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Eventos versionados</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">Contrato com Hiram <em>GAP-I</em></span></div>
+      </div>
+
+      <div class="cat"><h3>seo<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">SSR/SSG no conteúdo</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">JSON-LD Person + Article</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Sitemap + RSS + canonical</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Open Graph / Twitter cards</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Core Web Vitals</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Cross-post canonical <em>LinkedIn</em></span></div>
+      </div>
+
+      <div class="cat"><h3>analytics &amp; lgpd<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">Coleta first-party</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">GeoIP <em>MaxMind</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Anonimização de IP</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Banner de consentimento</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Política + retenção</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Dashboard admin</span></div>
+      </div>
+
+      <div class="cat"><h3>integrações externas<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">GitHub API <em>repos/contrib</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">WhatsApp click-to-chat</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">WhatsApp Cloud API <em>GAP-G</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Newsletter double opt-in</span></div>
+      </div>
+
+      <div class="cat"><h3>documentos &amp; científico<span class="hr"></span></h3>
+        <div class="row"><i class="d warn"></i><span class="lbl">QuestPDF <em>licença · PDF</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">OpenXML <em>Word</em></span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">Assinatura nível 1-4 <em>GAP-B</em></span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">Profundidade científica <em>GAP-C</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">DOI via Zenodo + ORCID</span></div>
+      </div>
+
+      <div class="cat"><h3>velocidade · claude code<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">CLAUDE.md <em>raiz + módulo</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Slash commands</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Subagents <em>revisor segurança</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Plan mode</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Hooks <em>Pre/PostToolUse</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Templates + source gen</span></div>
+      </div>
+
+      <div class="cat"><h3>qualidade &amp; segurança<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">Arch tests <em>NetArchTest</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Analyzers <em>Banned API, Sonar</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Nullable + warnings as errors</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">CodeQL + gitleaks</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">NuGet Audit + Dependabot</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Isolamento multi-tenant</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Testcontainers + Shouldly</span></div>
+      </div>
+
+      <div class="cat"><h3>infra &amp; devops<span class="hr"></span></h3>
+        <div class="row"><i class="d rec"></i><span class="lbl">Azure Container Apps <em>GAP-J</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">GitHub Actions <em>CI/CD</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Bicep / Terraform</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">OpenTelemetry + App Insights</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Serilog</span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Azure Front Door <em>CDN</em></span></div>
+      </div>
+
+      <div class="cat gaps"><h3>gaps abertos<span class="hr"></span></h3>
+        <div class="row"><i class="d ok"></i><span class="lbl">D · Frontend → React <em>resolvido</em></span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">A · Domínio (.dev)</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">B · Nível de assinatura</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">C · Profundidade científica</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">E · Atlas vs self-host</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">F · Mediator</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">G · WhatsApp Cloud API</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">H · Idiomas PT vs PT+EN</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">I · Contrato eventos Hiram</span></div>
+        <div class="row"><i class="d open"></i><span class="lbl">J · Host</span></div>
+      </div>
+
+      <div class="cat"><h3>armadilhas de licença<span class="hr"></span></h3>
+        <div class="row"><i class="d warn"></i><span class="lbl">MediatR <em>comercial</em></span></div>
+        <div class="row"><i class="d warn"></i><span class="lbl">AutoMapper <em>comercial</em></span></div>
+        <div class="row"><i class="d warn"></i><span class="lbl">QuestPDF <em>Community c/ limite</em></span></div>
+        <div class="row"><i class="d warn"></i><span class="lbl">FluentAssertions v8 <em>paga</em></span></div>
+        <div class="row"><i class="d rec"></i><span class="lbl">Saídas: Mapster · Shouldly · Wolverine</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="reveal" style="animation-delay:.2s">
+    <span><b>Núcleo travado:</b> Clean Arch · DDD · 8 contextos · outbox → Hiram · React/Next.js + .NET</span>
+    <span><b>9</b> GAPs abertos</span>
+    <span><b>1</b> resolvido (frontend)</span>
+    <span><b>4</b> armadilhas de licença mapeadas</span>
+  </footer>
+
+</div>
+</body>
+</html>
