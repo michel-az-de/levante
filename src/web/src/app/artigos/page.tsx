@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { ArtigoList } from "@/components/ArtigoList";
 import { artigoApi } from "@/lib/api";
 
-// SSR a cada request na Fatia 0 (sem cache), provando o caminho front -> API.
-export const dynamic = "force-dynamic";
+// ISR: HTML server-rendered, revalidado periodicamente (indexavel, sem exigir
+// a API no build do CI).
+export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: "Artigos",
+  description: "Artigos tecnicos publicados no Levante.",
+  alternates: { canonical: "/artigos" },
+  openGraph: { title: "Artigos", url: "/artigos" },
+};
 
 export default async function ArtigosPage() {
   const { data, error } = await artigoApi.GET("/artigos");
