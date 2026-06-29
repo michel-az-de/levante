@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  NODE_VERSION: "22"
+  SLN: src/api/Levante.sln
+
+jobs:
+  # 1) rough-cut: compila com warnings as errors; restore valida CPM + NuGet audit.
+  rough-cut:
+    name: rough-cut (build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore ${{ env.SLN }}
+      - run: dotnet build ${{ env.SLN }} -c Release --no-restore
+
+  # 2) dress: format, arch tests, gitleaks, contrato OpenAPI em sincronia, lint web.
+  dress:
+    name: dress (format, analyzers, arch, gitleaks, contrato)
+    needs: rough-cut
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Formatacao (dotnet format)
+        run: dotnet format ${{ env.SLN }} --verify-no-changes
+
+      - name: Arch tests (Domain sem Infra)
+        run: dotnet test tests/Levante.ArchitectureTests/Levante.ArchitectureTests.csproj -c Release
+
+      - name: Secret scanning (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Emite contrato OpenAPI fresco
+        run: dotnet run --project src/api/host/Levante.Api -c Release --no-launch-profile -- --emit-openapi src/web/openapi/levante.json
+
+      - name: Contrato em sincronia com a API
+        run: git diff --exit-code -- src/web/openapi/levante.json
+
+      - name: Instala dependencias web
+        working-directory: src/web
+        run: npm ci
+
+      - name: Regenera tipos do OpenAPI
+        working-directory: src/web
+        run: npm run gen:api
+
+      - name: Tipos TS em sincronia com o contrato
+        run: git diff --exit-code -- src/web/src/types/api.ts
+
+      - name: Lint web
+        working-directory: src/web
+        run: npm run lint
+
+  # 3) polish: testes (inclui privilegio minimo do Mongo via Testcontainers) +
+  #    cobertura minima do Domain + build do front.
+  polish:
+    name: polish (testes + cobertura + build web)
+    needs: dress
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Testes (unit + integracao com Testcontainers)
+        run: dotnet test ${{ env.SLN }} -c Release
+
+      - name: Gate de cobertura do Domain (>= 80% linha)
+        run: >
+          dotnet test tests/Levante.Conteudo.UnitTests/Levante.Conteudo.UnitTests.csproj
+          -c Release
+          -p:CollectCoverage=true
+          -p:ThresholdType=line
+          -p:Threshold=80
+          -p:Include="[Levante.Conteudo.Domain]*"
+
+      - name: Build do front (Next.js + typecheck)
+        working-directory: src/web
+        run: |
+          npm ci
+          npm run build
+
+  # SAST em paralelo; raise exige verde.
+  codeql:
+    name: codeql (SAST)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: csharp
+            build-mode: manual
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        if: matrix.language == 'csharp'
+        with:
+          global-json-file: global.json
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Build C# (build-mode manual)
+        if: matrix.language == 'csharp'
+        run: dotnet build ${{ env.SLN }} -c Release
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # 4) raise: NuGet audit + SBOM + containeriza e publica no GHCR.
+  #    Push so em merge na main ou tag (nunca em PR).
+  raise:
+    name: raise (publish/containeriza)
+    needs: [polish, codeql]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: NuGet audit (CVE falha o build)
+        run: dotnet restore ${{ env.SLN }}
+
+      - name: SBOM (CycloneDX)
+        run: |
+          dotnet tool restore
+          dotnet CycloneDX ${{ env.SLN }} -o sbom
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom/
+
+      - name: Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Containeriza e publica (non-root)
+        run: |
+          dotnet publish src/api/host/Levante.Api/Levante.Api.csproj \
+            -c Release \
+            /t:PublishContainer \
+            -p:ContainerRegistry=ghcr.io \
+            -p:ContainerRepository=${{ github.repository_owner }}/levante-api \
+            '-p:ContainerImageTags=${{ github.sha }};latest' \
+            -p:ContainerUser=app
