@@ -1,5 +1,6 @@
 using Levante.Conteudo.Application.Artigos;
 using Levante.Conteudo.Application.Artigos.ListarArtigosPublicados;
+using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
 
 namespace Levante.Api.Endpoints;
 
@@ -17,6 +18,12 @@ public static class ArtigoEndpoints
             .WithName("ListarArtigosPublicados")
             .Produces<IReadOnlyList<ArtigoResponse>>();
 
+        grupo.MapGet("/{slug}", ObterPorSlug)
+            .AllowAnonymous() // endpoint publico: decisao de autorizacao explicita
+            .WithName("ObterArtigoPorSlug")
+            .Produces<ArtigoResponse>()
+            .Produces(StatusCodes.Status404NotFound);
+
         return app;
     }
 
@@ -29,5 +36,17 @@ public static class ArtigoEndpoints
         return resultado.Sucesso
             ? Results.Ok(resultado.Valor)
             : Results.Problem(resultado.Erro.Mensagem);
+    }
+
+    private static async Task<IResult> ObterPorSlug(
+        string slug,
+        ObterArtigoPorSlugQueryHandler handler,
+        CancellationToken ct)
+    {
+        var resultado = await handler.Handle(new ObterArtigoPorSlugQuery(slug), ct);
+
+        return resultado.Sucesso
+            ? Results.Ok(resultado.Valor)
+            : Results.NotFound();
     }
 }

@@ -15,12 +15,14 @@ internal static class ArtigoSeeder
         var primeiro = Artigo.Criar(
             "Clean Architecture na pratica",
             new Slug("clean-architecture-na-pratica"),
+            "Como o walking skeleton do Levante atravessa todas as camadas, do navegador ao MongoDB.",
             "Walking skeleton do Levante: do navegador ao Mongo, atravessando todas as camadas.");
         primeiro.Publicar();
 
         var segundo = Artigo.Criar(
             "Da pedra bruta a pedra polida",
             new Slug("da-pedra-bruta-a-pedra-polida"),
+            "A esteira rough-cut, dress, polish e raise que leva cada mudanca a producao com seguranca.",
             "A esteira rough-cut, dress, polish e raise que leva o codigo a producao.");
         segundo.Publicar();
 

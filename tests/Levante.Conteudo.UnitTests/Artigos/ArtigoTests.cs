@@ -9,7 +9,7 @@ public sealed class ArtigoTests
     [Fact]
     public void Criar_iniciaEmRascunhoSemPublicacao()
     {
-        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Conteudo do artigo.");
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo do artigo.");
 
         artigo.Id.ShouldNotBe(Guid.Empty);
         artigo.Status.ShouldBe(StatusArtigo.Rascunho);
@@ -21,7 +21,7 @@ public sealed class ArtigoTests
     [Fact]
     public void Publicar_mudaStatusRegistraDataEEvento()
     {
-        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Conteudo do artigo.");
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo do artigo.");
 
         artigo.Publicar();
 
@@ -33,7 +33,7 @@ public sealed class ArtigoTests
     [Fact]
     public void Publicar_ehIdempotente()
     {
-        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Conteudo do artigo.");
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo do artigo.");
 
         artigo.Publicar();
         artigo.Publicar();
@@ -44,7 +44,7 @@ public sealed class ArtigoTests
     [Fact]
     public void LimparEventos_esvaziaAColecao()
     {
-        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Conteudo do artigo.");
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo do artigo.");
         artigo.Publicar();
 
         artigo.LimparEventos();
@@ -60,7 +60,7 @@ public sealed class ArtigoTests
         var publicacao = new DateTime(2026, 1, 12, 9, 30, 0, DateTimeKind.Utc);
 
         var artigo = Artigo.Reconstituir(
-            id, "Titulo", new Slug("titulo"), "Conteudo", StatusArtigo.Publicado, criacao, publicacao);
+            id, "Titulo", new Slug("titulo"), "Resumo", "Conteudo", StatusArtigo.Publicado, criacao, publicacao);
 
         artigo.Id.ShouldBe(id);
         artigo.Status.ShouldBe(StatusArtigo.Publicado);
@@ -74,6 +74,6 @@ public sealed class ArtigoTests
     [InlineData("   ")]
     public void Criar_rejeitaTituloVazio(string titulo)
     {
-        Should.Throw<ArgumentException>(() => Artigo.Criar(titulo, new Slug("titulo"), "Conteudo."));
+        Should.Throw<ArgumentException>(() => Artigo.Criar(titulo, new Slug("titulo"), "Resumo.", "Conteudo."));
     }
 }

@@ -27,6 +27,39 @@
           }
         }
       }
+    },
+    "/artigos/{slug}": {
+      "get": {
+        "tags": [
+          "Artigos"
+        ],
+        "operationId": "ObterArtigoPorSlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtigoResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -36,6 +69,7 @@
           "id",
           "titulo",
           "slug",
+          "resumo",
           "conteudo",
           "dataPublicacao"
         ],
@@ -49,6 +83,9 @@
             "type": "string"
           },
           "slug": {
+            "type": "string"
+          },
+          "resumo": {
             "type": "string"
           },
           "conteudo": {

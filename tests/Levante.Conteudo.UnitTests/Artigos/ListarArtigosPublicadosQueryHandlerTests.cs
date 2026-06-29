@@ -10,7 +10,7 @@ public sealed class ListarArtigosPublicadosQueryHandlerTests
     [Fact]
     public async Task Handle_devolveArtigosMapeados()
     {
-        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Conteudo.");
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
         artigo.Publicar();
         var repositorio = new RepositorioFake([artigo]);
         var handler = new ListarArtigosPublicadosQueryHandler(repositorio);
