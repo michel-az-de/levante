@@ -1,9 +1,14 @@
+using System.Text;
 using Levante.Api.Endpoints;
 using Levante.Api.Seguranca;
 using Levante.Conteudo.Application.Artigos.ListarArtigosPublicados;
 using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
 using Levante.Conteudo.Infrastructure;
+using Levante.Identity.Application.Autenticacao;
+using Levante.Identity.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +18,7 @@ var modoEmitOpenApi = args.Contains(Levante.Api.OpenApiExport.Argumento);
 // inicializacao (indices + seed) e self-check de privilegio minimo no boot.
 // Em modo emit do contrato, nao registra os servicos de boot (nao toca o Mongo).
 builder.Services.AddConteudoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
+builder.Services.AddIdentityInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 
 if (modoEmitOpenApi)
 {
@@ -22,12 +28,38 @@ if (modoEmitOpenApi)
 // Handlers CQRS-lite chamados direto (sem mediator por ora, GAP-F).
 builder.Services.AddScoped<ListarArtigosPublicadosQueryHandler>();
 builder.Services.AddScoped<ObterArtigoPorSlugQueryHandler>();
+builder.Services.AddScoped<AutenticarCommandHandler>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
 builder.Services.AddOpenApi();
 
+// Autenticacao JWT bearer: da um esquema real a FallbackPolicy (deny-by-default).
+// SecretKey vem de user-secrets/env (ValidateOnStart exige no boot real); o fallback
+// abaixo so e usado no modo emit (sem requests) para nao exigir segredo no build.
+var jwtSecret = builder.Configuration["Jwt:SecretKey"];
+if (string.IsNullOrEmpty(jwtSecret))
+{
+    jwtSecret = "emit-only-fallback-key-defina-Jwt-SecretKey-em-user-secrets";
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "levante",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "levante",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
+    });
+
 // Autorizacao explicita: nega por padrao. Todo endpoint declara AllowAnonymous
-// ou RequireAuthorization. Esquemas de autenticacao chegam com Identity (Fatia 2).
+// ou RequireAuthorization.
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -46,11 +78,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseSecurityHeaders();
 app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapOpenApi().AllowAnonymous();
 app.MapHealthEndpoints();
 app.MapArtigoEndpoints();
+app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).
 if (modoEmitOpenApi)
