@@ -107,6 +107,8 @@ dotnet_diagnostic.CA1707.severity = none       # underscores em nomes de teste
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.S2699.severity = none        # Shouldly: asserts fora do padrao Sonar
 dotnet_diagnostic.MA0004.severity = none
+dotnet_diagnostic.MA0002.severity = none       # comparer em colecoes de teste
+dotnet_diagnostic.MA0006.severity = none       # == em string nos testes
 
 # ---------------------------------------------------------------------------
 # Codigo gerado: nunca analisar.

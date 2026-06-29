@@ -30,6 +30,8 @@ coverage/
 *.coveragexml
 coverage.cobertura.xml
 coverage.opencover.xml
+coverage.json
+coverage*.json
 *.trx
 
 # SBOM gerado
