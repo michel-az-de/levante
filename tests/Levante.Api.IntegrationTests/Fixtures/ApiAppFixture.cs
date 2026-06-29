@@ -18,6 +18,13 @@ namespace Levante.Api.IntegrationTests.Fixtures;
 /// </summary>
 public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    // Credenciais de teste (NAO sao segredos): o seeder cria este admin em Development.
+    public const string EmailAdmin = "admin@levante.dev";
+    public const string SenhaAdmin = "Senha-de-teste-Forte-123";
+
+    // Chave JWT apenas de teste (baixa entropia, descritiva): nao e segredo real.
+    private const string SegredoJwtDeTeste = "chave-de-teste-jwt-nao-secreta-com-mais-de-32-caracteres";
+
     private readonly MongoDbContainer _mongo = new MongoDbBuilder()
         .WithUsername("root")
         .WithPassword("root-pwd")
@@ -39,6 +46,9 @@ public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifeti
             {
                 ["Mongo:ConnectionString"] = _mongo.GetConnectionString(),
                 ["Mongo:DatabaseName"] = "levante",
+                ["Jwt:SecretKey"] = SegredoJwtDeTeste,
+                ["Admin:Email"] = EmailAdmin,
+                ["Admin:SenhaInicial"] = SenhaAdmin,
             }));
     }
 }

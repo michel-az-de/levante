@@ -105,7 +105,7 @@ jobs:
       - name: Testes (unit + integracao com Testcontainers)
         run: dotnet test ${{ env.SLN }} -c Release
 
-      - name: Gate de cobertura do Domain (>= 80% linha)
+      - name: Gate de cobertura do Conteudo.Domain (>= 80% linha)
         run: >
           dotnet test tests/Levante.Conteudo.UnitTests/Levante.Conteudo.UnitTests.csproj
           -c Release
@@ -113,6 +113,15 @@ jobs:
           -p:ThresholdType=line
           -p:Threshold=80
           -p:Include="[Levante.Conteudo.Domain]*"
+
+      - name: Gate de cobertura do Identity.Domain (>= 80% linha)
+        run: >
+          dotnet test tests/Levante.Identity.UnitTests/Levante.Identity.UnitTests.csproj
+          -c Release
+          -p:CollectCoverage=true
+          -p:ThresholdType=line
+          -p:Threshold=80
+          -p:Include="[Levante.Identity.Domain]*"
 
       - name: Build do front (Next.js + typecheck)
         working-directory: src/web
