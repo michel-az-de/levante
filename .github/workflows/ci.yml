@@ -203,5 +203,5 @@ jobs:
             /t:PublishContainer \
             -p:ContainerRegistry=ghcr.io \
             -p:ContainerRepository=${{ github.repository_owner }}/levante-api \
-            -p:ContainerImageTags=${{ github.sha }}%3Blatest \
+            -p:ContainerImageTag=${{ github.sha }} \
             -p:ContainerUser=app
