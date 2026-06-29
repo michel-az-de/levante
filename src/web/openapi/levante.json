@@ -60,10 +60,75 @@
           }
         }
       }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "Autenticar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutenticarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDeAcessoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/eu": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "ObterAdministradorAtual",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministradorAtualResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AdministradorAtualResponse": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "description": "Resposta de /auth/eu (admin autenticado)."
+      },
       "ArtigoResponse": {
         "required": [
           "id",
@@ -98,12 +163,48 @@
           }
         },
         "description": "Contrato de saida do contexto Conteudo. Vira o tipo TS gerado do OpenAPI\n(PT) consumido pelo Next.js. Nao expor o agregado diretamente."
+      },
+      "AutenticarRequest": {
+        "required": [
+          "email",
+          "senha"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "senha": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo do login."
+      },
+      "TokenDeAcessoResponse": {
+        "required": [
+          "accessToken",
+          "expiraEmSegundos"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiraEmSegundos": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          }
+        },
+        "description": "Token de acesso emitido no login (JWT bearer). Contrato consumido pelo admin."
       }
     }
   },
   "tags": [
     {
       "name": "Artigos"
+    },
+    {
+      "name": "Auth"
     }
   ]
 }

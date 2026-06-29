@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
@@ -7,17 +8,27 @@ import type { Artigo } from "@/types/domain";
 
 export const revalidate = 300;
 
-async function obterArtigo(slug: string): Promise<Artigo | null> {
-  try {
-    const { data, error } = await artigoApi.GET("/artigos/{slug}", {
-      params: { path: { slug } },
-    });
-    return error || !data ? null : data;
-  } catch {
-    // API indisponivel: trata como nao encontrado (404) em vez de 500.
+// cache(): generateMetadata e o componente compartilham o mesmo fetch no render
+// do request, em vez de baterem na API duas vezes. (O opengraph-image roda em
+// outro request e tem o seu proprio fetch, com fallback proprio.)
+const obterArtigo = cache(async (slug: string): Promise<Artigo | null> => {
+  const { data, response } = await artigoApi.GET("/artigos/{slug}", {
+    params: { path: { slug } },
+  });
+
+  // 404 da API = artigo inexistente ou nao publicado -> notFound() (cacheavel).
+  if (response.status === 404) {
     return null;
   }
-}
+
+  // Qualquer outra falha (API fora, 5xx) PROPAGA de proposito: com revalidate=300,
+  // engolir o erro cacharia um 404 falso por 5 min para um artigo que existe.
+  if (!response.ok) {
+    throw new Error(`Falha ao obter artigo '${slug}': HTTP ${response.status}`);
+  }
+
+  return data ?? null;
+});
 
 export async function generateMetadata({
   params,

@@ -10,6 +10,7 @@ namespace Levante.Api.Seguranca;
 public static class RateLimiting
 {
     public const string PolicyReady = "ready";
+    public const string PolicyAuth = "auth";
 
     public static IServiceCollection AddLevanteRateLimiting(this IServiceCollection services)
     {
@@ -32,6 +33,14 @@ public static class RateLimiting
             options.AddFixedWindowLimiter(PolicyReady, limiter =>
             {
                 limiter.PermitLimit = 10;
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.QueueLimit = 0;
+            });
+
+            // Login: estrita, para frear brute-force (complementa o lockout por conta).
+            options.AddFixedWindowLimiter(PolicyAuth, limiter =>
+            {
+                limiter.PermitLimit = 5;
                 limiter.Window = TimeSpan.FromMinutes(1);
                 limiter.QueueLimit = 0;
             });

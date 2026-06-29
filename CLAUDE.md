@@ -85,6 +85,7 @@ Estas regras vêm de incidentes reais. Não relaxe nenhuma.
 3. Todo endpoint nasce com autorização explícita. Nada de endpoint sem política definida.
 4. Headers de segurança (HSTS, CSP, etc.), anti-forgery, rate limiting e validação de entrada são padrão, não opcional.
 5. LGPD: coleta de analytics exige consentimento; IP é anonimizado; há política de retenção. Sem rastrear antes do consentimento.
+6. Admin (contexto `Identity`): login com senha (PasswordHasher/PBKDF2) + lockout (5 falhas/15min) e rate limit no `/auth/login`; **JWT bearer** (sem enumeração de usuário). `Jwt:SecretKey` e o admin de seed (`Admin:Email`/`Admin:SenhaInicial`) vêm de user-secrets/env, nunca do repo. MFA (TOTP) é hardening posterior.
 
 ## Estilo de código C#
 

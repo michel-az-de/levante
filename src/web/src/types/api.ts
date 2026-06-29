@@ -36,10 +36,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Autenticar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/eu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObterAdministradorAtual"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Resposta de /auth/eu (admin autenticado). */
+        AdministradorAtualResponse: {
+            email: string;
+        };
         /**
          * @description Contrato de saida do contexto Conteudo. Vira o tipo TS gerado do OpenAPI
          *     (PT) consumido pelo Next.js. Nao expor o agregado diretamente.
@@ -53,6 +89,17 @@ export interface components {
             conteudo: string;
             /** Format: date-time */
             dataPublicacao: string | null;
+        };
+        /** @description Corpo do login. */
+        AutenticarRequest: {
+            email: string;
+            senha: string;
+        };
+        /** @description Token de acesso emitido no login (JWT bearer). Contrato consumido pelo admin. */
+        TokenDeAcessoResponse: {
+            accessToken: string;
+            /** Format: int32 */
+            expiraEmSegundos: unknown;
         };
     };
     responses: never;
@@ -109,6 +156,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    Autenticar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutenticarRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenDeAcessoResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ObterAdministradorAtual: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdministradorAtualResponse"];
+                };
             };
         };
     };

@@ -14,6 +14,13 @@
     <PackageVersion Include="MongoDB.Driver" Version="3.9.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Auth (Identity / JWT)">
+    <!-- PasswordHasher vem do shared framework; o pacote da familia IdentityModel
+         (Wilson) versiona separado do .NET (8.x). JwtBearer acompanha o .NET (10.x). -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
+  </ItemGroup>
+
   <ItemGroup Label="OpenAPI (emissao do documento em build)">
     <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.9" />
   </ItemGroup>

@@ -21,6 +21,9 @@
     <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Domain\Levante.Conteudo.Domain.csproj" />
     <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Application\Levante.Conteudo.Application.csproj" />
     <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Infrastructure\Levante.Conteudo.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Identity\Levante.Identity.Domain\Levante.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Identity\Levante.Identity.Application\Levante.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Identity\Levante.Identity.Infrastructure\Levante.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
