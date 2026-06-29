@@ -17,6 +17,15 @@ updates:
     open-pull-requests-limit: 10
     commit-message:
       prefix: "build(deps)"
+    ignore:
+      # eslint 10 quebra o eslint-plugin-react do eslint-config-next 16
+      # (usa context.getFilename, removido na v10). Liberar quando houver
+      # eslint-config-next compativel com eslint 10.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      # @types/node acompanha o major do runtime (Node 22 no CI), nao o latest.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions usadas no CI.
   - package-ecosystem: github-actions
