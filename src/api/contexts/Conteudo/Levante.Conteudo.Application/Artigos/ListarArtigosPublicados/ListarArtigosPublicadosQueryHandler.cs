@@ -16,15 +16,8 @@ public sealed class ListarArtigosPublicadosQueryHandler(IArtigoRepository reposi
         ArgumentNullException.ThrowIfNull(query);
 
         var artigos = await repositorio.ListPublicadosAsync(ct);
-        IReadOnlyList<ArtigoResponse> resposta = [.. artigos.Select(Mapear)];
+        IReadOnlyList<ArtigoResponse> resposta = [.. artigos.Select(ArtigoResponse.DeArtigo)];
 
         return Result.Ok(resposta);
     }
-
-    private static ArtigoResponse Mapear(Artigo artigo) => new(
-        artigo.Id,
-        artigo.Titulo,
-        artigo.Slug.Valor,
-        artigo.Conteudo,
-        artigo.DataPublicacao);
 }

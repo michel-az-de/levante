@@ -1,3 +1,5 @@
+using Levante.Conteudo.Domain.Artigos;
+
 namespace Levante.Conteudo.Application.Artigos;
 
 /// <summary>
@@ -8,5 +10,15 @@ public sealed record ArtigoResponse(
     Guid Id,
     string Titulo,
     string Slug,
+    string Resumo,
     string Conteudo,
-    DateTime? DataPublicacao);
+    DateTime? DataPublicacao)
+{
+    public static ArtigoResponse DeArtigo(Artigo artigo) => new(
+        artigo.Id,
+        artigo.Titulo,
+        artigo.Slug.Valor,
+        artigo.Resumo,
+        artigo.Conteudo,
+        artigo.DataPublicacao);
+}

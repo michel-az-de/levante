@@ -1,6 +1,7 @@
 using Levante.Api.Endpoints;
 using Levante.Api.Seguranca;
 using Levante.Conteudo.Application.Artigos.ListarArtigosPublicados;
+using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
 using Levante.Conteudo.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 
@@ -20,6 +21,7 @@ if (modoEmitOpenApi)
 
 // Handlers CQRS-lite chamados direto (sem mediator por ora, GAP-F).
 builder.Services.AddScoped<ListarArtigosPublicadosQueryHandler>();
+builder.Services.AddScoped<ObterArtigoPorSlugQueryHandler>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
 builder.Services.AddOpenApi();

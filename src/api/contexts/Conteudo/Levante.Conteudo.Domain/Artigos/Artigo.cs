@@ -10,10 +10,14 @@ public sealed class Artigo
 {
     private readonly List<IEventoDeDominio> _eventos = [];
 
+    /// <summary>Tamanho maximo do resumo (alinhado a meta description de SEO).</summary>
+    public const int TamanhoMaximoResumo = 280;
+
     private Artigo(
         Guid id,
         string titulo,
         Slug slug,
+        string resumo,
         string conteudo,
         StatusArtigo status,
         DateTime dataCriacao,
@@ -22,6 +26,7 @@ public sealed class Artigo
         Id = id;
         Titulo = titulo;
         Slug = slug;
+        Resumo = resumo;
         Conteudo = conteudo;
         Status = status;
         DataCriacao = dataCriacao;
@@ -34,6 +39,9 @@ public sealed class Artigo
 
     public Slug Slug { get; private set; }
 
+    /// <summary>Resumo curto (vira a meta description / descricao OG no front).</summary>
+    public string Resumo { get; private set; }
+
     public string Conteudo { get; private set; }
 
     public StatusArtigo Status { get; private set; }
@@ -45,16 +53,24 @@ public sealed class Artigo
     public IReadOnlyList<IEventoDeDominio> Eventos => _eventos;
 
     /// <summary>Cria um novo artigo em rascunho.</summary>
-    public static Artigo Criar(string titulo, Slug slug, string conteudo)
+    public static Artigo Criar(string titulo, Slug slug, string resumo, string conteudo)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(titulo);
         ArgumentNullException.ThrowIfNull(slug);
+        ArgumentException.ThrowIfNullOrWhiteSpace(resumo);
         ArgumentException.ThrowIfNullOrWhiteSpace(conteudo);
+
+        if (resumo.Length > TamanhoMaximoResumo)
+        {
+            throw new ArgumentException(
+                $"Resumo excede {TamanhoMaximoResumo} caracteres.", nameof(resumo));
+        }
 
         return new Artigo(
             Guid.NewGuid(),
             titulo,
             slug,
+            resumo,
             conteudo,
             StatusArtigo.Rascunho,
             DateTime.UtcNow,
@@ -66,11 +82,12 @@ public sealed class Artigo
         Guid id,
         string titulo,
         Slug slug,
+        string resumo,
         string conteudo,
         StatusArtigo status,
         DateTime dataCriacao,
         DateTime? dataPublicacao) =>
-        new(id, titulo, slug, conteudo, status, dataCriacao, dataPublicacao);
+        new(id, titulo, slug, resumo, conteudo, status, dataCriacao, dataPublicacao);
 
     /// <summary>Publica o artigo (idempotente) e registra o evento de dominio.</summary>
     public void Publicar()

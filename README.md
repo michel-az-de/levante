@@ -57,13 +57,17 @@ dotnet run --project src/api/host/Levante.Api      # /health/live, /health/ready
 dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"
 cd src/web && npm ci && npm run gen:api && npm run dev   # http://localhost:3000/artigos
 
+# SEO: URL base do site (canonical, sitemap, RSS, OG) via env (GAP-A: domínio em aberto)
+SITE_URL=https://seu-dominio npm run build
+# Rotas de SEO: /sitemap.xml  /robots.txt  /feed.xml  e /artigos/[slug] (SSR + JSON-LD)
+
 # Hooks de pré-commit (format + gitleaks)
 dotnet tool restore && dotnet husky install            # gitleaks deve estar no PATH
 ```
 
 ## Status
 
-Em construção. Fatia 0 (walking skeleton) em andamento.
+Em construção. Fatia 1 (conteúdo público + SEO base): leitura por slug, sitemap, RSS, JSON-LD (Person/Article), Open Graph, canonical e 404.
 
 ## Licença
 

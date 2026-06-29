@@ -20,6 +20,9 @@ internal sealed class ArtigoDocument
     [BsonElement("slug")]
     public string Slug { get; set; } = string.Empty;
 
+    [BsonElement("resumo")]
+    public string Resumo { get; set; } = string.Empty;
+
     [BsonElement("conteudo")]
     public string Conteudo { get; set; } = string.Empty;
 
@@ -38,6 +41,7 @@ internal sealed class ArtigoDocument
         Id = artigo.Id,
         Titulo = artigo.Titulo,
         Slug = artigo.Slug.Valor,
+        Resumo = artigo.Resumo,
         Conteudo = artigo.Conteudo,
         Status = artigo.Status,
         DataCriacao = artigo.DataCriacao,
@@ -48,6 +52,7 @@ internal sealed class ArtigoDocument
         Id,
         Titulo,
         new Slug(Slug),
+        Resumo,
         Conteudo,
         Status,
         DataCriacao,
