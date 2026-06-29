@@ -69,6 +69,14 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddLevanteRateLimiting();
 
+// CORS: o admin (Next.js) chama a API direto do browser com JWT bearer.
+// Origem(ns) via config (default localhost:3000 em dev). Sem AllowCredentials
+// (token vai no header Authorization, nao em cookie).
+var corsOrigens = builder.Configuration.GetSection("Cors:Origens").Get<string[]>()
+    ?? ["http://localhost:3000"];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+    policy.WithOrigins(corsOrigens).AllowAnyHeader().AllowAnyMethod()));
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -77,6 +85,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSecurityHeaders();
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
