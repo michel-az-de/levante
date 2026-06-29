@@ -8,10 +8,15 @@ import type { Artigo } from "@/types/domain";
 export const revalidate = 300;
 
 async function obterArtigo(slug: string): Promise<Artigo | null> {
-  const { data, error } = await artigoApi.GET("/artigos/{slug}", {
-    params: { path: { slug } },
-  });
-  return error || !data ? null : data;
+  try {
+    const { data, error } = await artigoApi.GET("/artigos/{slug}", {
+      params: { path: { slug } },
+    });
+    return error || !data ? null : data;
+  } catch {
+    // API indisponivel: trata como nao encontrado (404) em vez de 500.
+    return null;
+  }
 }
 
 export async function generateMetadata({
