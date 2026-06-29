@@ -12,22 +12,30 @@ namespace Levante.Conteudo.Infrastructure;
 /// <summary>Composition root do contexto Conteudo (camada Infrastructure).</summary>
 public static class DependencyInjection
 {
+    // registrarServicosDeBoot=false (ex.: emissao do contrato OpenAPI) nao
+    // registra os hosted services nem o ValidateOnStart: o host sobe sem tocar
+    // o Mongo.
     public static IServiceCollection AddConteudoInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool registrarServicosDeBoot = true)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddOptions<ConteudoMongoOptions>()
+        var opcoes = services.AddOptions<ConteudoMongoOptions>()
             .Bind(configuration.GetSection(ConteudoMongoOptions.SecaoConfig))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
+
+        if (registrarServicosDeBoot)
+        {
+            opcoes.ValidateOnStart();
+        }
 
         services.AddSingleton<IMongoClient>(sp =>
         {
-            var opcoes = sp.GetRequiredService<IOptions<ConteudoMongoOptions>>().Value;
-            return new MongoClient(opcoes.ConnectionString);
+            var valor = sp.GetRequiredService<IOptions<ConteudoMongoOptions>>().Value;
+            return new MongoClient(valor.ConnectionString);
         });
 
         services.AddSingleton<ConteudoMongoContext>();
@@ -36,9 +44,12 @@ public static class DependencyInjection
         services.AddHealthChecks()
             .AddCheck<MongoHealthCheck>("mongo", tags: ["ready"]);
 
-        // Inicializacao (indices + seed em dev) e guarda de privilegio minimo no boot.
-        services.AddHostedService<ConteudoInicializacaoHostedService>();
-        services.AddHostedService<SelfCheckPrivilegioMongoHostedService>();
+        if (registrarServicosDeBoot)
+        {
+            // Inicializacao (indices + seed em dev) e guarda de privilegio minimo no boot.
+            services.AddHostedService<ConteudoInicializacaoHostedService>();
+            services.AddHostedService<SelfCheckPrivilegioMongoHostedService>();
+        }
 
         return services;
     }
