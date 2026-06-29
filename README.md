@@ -4,6 +4,8 @@ Plataforma pessoal e portfólio técnico de Felipe Michel de Azevedo, arquiteto 
 
 > Da pedra bruta à pedra polida.
 
+[![CI](https://github.com/michel-az-de/levante/actions/workflows/ci.yml/badge.svg)](https://github.com/michel-az-de/levante/actions/workflows/ci.yml)
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -36,6 +38,28 @@ Navegador → Next.js (SSR) → [OpenAPI] → .NET Minimal API → Domain → Mo
 ## Qualidade e segurança
 
 Esteira com gates em sequência: `rough-cut → dress → polish → raise`. Arch tests, analyzers, CodeQL, gitleaks, NuGet audit e testes de isolamento multi-tenant. Nada vai a produção sem passar todos os gates.
+
+## Desenvolvimento local
+
+Pré-requisitos: **.NET 10 SDK** (fixado em `global.json`), **Node 20+** (Next.js 16) e **Docker** (testes de integração com Testcontainers).
+
+```bash
+# Backend
+dotnet build src/api/Levante.sln
+dotnet test  src/api/Levante.sln --filter "Category!=Integration"   # unit (sem Docker)
+dotnet test  src/api/Levante.sln --filter "Category=Integration"    # integração (Docker)
+
+# Connection string do Mongo (sem secrets no repo)
+dotnet user-secrets --project src/api/host/Levante.Api set "Mongo:ConnectionString" "<sua-uri-atlas>"
+dotnet run --project src/api/host/Levante.Api      # /health/live, /health/ready, /artigos, /openapi/v1.json
+
+# Contrato OpenAPI -> tipos TS
+dotnet run --project src/api/host/Levante.Api -- --emit-openapi src/web/openapi/levante.json
+cd src/web && npm ci && npm run gen:api && npm run dev   # http://localhost:3000/artigos
+
+# Hooks de pré-commit (format + gitleaks)
+dotnet tool restore && dotnet husky install            # gitleaks deve estar no PATH
+```
 
 ## Status
 

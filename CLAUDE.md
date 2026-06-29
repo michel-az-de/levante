@@ -132,13 +132,15 @@ levante/
 | Ação | Comando |
 |------|---------|
 | Build backend | `dotnet build src/api/Levante.sln` |
-| Testes backend | `dotnet test src/api/Levante.sln` |
+| Testes (unit, sem Docker) | `dotnet test src/api/Levante.sln --filter "Category!=Integration"` |
+| Testes (integração, requer Docker) | `dotnet test src/api/Levante.sln --filter "Category=Integration"` |
 | Format (check) | `dotnet format src/api/Levante.sln --verify-no-changes` |
-| Rodar API | `dotnet run --project src/api/host/Levante.Api` |
+| Rodar API | `dotnet run --project src/api/host/Levante.Api` (config `Mongo:ConnectionString` via user-secrets/env) |
+| Emitir contrato OpenAPI | `dotnet run --project src/api/host/Levante.Api -- --emit-openapi src/web/openapi/levante.json` |
 | Front dev | `npm run dev` (em `src/web`) |
 | Front build | `npm run build` (em `src/web`) |
 | Front lint | `npm run lint` (em `src/web`) |
-| Gerar tipos do OpenAPI | script em `src/web` (definir na Fatia 0) |
+| Gerar tipos do OpenAPI | `npm run gen:api` (em `src/web`, a partir de `openapi/levante.json`) |
 
 Versões de pacote NuGet são centralizadas em `Directory.Packages.props` (Central Package Management). Não declare versão em `.csproj` nem invente versão fora do arquivo central.
 
