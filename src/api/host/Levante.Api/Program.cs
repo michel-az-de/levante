@@ -6,8 +6,10 @@ using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
 using Levante.Conteudo.Infrastructure;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
+using Levante.Identity.Infrastructure.Seguranca;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,25 +36,27 @@ builder.Services.AddScoped<AutenticarCommandHandler>();
 builder.Services.AddOpenApi();
 
 // Autenticacao JWT bearer: da um esquema real a FallbackPolicy (deny-by-default).
-// SecretKey vem de user-secrets/env (ValidateOnStart exige no boot real); o fallback
-// abaixo so e usado no modo emit (sem requests) para nao exigir segredo no build.
-var jwtSecret = builder.Configuration["Jwt:SecretKey"];
-if (string.IsNullOrEmpty(jwtSecret))
-{
-    jwtSecret = "emit-only-fallback-key-defina-Jwt-SecretKey-em-user-secrets";
-}
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// A chave/issuer/audience vem de JwtOptions resolvido LAZY (config final). Isso e
+// essencial nos testes: o WebApplicationFactory injeta config DEPOIS do builder,
+// entao ler eager daria divergencia entre gerar e validar o token. ValidateOnStart
+// de JwtOptions exige o segredo no boot real; o fallback so cobre o modo emit.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((bearer, jwt) =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        var opcoes = jwt.Value;
+        var secret = string.IsNullOrEmpty(opcoes.SecretKey)
+            ? "emit-only-fallback-key-defina-Jwt-SecretKey-em-user-secrets"
+            : opcoes.SecretKey;
+
+        bearer.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "levante",
+            ValidIssuer = opcoes.Issuer,
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "levante",
+            ValidAudience = opcoes.Audience,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
