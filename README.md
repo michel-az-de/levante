@@ -54,7 +54,7 @@ dotnet user-secrets --project src/api/host/Levante.Api set "Mongo:ConnectionStri
 dotnet run --project src/api/host/Levante.Api      # /health/live, /health/ready, /artigos, /openapi/v1.json
 
 # Contrato OpenAPI -> tipos TS
-dotnet run --project src/api/host/Levante.Api -- --emit-openapi src/web/openapi/levante.json
+dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"
 cd src/web && npm ci && npm run gen:api && npm run dev   # http://localhost:3000/artigos
 
 # Hooks de pré-commit (format + gitleaks)

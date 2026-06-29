@@ -64,7 +64,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Emite contrato OpenAPI fresco
-        run: dotnet run --project src/api/host/Levante.Api -c Release --no-launch-profile -- --emit-openapi src/web/openapi/levante.json
+        # Caminho absoluto: 'dotnet run --project' usa o dir do projeto como CWD.
+        run: dotnet run --project src/api/host/Levante.Api -c Release --no-launch-profile -- --emit-openapi "$GITHUB_WORKSPACE/src/web/openapi/levante.json"
 
       - name: Contrato em sincronia com a API
         run: git diff --exit-code -- src/web/openapi/levante.json

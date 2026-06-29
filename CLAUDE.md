@@ -136,7 +136,7 @@ levante/
 | Testes (integração, requer Docker) | `dotnet test src/api/Levante.sln --filter "Category=Integration"` |
 | Format (check) | `dotnet format src/api/Levante.sln --verify-no-changes` |
 | Rodar API | `dotnet run --project src/api/host/Levante.Api` (config `Mongo:ConnectionString` via user-secrets/env) |
-| Emitir contrato OpenAPI | `dotnet run --project src/api/host/Levante.Api -- --emit-openapi src/web/openapi/levante.json` |
+| Emitir contrato OpenAPI | `dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"` (caminho absoluto: o `dotnet run` usa o dir do projeto como CWD) |
 | Front dev | `npm run dev` (em `src/web`) |
 | Front build | `npm run build` (em `src/web`) |
 | Front lint | `npm run lint` (em `src/web`) |
