@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Domain\Levante.Conteudo.Domain.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Application\Levante.Conteudo.Application.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Conteudo\Levante.Conteudo.Infrastructure\Levante.Conteudo.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

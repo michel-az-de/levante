@@ -1,0 +1,21 @@
+{
+   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+   "tasks": [
+      {
+         "name": "dotnet-format",
+         "group": "pre-commit",
+         "command": "dotnet",
+         "args": ["format", "src/api/Levante.sln", "--verify-no-changes"]
+      },
+      {
+         "name": "gitleaks",
+         "group": "pre-commit",
+         "command": "bash",
+         "args": ["-c", "command -v gitleaks >/dev/null 2>&1 && gitleaks protect --staged --redact --no-banner || echo '[pre-commit] gitleaks ausente no PATH; pulando (o gate dress do CI faz o scan).'"],
+         "windows": {
+            "command": "cmd",
+            "args": ["/c", "where gitleaks >nul 2>nul && gitleaks protect --staged --redact --no-banner || echo [pre-commit] gitleaks ausente no PATH; pulando (o gate dress do CI faz o scan)."]
+         }
+      }
+   ]
+}

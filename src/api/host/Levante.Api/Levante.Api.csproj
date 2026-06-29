@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- Imagem de container non-root (gate raise). -->
+    <ContainerUser>app</ContainerUser>
+    <ContainerRepository>levante-api</ContainerRepository>
+    <!-- O contrato OpenAPI e emitido pelo modo emit-openapi do Program (sem subir
+         o host, sem tocar o Mongo), nao pelo tool de build (que sobe o host). -->
+    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\contexts\Conteudo\Levante.Conteudo.Infrastructure\Levante.Conteudo.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

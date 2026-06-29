@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Infrastructure conhece hosting (HealthChecks, DI, Configuration). -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Levante.Conteudo.Application\Levante.Conteudo.Application.csproj" />
+    <ProjectReference Include="..\Levante.Conteudo.Domain\Levante.Conteudo.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" />
+  </ItemGroup>
+
+</Project>

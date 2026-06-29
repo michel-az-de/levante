@@ -1,0 +1,72 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Levante.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/artigos": {
+      "get": {
+        "tags": [
+          "Artigos"
+        ],
+        "operationId": "ListarArtigosPublicados",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArtigoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArtigoResponse": {
+        "required": [
+          "id",
+          "titulo",
+          "slug",
+          "conteudo",
+          "dataPublicacao"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          },
+          "dataPublicacao": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "description": "Contrato de saida do contexto Conteudo. Vira o tipo TS gerado do OpenAPI\n(PT) consumido pelo Next.js. Nao expor o agregado diretamente."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Artigos"
+    }
+  ]
+}
