@@ -49,9 +49,13 @@ dotnet build src/api/Levante.sln
 dotnet test  src/api/Levante.sln --filter "Category!=Integration"   # unit (sem Docker)
 dotnet test  src/api/Levante.sln --filter "Category=Integration"    # integração (Docker)
 
-# Connection string do Mongo (sem secrets no repo)
+# Segredos via user-secrets (nunca no repo): Mongo, JWT e o admin de dev
 dotnet user-secrets --project src/api/host/Levante.Api set "Mongo:ConnectionString" "<sua-uri-atlas>"
-dotnet run --project src/api/host/Levante.Api      # /health/live, /health/ready, /artigos, /openapi/v1.json
+dotnet user-secrets --project src/api/host/Levante.Api set "Jwt:SecretKey" "<>=32-chars>"
+dotnet user-secrets --project src/api/host/Levante.Api set "Admin:Email" "voce@exemplo.com"
+dotnet user-secrets --project src/api/host/Levante.Api set "Admin:SenhaInicial" "<senha-forte>"
+dotnet run --project src/api/host/Levante.Api      # /health, /artigos, /auth/login, /auth/eu, /openapi/v1.json
+# Admin (Next.js): /admin/login -> /admin (JWT bearer). Em prod, semeie o admin por passo seguro unico.
 
 # Contrato OpenAPI -> tipos TS
 dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"
