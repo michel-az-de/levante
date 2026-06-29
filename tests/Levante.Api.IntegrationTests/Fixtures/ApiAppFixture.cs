@@ -8,16 +8,19 @@ using Xunit;
 namespace Levante.Api.IntegrationTests.Fixtures;
 
 /// <summary>
-/// Sobe a API real (WebApplicationFactory) sobre um Mongo efemero em replica
-/// set (sem auth) — exercita transacoes/Change Streams (Fatia 0 lock #3) e o
-/// boot completo (indices, seed em Development, self-check de privilegio).
+/// Sobe a API real (WebApplicationFactory) sobre um Mongo efemero autenticado
+/// e exercita o boot completo (indices, seed em Development, self-check de
+/// privilegio) + endpoints.
+///
+/// TODO (Fatia 4): habilitar replica set quando o Outbox/Change Streams entrar.
+/// O combo auth + replica set + keyfile do Testcontainers e instavel e a Fatia 0
+/// nao usa transacoes/Change Streams, entao roda single node por ora.
 /// </summary>
 public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly MongoDbContainer _mongo = new MongoDbBuilder()
-        .WithUsername(string.Empty)
-        .WithPassword(string.Empty)
-        .WithReplicaSet("rs0")
+        .WithUsername("root")
+        .WithPassword("root-pwd")
         .Build();
 
     Task IAsyncLifetime.InitializeAsync() => _mongo.StartAsync();
