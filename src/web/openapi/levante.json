@@ -350,7 +350,10 @@
           "resumo",
           "conteudo",
           "dataPublicacao",
-          "status"
+          "status",
+          "metaTitulo",
+          "metaDescricao",
+          "imagemOgUrl"
         ],
         "type": "object",
         "properties": {
@@ -377,6 +380,18 @@
           },
           "status": {
             "type": "string"
+          },
+          "metaTitulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagemOgUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "description": "Contrato de saida do contexto Conteudo. Vira o tipo TS gerado do OpenAPI\n(PT) consumido pelo Next.js. Nao expor o agregado diretamente."
@@ -417,9 +432,21 @@
           },
           "conteudo": {
             "type": "string"
+          },
+          "metaTitulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagemOgUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
-        "description": "Corpo de criacao de artigo (slug informado pelo admin)."
+        "description": "Corpo de criacao de artigo (slug informado pelo admin). Meta SEO opcional."
       },
       "EditarArtigoRequest": {
         "required": [
@@ -441,9 +468,21 @@
           },
           "conteudo": {
             "type": "string"
+          },
+          "metaTitulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagemOgUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
-        "description": "Corpo de edicao de artigo (Id vem da rota)."
+        "description": "Corpo de edicao de artigo (Id vem da rota). Meta SEO opcional."
       },
       "HttpValidationProblemDetails": {
         "type": "object",

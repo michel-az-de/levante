@@ -59,7 +59,15 @@ public static class ArtigoAdminEndpoints
         CancellationToken ct)
     {
         var resultado = await handler.Handle(
-            new CriarArtigoCommand(requisicao.Titulo, requisicao.Slug, requisicao.Resumo, requisicao.Conteudo), ct);
+            new CriarArtigoCommand(
+                requisicao.Titulo,
+                requisicao.Slug,
+                requisicao.Resumo,
+                requisicao.Conteudo,
+                requisicao.MetaTitulo,
+                requisicao.MetaDescricao,
+                requisicao.ImagemOgUrl),
+            ct);
 
         return resultado.Sucesso
             ? Results.Created($"/artigos/{resultado.Valor!.Slug}", resultado.Valor)
@@ -73,7 +81,16 @@ public static class ArtigoAdminEndpoints
         CancellationToken ct)
     {
         var resultado = await handler.Handle(
-            new EditarArtigoCommand(id, requisicao.Titulo, requisicao.Slug, requisicao.Resumo, requisicao.Conteudo), ct);
+            new EditarArtigoCommand(
+                id,
+                requisicao.Titulo,
+                requisicao.Slug,
+                requisicao.Resumo,
+                requisicao.Conteudo,
+                requisicao.MetaTitulo,
+                requisicao.MetaDescricao,
+                requisicao.ImagemOgUrl),
+            ct);
 
         return resultado.Sucesso ? Results.Ok(resultado.Valor) : MapearFalha(resultado.Erro);
     }
@@ -119,8 +136,22 @@ public static class ArtigoAdminEndpoints
     };
 }
 
-/// <summary>Corpo de criacao de artigo (slug informado pelo admin).</summary>
-public sealed record CriarArtigoRequest(string Titulo, string Slug, string Resumo, string Conteudo);
+/// <summary>Corpo de criacao de artigo (slug informado pelo admin). Meta SEO opcional.</summary>
+public sealed record CriarArtigoRequest(
+    string Titulo,
+    string Slug,
+    string Resumo,
+    string Conteudo,
+    string? MetaTitulo = null,
+    string? MetaDescricao = null,
+    string? ImagemOgUrl = null);
 
-/// <summary>Corpo de edicao de artigo (Id vem da rota).</summary>
-public sealed record EditarArtigoRequest(string Titulo, string Slug, string Resumo, string Conteudo);
+/// <summary>Corpo de edicao de artigo (Id vem da rota). Meta SEO opcional.</summary>
+public sealed record EditarArtigoRequest(
+    string Titulo,
+    string Slug,
+    string Resumo,
+    string Conteudo,
+    string? MetaTitulo = null,
+    string? MetaDescricao = null,
+    string? ImagemOgUrl = null);
