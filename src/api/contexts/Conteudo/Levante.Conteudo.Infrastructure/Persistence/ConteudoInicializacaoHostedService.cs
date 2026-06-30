@@ -21,6 +21,7 @@ internal sealed class ConteudoInicializacaoHostedService(
             return;
         }
 
+        await CategoriaSeeder.SeedAsync(contexto, logger, cancellationToken);
         await ArtigoSeeder.SeedAsync(contexto, logger, cancellationToken);
     }
 

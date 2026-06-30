@@ -22,7 +22,9 @@ public sealed class Artigo
         StatusArtigo status,
         DateTime dataCriacao,
         DateTime? dataPublicacao,
-        MetaSeo meta)
+        MetaSeo meta,
+        Guid? categoriaId,
+        IReadOnlyList<Tag> tags)
     {
         Id = id;
         Titulo = titulo;
@@ -33,6 +35,8 @@ public sealed class Artigo
         DataCriacao = dataCriacao;
         DataPublicacao = dataPublicacao;
         Meta = meta;
+        CategoriaId = categoriaId;
+        Tags = tags;
     }
 
     public Guid Id { get; }
@@ -55,10 +59,23 @@ public sealed class Artigo
     /// <summary>Metadados de SEO editaveis (override de title/description/OG). Nunca null; Vazio por padrao.</summary>
     public MetaSeo Meta { get; private set; }
 
+    /// <summary>Categoria associada (taxonomia curada; opcional, no maximo uma).</summary>
+    public Guid? CategoriaId { get; private set; }
+
+    /// <summary>Tags livres (rotulos kebab-case). Nunca null; lista vazia por padrao.</summary>
+    public IReadOnlyList<Tag> Tags { get; private set; }
+
     public IReadOnlyList<IEventoDeDominio> Eventos => _eventos;
 
     /// <summary>Cria um novo artigo em rascunho. <paramref name="meta"/> ausente vira <see cref="MetaSeo.Vazio"/>.</summary>
-    public static Artigo Criar(string titulo, Slug slug, string resumo, string conteudo, MetaSeo? meta = null)
+    public static Artigo Criar(
+        string titulo,
+        Slug slug,
+        string resumo,
+        string conteudo,
+        MetaSeo? meta = null,
+        Guid? categoriaId = null,
+        IReadOnlyList<Tag>? tags = null)
     {
         GarantirCampos(titulo, slug, resumo, conteudo);
 
@@ -71,7 +88,9 @@ public sealed class Artigo
             StatusArtigo.Rascunho,
             DateTime.UtcNow,
             dataPublicacao: null,
-            meta ?? MetaSeo.Vazio);
+            meta ?? MetaSeo.Vazio,
+            categoriaId,
+            tags ?? []);
     }
 
     /// <summary>Rehidrata um artigo existente (uso da camada de persistencia).</summary>
@@ -84,8 +103,10 @@ public sealed class Artigo
         StatusArtigo status,
         DateTime dataCriacao,
         DateTime? dataPublicacao,
-        MetaSeo? meta = null) =>
-        new(id, titulo, slug, resumo, conteudo, status, dataCriacao, dataPublicacao, meta ?? MetaSeo.Vazio);
+        MetaSeo? meta = null,
+        Guid? categoriaId = null,
+        IReadOnlyList<Tag>? tags = null) =>
+        new(id, titulo, slug, resumo, conteudo, status, dataCriacao, dataPublicacao, meta ?? MetaSeo.Vazio, categoriaId, tags ?? []);
 
     /// <summary>Publica o artigo (idempotente) e registra o evento de dominio.</summary>
     public void Publicar()
@@ -100,8 +121,15 @@ public sealed class Artigo
         _eventos.Add(new ArtigoPublicado(Id, Slug.Valor, DataPublicacao.Value));
     }
 
-    /// <summary>Atualiza os campos editaveis (titulo, slug, resumo, conteudo e meta SEO).</summary>
-    public void Editar(string titulo, Slug slug, string resumo, string conteudo, MetaSeo? meta = null)
+    /// <summary>Atualiza os campos editaveis (titulo, slug, resumo, conteudo, meta SEO, categoria e tags).</summary>
+    public void Editar(
+        string titulo,
+        Slug slug,
+        string resumo,
+        string conteudo,
+        MetaSeo? meta = null,
+        Guid? categoriaId = null,
+        IReadOnlyList<Tag>? tags = null)
     {
         GarantirCampos(titulo, slug, resumo, conteudo);
 
@@ -110,6 +138,8 @@ public sealed class Artigo
         Resumo = resumo;
         Conteudo = conteudo;
         Meta = meta ?? MetaSeo.Vazio;
+        CategoriaId = categoriaId;
+        Tags = tags ?? [];
     }
 
     /// <summary>Arquiva o artigo (estado terminal; idempotente). A acao "despublicar".</summary>
