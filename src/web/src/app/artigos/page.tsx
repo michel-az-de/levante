@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArtigoList } from "@/components/ArtigoList";
 import { artigoApi } from "@/lib/api";
-import type { Artigo } from "@/types/domain";
+import type { Artigo, Categoria } from "@/types/domain";
 
 // SSR a cada request (HTML server-rendered, indexavel). Dinamico para a lista
 // estar sempre fresca e para nao exigir a API no `next build` do CI.
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 export default async function ArtigosPage() {
   let artigos: Artigo[] = [];
+  let categorias: Categoria[] = [];
   let erro = false;
   try {
     const { data, error } = await artigoApi.GET("/artigos");
@@ -24,6 +25,8 @@ export default async function ArtigosPage() {
     } else {
       artigos = data ?? [];
     }
+    const categoriasResposta = await artigoApi.GET("/categorias");
+    categorias = categoriasResposta.data ?? [];
   } catch {
     erro = true;
   }
@@ -34,7 +37,7 @@ export default async function ArtigosPage() {
       {erro ? (
         <p className="text-red-600">Nao foi possivel carregar os artigos.</p>
       ) : (
-        <ArtigoList artigos={artigos} />
+        <ArtigoList artigos={artigos} categorias={categorias} />
       )}
     </main>
   );

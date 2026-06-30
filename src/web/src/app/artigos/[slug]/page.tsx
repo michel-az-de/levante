@@ -1,11 +1,12 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
-import type { Artigo } from "@/types/domain";
+import type { Artigo, Categoria } from "@/types/domain";
 
 export const revalidate = 300;
 
@@ -29,6 +30,12 @@ const obterArtigo = cache(async (slug: string): Promise<Artigo | null> => {
   }
 
   return data ?? null;
+});
+
+// Resolve a categoria do artigo para exibir nome/link (front compoe o read model).
+const obterCategorias = cache(async (): Promise<Categoria[]> => {
+  const { data } = await artigoApi.GET("/categorias");
+  return data ?? [];
 });
 
 export async function generateMetadata({
@@ -82,6 +89,11 @@ export default async function ArtigoPage({
     notFound();
   }
 
+  const categorias = await obterCategorias();
+  const categoria = artigo.categoriaId
+    ? categorias.find((c) => c.id === artigo.categoriaId)
+    : undefined;
+
   const url = `${site.url}/artigos/${artigo.slug}`;
   const dataPublicacao = artigo.dataPublicacao
     ? new Date(artigo.dataPublicacao).toLocaleDateString("pt-BR")
@@ -94,6 +106,8 @@ export default async function ArtigoPage({
     description: artigo.resumo,
     datePublished: artigo.dataPublicacao ?? undefined,
     author: { "@type": "Person", name: site.autor, url: site.url },
+    articleSection: categoria?.nome,
+    keywords: artigo.tags.length > 0 ? artigo.tags.join(", ") : undefined,
     mainEntityOfPage: url,
     url,
   };
@@ -113,6 +127,14 @@ export default async function ArtigoPage({
       <JsonLd data={breadcrumb} />
       <article className="flex flex-col gap-4">
         <header className="flex flex-col gap-2">
+          {categoria ? (
+            <Link
+              href={`/categoria/${categoria.slug}`}
+              className="text-sm font-medium uppercase tracking-wide text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {categoria.nome}
+            </Link>
+          ) : null}
           <h1 className="text-3xl font-bold tracking-tight">{artigo.titulo}</h1>
           {dataPublicacao ? (
             <p className="text-sm text-neutral-500">Publicado em {dataPublicacao}</p>
@@ -120,6 +142,18 @@ export default async function ArtigoPage({
           <p className="text-lg text-neutral-600 dark:text-neutral-400">{artigo.resumo}</p>
         </header>
         <Markdown>{artigo.conteudo}</Markdown>
+        {artigo.tags.length > 0 ? (
+          <footer className="flex flex-wrap gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+            {artigo.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+              >
+                #{tag}
+              </span>
+            ))}
+          </footer>
+        ) : null}
       </article>
     </main>
   );

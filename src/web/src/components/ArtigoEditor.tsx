@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/Markdown";
+import { apiAdmin } from "@/lib/auth";
+import type { Categoria } from "@/types/domain";
 
 export interface ArtigoFormValores {
   titulo: string;
@@ -11,6 +13,17 @@ export interface ArtigoFormValores {
   metaTitulo: string;
   metaDescricao: string;
   imagemOgUrl: string;
+  categoriaId: string;
+  tags: string[];
+}
+
+/** Separa tags por virgula, normaliza e remove vazias/duplicadas. */
+function parseTags(texto: string): string[] {
+  const tags = texto
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter((t) => t.length > 0);
+  return [...new Set(tags)];
 }
 
 /**
@@ -34,9 +47,26 @@ export function ArtigoEditor({
   const [metaTitulo, setMetaTitulo] = useState(inicial.metaTitulo);
   const [metaDescricao, setMetaDescricao] = useState(inicial.metaDescricao);
   const [imagemOgUrl, setImagemOgUrl] = useState(inicial.imagemOgUrl);
+  const [categoriaId, setCategoriaId] = useState(inicial.categoriaId);
+  const [tagsTexto, setTagsTexto] = useState(inicial.tags.join(", "));
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const conteudoRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    let ativo = true;
+    apiAdmin.GET("/categorias").then(({ data }) => {
+      if (ativo && data) {
+        setCategorias(data);
+      }
+    });
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const tagsPreview = parseTags(tagsTexto);
 
   function envolverSelecao(prefixo: string, sufixo: string, exemplo: string) {
     const el = conteudoRef.current;
@@ -84,6 +114,8 @@ export function ArtigoEditor({
         metaTitulo,
         metaDescricao,
         imagemOgUrl,
+        categoriaId,
+        tags: parseTags(tagsTexto),
       });
       if (mensagem) {
         setErro(mensagem);
@@ -135,6 +167,45 @@ export function ArtigoEditor({
           className="rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900"
         />
         <span className="text-xs text-neutral-500">{resumo.length}/280</span>
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm">
+        Categoria (opcional)
+        <select
+          value={categoriaId}
+          onChange={(e) => setCategoriaId(e.target.value)}
+          className="rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900"
+        >
+          <option value="">— sem categoria —</option>
+          {categorias.map((categoria) => (
+            <option key={categoria.id} value={categoria.id}>
+              {categoria.nome}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm">
+        Tags (separadas por vírgula)
+        <input
+          type="text"
+          value={tagsTexto}
+          onChange={(e) => setTagsTexto(e.target.value)}
+          placeholder="clean-architecture, ddd, dotnet"
+          className="rounded-md border border-neutral-300 px-3 py-2 font-mono dark:border-neutral-700 dark:bg-neutral-900"
+        />
+        {tagsPreview.length > 0 ? (
+          <span className="flex flex-wrap gap-1">
+            {tagsPreview.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-neutral-200 px-2 py-0.5 text-xs text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </span>
+        ) : null}
       </label>
 
       <div className="flex flex-col gap-1 text-sm">
