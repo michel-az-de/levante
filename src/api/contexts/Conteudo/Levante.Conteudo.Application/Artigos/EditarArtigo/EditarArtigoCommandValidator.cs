@@ -1,12 +1,13 @@
 using FluentValidation;
 using Levante.Conteudo.Domain.Artigos;
+using Levante.Conteudo.Domain.Categorias;
 
 namespace Levante.Conteudo.Application.Artigos.EditarArtigo;
 
 /// <summary>Validador do comando de edicao (mesmas regras de campo da criacao + Id).</summary>
 public sealed class EditarArtigoCommandValidator : AbstractValidator<EditarArtigoCommand>
 {
-    public EditarArtigoCommandValidator()
+    public EditarArtigoCommandValidator(ICategoriaRepository categorias)
     {
         RuleFor(x => x.Id).NotEmpty();
 
@@ -26,5 +27,16 @@ public sealed class EditarArtigoCommandValidator : AbstractValidator<EditarArtig
         RuleFor(x => x.ImagemOgUrl)
             .Must(SeoUrl.EhImagemOgValida)
             .WithMessage("Imagem OG deve ser uma URL http(s) ou um caminho comecando com '/'.");
+
+        RuleFor(x => x.CategoriaId)
+            .MustAsync(async (id, ct) => id is null || await categorias.GetByIdAsync(id.Value, ct) is not null)
+            .WithMessage("Categoria informada nao existe.");
+
+        RuleFor(x => x.Tags)
+            .Must(tags => tags is null || tags.Count <= AssociacaoArtigo.MaximoDeTags)
+            .WithMessage($"Maximo de {AssociacaoArtigo.MaximoDeTags} tags.");
+        RuleForEach(x => x.Tags)
+            .Must(tag => Tag.TryParse(tag, out _))
+            .WithMessage("Tag invalida. Use kebab-case minusculo (ex.: clean-architecture).");
     }
 }

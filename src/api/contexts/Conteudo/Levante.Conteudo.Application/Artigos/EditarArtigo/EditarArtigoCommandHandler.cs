@@ -42,7 +42,9 @@ public sealed class EditarArtigoCommandHandler(
         }
 
         var meta = MetaSeo.Criar(comando.MetaTitulo, comando.MetaDescricao, comando.ImagemOgUrl);
-        artigo.Editar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo, meta);
+        var tags = TagsDoComando.Converter(comando.Tags);
+        artigo.Editar(
+            comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo, meta, comando.CategoriaId, tags);
 
         try
         {
