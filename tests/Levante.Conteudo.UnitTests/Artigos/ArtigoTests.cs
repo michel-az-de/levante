@@ -76,4 +76,62 @@ public sealed class ArtigoTests
     {
         Should.Throw<ArgumentException>(() => Artigo.Criar(titulo, new Slug("titulo"), "Resumo.", "Conteudo."));
     }
+
+    [Fact]
+    public void Editar_atualizaCamposEditaveis()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+
+        artigo.Editar("Novo titulo", new Slug("novo-slug"), "Novo resumo.", "Novo conteudo.");
+
+        artigo.Titulo.ShouldBe("Novo titulo");
+        artigo.Slug.Valor.ShouldBe("novo-slug");
+        artigo.Resumo.ShouldBe("Novo resumo.");
+        artigo.Conteudo.ShouldBe("Novo conteudo.");
+    }
+
+    [Fact]
+    public void Editar_naoAlteraStatusNemPublicacao()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+        artigo.Publicar();
+        var publicacao = artigo.DataPublicacao;
+
+        artigo.Editar("Editado", new Slug("titulo"), "Resumo.", "Conteudo.");
+
+        artigo.Status.ShouldBe(StatusArtigo.Publicado);
+        artigo.DataPublicacao.ShouldBe(publicacao);
+    }
+
+    [Fact]
+    public void Editar_rejeitaResumoAlemDoLimite()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+        var resumoLongo = new string('a', Artigo.TamanhoMaximoResumo + 1);
+
+        Should.Throw<ArgumentException>(
+            () => artigo.Editar("Titulo", new Slug("titulo"), resumoLongo, "Conteudo."));
+    }
+
+    [Fact]
+    public void Arquivar_mudaStatusParaArquivado()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+        artigo.Publicar();
+
+        artigo.Arquivar();
+
+        artigo.Status.ShouldBe(StatusArtigo.Arquivado);
+    }
+
+    [Fact]
+    public void Arquivar_ehIdempotente()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+
+        artigo.Arquivar();
+        artigo.Arquivar();
+
+        artigo.Status.ShouldBe(StatusArtigo.Arquivado);
+    }
 }
