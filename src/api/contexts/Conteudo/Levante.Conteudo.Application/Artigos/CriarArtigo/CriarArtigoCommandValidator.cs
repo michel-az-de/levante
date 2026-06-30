@@ -18,5 +18,11 @@ public sealed class CriarArtigoCommandValidator : AbstractValidator<CriarArtigoC
         RuleFor(x => x.Resumo).NotEmpty().MaximumLength(Artigo.TamanhoMaximoResumo);
 
         RuleFor(x => x.Conteudo).NotEmpty();
+
+        RuleFor(x => x.MetaTitulo).MaximumLength(MetaSeo.TamanhoMaximoTitulo);
+        RuleFor(x => x.MetaDescricao).MaximumLength(MetaSeo.TamanhoMaximoDescricao);
+        RuleFor(x => x.ImagemOgUrl)
+            .Must(SeoUrl.EhImagemOgValida)
+            .WithMessage("Imagem OG deve ser uma URL http(s) ou um caminho comecando com '/'.");
     }
 }

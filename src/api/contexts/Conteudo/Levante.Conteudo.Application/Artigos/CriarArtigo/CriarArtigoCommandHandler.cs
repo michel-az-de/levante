@@ -28,7 +28,8 @@ public sealed class CriarArtigoCommandHandler(
             return SlugEmUso(comando.Slug);
         }
 
-        var artigo = Artigo.Criar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo);
+        var meta = MetaSeo.Criar(comando.MetaTitulo, comando.MetaDescricao, comando.ImagemOgUrl);
+        var artigo = Artigo.Criar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo, meta);
 
         try
         {
