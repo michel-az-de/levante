@@ -12,7 +12,8 @@ public sealed record ArtigoResponse(
     string Slug,
     string Resumo,
     string Conteudo,
-    DateTime? DataPublicacao)
+    DateTime? DataPublicacao,
+    string Status)
 {
     public static ArtigoResponse DeArtigo(Artigo artigo) => new(
         artigo.Id,
@@ -20,5 +21,6 @@ public sealed record ArtigoResponse(
         artigo.Slug.Valor,
         artigo.Resumo,
         artigo.Conteudo,
-        artigo.DataPublicacao);
+        artigo.DataPublicacao,
+        artigo.Status.ToString());
 }

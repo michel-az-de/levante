@@ -25,10 +25,40 @@ internal sealed class ArtigoRepository(ConteudoMongoContext contexto) : IArtigoR
         return doc?.ParaDominio();
     }
 
+    public async Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct)
+    {
+        var docs = await contexto.Artigos
+            .Find(FilterDefinition<ArtigoDocument>.Empty)
+            .SortByDescending(d => d.DataCriacao)
+            .ToListAsync(ct);
+
+        return [.. docs.Select(d => d.ParaDominio())];
+    }
+
+    public async Task<Artigo?> GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        var doc = await contexto.Artigos
+            .Find(d => d.Id == id)
+            .FirstOrDefaultAsync(ct);
+
+        return doc?.ParaDominio();
+    }
+
     public Task AddAsync(Artigo artigo, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(artigo);
 
         return contexto.Artigos.InsertOneAsync(ArtigoDocument.DeDominio(artigo), options: null, ct);
+    }
+
+    public Task UpdateAsync(Artigo artigo, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(artigo);
+
+        return contexto.Artigos.ReplaceOneAsync(
+            d => d.Id == artigo.Id,
+            ArtigoDocument.DeDominio(artigo),
+            new ReplaceOptions(),
+            ct);
     }
 }
