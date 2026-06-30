@@ -13,7 +13,10 @@ public sealed record ArtigoResponse(
     string Resumo,
     string Conteudo,
     DateTime? DataPublicacao,
-    string Status)
+    string Status,
+    string? MetaTitulo,
+    string? MetaDescricao,
+    string? ImagemOgUrl)
 {
     public static ArtigoResponse DeArtigo(Artigo artigo) => new(
         artigo.Id,
@@ -22,5 +25,8 @@ public sealed record ArtigoResponse(
         artigo.Resumo,
         artigo.Conteudo,
         artigo.DataPublicacao,
-        artigo.Status.ToString());
+        artigo.Status.ToString(),
+        artigo.Meta.Titulo,
+        artigo.Meta.Descricao,
+        artigo.Meta.ImagemOgUrl);
 }

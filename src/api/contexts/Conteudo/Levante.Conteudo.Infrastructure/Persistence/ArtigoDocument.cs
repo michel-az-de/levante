@@ -36,6 +36,18 @@ internal sealed class ArtigoDocument
     [BsonElement("dataPublicacao")]
     public DateTime? DataPublicacao { get; set; }
 
+    [BsonElement("metaTitulo")]
+    [BsonIgnoreIfNull]
+    public string? MetaTitulo { get; set; }
+
+    [BsonElement("metaDescricao")]
+    [BsonIgnoreIfNull]
+    public string? MetaDescricao { get; set; }
+
+    [BsonElement("imagemOgUrl")]
+    [BsonIgnoreIfNull]
+    public string? ImagemOgUrl { get; set; }
+
     public static ArtigoDocument DeDominio(Artigo artigo) => new()
     {
         Id = artigo.Id,
@@ -46,6 +58,9 @@ internal sealed class ArtigoDocument
         Status = artigo.Status,
         DataCriacao = artigo.DataCriacao,
         DataPublicacao = artigo.DataPublicacao,
+        MetaTitulo = artigo.Meta.Titulo,
+        MetaDescricao = artigo.Meta.Descricao,
+        ImagemOgUrl = artigo.Meta.ImagemOgUrl,
     };
 
     public Artigo ParaDominio() => Artigo.Reconstituir(
@@ -56,5 +71,6 @@ internal sealed class ArtigoDocument
         Conteudo,
         Status,
         DataCriacao,
-        DataPublicacao);
+        DataPublicacao,
+        MetaSeo.Criar(MetaTitulo, MetaDescricao, ImagemOgUrl));
 }
