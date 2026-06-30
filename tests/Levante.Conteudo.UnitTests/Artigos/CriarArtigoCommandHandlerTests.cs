@@ -1,5 +1,6 @@
 using Levante.Conteudo.Application.Artigos.CriarArtigo;
 using Levante.Conteudo.Domain.Artigos;
+using Levante.Conteudo.Domain.Categorias;
 using Shouldly;
 using Xunit;
 
@@ -57,6 +58,53 @@ public sealed class CriarArtigoCommandHandlerTests
         resultado.Valor!.MetaTitulo.ShouldBeNull();
         resultado.Valor.MetaDescricao.ShouldBeNull();
         resultado.Valor.ImagemOgUrl.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Handle_aceitaCategoriaExistenteETags()
+    {
+        var categoria = Categoria.Criar("Arquitetura", new Slug("arquitetura"));
+        var repo = new ArtigoRepositorioEmMemoria();
+        var handler = new CriarArtigoCommandHandler(
+            repo, new CriarArtigoCommandValidator(new CategoriaRepositorioEmMemoria(categoria)));
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand(
+                "Titulo", "meu-artigo", "Resumo.", "Conteudo.",
+                CategoriaId: categoria.Id, Tags: ["clean-architecture", "ddd"]),
+            CancellationToken.None);
+
+        resultado.Sucesso.ShouldBeTrue();
+        resultado.Valor!.CategoriaId.ShouldBe(categoria.Id);
+        resultado.Valor.Tags.ShouldBe(["clean-architecture", "ddd"]);
+    }
+
+    [Fact]
+    public async Task Handle_falhaQuandoCategoriaInexistente()
+    {
+        var repo = new ArtigoRepositorioEmMemoria();
+        var handler = Criar(repo); // validador com repositorio de categorias vazio
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", CategoriaId: Guid.NewGuid()),
+            CancellationToken.None);
+
+        resultado.Falhou.ShouldBeTrue();
+        resultado.Erro.Codigo.ShouldBe("validacao");
+        repo.Adicionados.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Handle_falhaQuandoTagInvalida()
+    {
+        var handler = Criar(new ArtigoRepositorioEmMemoria());
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", Tags: ["tag invalida"]),
+            CancellationToken.None);
+
+        resultado.Falhou.ShouldBeTrue();
+        resultado.Erro.Codigo.ShouldBe("validacao");
     }
 
     [Fact]

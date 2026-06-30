@@ -1,3 +1,4 @@
+using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Domain.Categorias;
 
 namespace Levante.Conteudo.UnitTests.Artigos;
@@ -13,6 +14,9 @@ internal sealed class CategoriaRepositorioEmMemoria : ICategoriaRepository
 
     public int Atualizadas { get; private set; }
 
+    /// <summary>Simula a violacao do indice unico (corrida): a escrita lanca SlugEmUsoException.</summary>
+    public bool LancarSlugEmUsoNaEscrita { get; init; }
+
     public Task<IReadOnlyList<Categoria>> ListAsync(CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<Categoria>>([.. _categorias]);
 
@@ -24,6 +28,11 @@ internal sealed class CategoriaRepositorioEmMemoria : ICategoriaRepository
 
     public Task AddAsync(Categoria categoria, CancellationToken ct)
     {
+        if (LancarSlugEmUsoNaEscrita)
+        {
+            throw new SlugEmUsoException(categoria.Slug.Valor);
+        }
+
         _categorias.Add(categoria);
         Adicionadas++;
         return Task.CompletedTask;
