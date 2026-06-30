@@ -40,9 +40,17 @@ public sealed class ListarArtigosPublicadosQueryHandlerTests
         public Task<IReadOnlyList<Artigo>> ListPublicadosAsync(CancellationToken ct) =>
             Task.FromResult(artigos);
 
+        public Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct) =>
+            Task.FromResult(artigos);
+
         public Task<Artigo?> GetBySlugAsync(string slug, CancellationToken ct) =>
             Task.FromResult(artigos.FirstOrDefault(a => a.Slug.Valor == slug));
 
+        public Task<Artigo?> GetByIdAsync(Guid id, CancellationToken ct) =>
+            Task.FromResult(artigos.FirstOrDefault(a => a.Id == id));
+
         public Task AddAsync(Artigo artigo, CancellationToken ct) => Task.CompletedTask;
+
+        public Task UpdateAsync(Artigo artigo, CancellationToken ct) => Task.CompletedTask;
     }
 }

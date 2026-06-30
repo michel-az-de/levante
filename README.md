@@ -54,8 +54,10 @@ dotnet user-secrets --project src/api/host/Levante.Api set "Mongo:ConnectionStri
 dotnet user-secrets --project src/api/host/Levante.Api set "Jwt:SecretKey" "<>=32-chars>"
 dotnet user-secrets --project src/api/host/Levante.Api set "Admin:Email" "voce@exemplo.com"
 dotnet user-secrets --project src/api/host/Levante.Api set "Admin:SenhaInicial" "<senha-forte>"
-dotnet run --project src/api/host/Levante.Api      # /health, /artigos, /auth/login, /auth/eu, /openapi/v1.json
-# Admin (Next.js): /admin/login -> /admin (JWT bearer). Em prod, semeie o admin por passo seguro unico.
+dotnet run --project src/api/host/Levante.Api      # /health, /artigos, /auth/*, /admin/artigos, /openapi/v1.json
+# Admin (Next.js): /admin/login -> /admin -> /admin/artigos (CRUD + publicar/arquivar, JWT bearer).
+# Endpoints de escrita exigem token: POST/PUT /artigos, POST /artigos/{id}/publicar|arquivar.
+# Em prod, semeie o admin por passo seguro unico.
 
 # Contrato OpenAPI -> tipos TS
 dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"
@@ -71,7 +73,9 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 
 ## Status
 
-Em construção. Fatia 1 (conteúdo público + SEO base): leitura por slug, sitemap, RSS, JSON-LD (Person/Article), Open Graph, canonical e 404.
+Em construção. Fatia 2b (CRUD de artigos): criar, editar, publicar e arquivar pelo `/admin` (endpoints protegidos por JWT, validação com FluentValidation). O conteúdo é **markdown**, renderizado no público (SSR) e no editor com preview ao vivo. "Despublicar" = arquivar (estado terminal).
+
+Entregue antes: Fatia 1 (conteúdo público + SEO base — leitura por slug, sitemap, RSS, JSON-LD, Open Graph, canonical e 404) e Fatia 2a (autenticação do admin, JWT bearer).
 
 ## Licença
 

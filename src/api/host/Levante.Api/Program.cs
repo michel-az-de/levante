@@ -1,8 +1,14 @@
 using System.Text;
+using FluentValidation;
 using Levante.Api.Endpoints;
 using Levante.Api.Seguranca;
+using Levante.Conteudo.Application.Artigos.ArquivarArtigo;
+using Levante.Conteudo.Application.Artigos.CriarArtigo;
+using Levante.Conteudo.Application.Artigos.EditarArtigo;
 using Levante.Conteudo.Application.Artigos.ListarArtigosPublicados;
+using Levante.Conteudo.Application.Artigos.ListarTodosArtigos;
 using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
+using Levante.Conteudo.Application.Artigos.PublicarArtigo;
 using Levante.Conteudo.Infrastructure;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
@@ -30,7 +36,15 @@ if (modoEmitOpenApi)
 // Handlers CQRS-lite chamados direto (sem mediator por ora, GAP-F).
 builder.Services.AddScoped<ListarArtigosPublicadosQueryHandler>();
 builder.Services.AddScoped<ObterArtigoPorSlugQueryHandler>();
+builder.Services.AddScoped<ListarTodosArtigosQueryHandler>();
+builder.Services.AddScoped<CriarArtigoCommandHandler>();
+builder.Services.AddScoped<EditarArtigoCommandHandler>();
+builder.Services.AddScoped<PublicarArtigoCommandHandler>();
+builder.Services.AddScoped<ArquivarArtigoCommandHandler>();
 builder.Services.AddScoped<AutenticarCommandHandler>();
+
+// Validators FluentValidation do contexto Conteudo (IValidator<T> por comando).
+builder.Services.AddValidatorsFromAssemblyContaining<CriarArtigoCommandValidator>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
 builder.Services.AddOpenApi();
@@ -97,6 +111,7 @@ app.UseAuthorization();
 app.MapOpenApi().AllowAnonymous();
 app.MapHealthEndpoints();
 app.MapArtigoEndpoints();
+app.MapArtigoAdminEndpoints();
 app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).

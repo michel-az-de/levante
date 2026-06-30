@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
+import { Markdown } from "@/components/Markdown";
 import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
 import type { Artigo } from "@/types/domain";
@@ -106,9 +107,7 @@ export default async function ArtigoPage({
           ) : null}
           <p className="text-lg text-neutral-600 dark:text-neutral-400">{artigo.resumo}</p>
         </header>
-        <div className="leading-relaxed text-neutral-800 dark:text-neutral-200">
-          {artigo.conteudo}
-        </div>
+        <Markdown>{artigo.conteudo}</Markdown>
       </article>
     </main>
   );

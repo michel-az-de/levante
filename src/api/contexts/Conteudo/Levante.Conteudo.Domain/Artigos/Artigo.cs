@@ -55,16 +55,7 @@ public sealed class Artigo
     /// <summary>Cria um novo artigo em rascunho.</summary>
     public static Artigo Criar(string titulo, Slug slug, string resumo, string conteudo)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(titulo);
-        ArgumentNullException.ThrowIfNull(slug);
-        ArgumentException.ThrowIfNullOrWhiteSpace(resumo);
-        ArgumentException.ThrowIfNullOrWhiteSpace(conteudo);
-
-        if (resumo.Length > TamanhoMaximoResumo)
-        {
-            throw new ArgumentException(
-                $"Resumo excede {TamanhoMaximoResumo} caracteres.", nameof(resumo));
-        }
+        GarantirCampos(titulo, slug, resumo, conteudo);
 
         return new Artigo(
             Guid.NewGuid(),
@@ -102,6 +93,42 @@ public sealed class Artigo
         _eventos.Add(new ArtigoPublicado(Id, Slug.Valor, DataPublicacao.Value));
     }
 
+    /// <summary>Atualiza os campos editaveis (titulo, slug, resumo, conteudo).</summary>
+    public void Editar(string titulo, Slug slug, string resumo, string conteudo)
+    {
+        GarantirCampos(titulo, slug, resumo, conteudo);
+
+        Titulo = titulo;
+        Slug = slug;
+        Resumo = resumo;
+        Conteudo = conteudo;
+    }
+
+    /// <summary>Arquiva o artigo (estado terminal; idempotente). A acao "despublicar".</summary>
+    public void Arquivar()
+    {
+        if (Status == StatusArtigo.Arquivado)
+        {
+            return;
+        }
+
+        Status = StatusArtigo.Arquivado;
+    }
+
     /// <summary>Limpa eventos ja despachados (chamado apos persistir no Outbox).</summary>
     public void LimparEventos() => _eventos.Clear();
+
+    private static void GarantirCampos(string titulo, Slug slug, string resumo, string conteudo)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(titulo);
+        ArgumentNullException.ThrowIfNull(slug);
+        ArgumentException.ThrowIfNullOrWhiteSpace(resumo);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conteudo);
+
+        if (resumo.Length > TamanhoMaximoResumo)
+        {
+            throw new ArgumentException(
+                $"Resumo excede {TamanhoMaximoResumo} caracteres.", nameof(resumo));
+        }
+    }
 }

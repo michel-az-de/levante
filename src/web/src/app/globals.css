@@ -7,3 +7,49 @@
 body {
   @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
 }
+
+/* Estilo do conteudo renderizado a partir de markdown (publico + preview admin).
+   Escopo proprio para nao depender do plugin @tailwindcss/typography. */
+.markdown {
+  @apply leading-relaxed text-neutral-800 dark:text-neutral-200;
+}
+.markdown > * + * {
+  @apply mt-4;
+}
+.markdown h1 {
+  @apply mt-8 text-2xl font-bold tracking-tight;
+}
+.markdown h2 {
+  @apply mt-8 text-xl font-bold tracking-tight;
+}
+.markdown h3 {
+  @apply mt-6 text-lg font-semibold;
+}
+.markdown ul {
+  @apply list-disc pl-6;
+}
+.markdown ol {
+  @apply list-decimal pl-6;
+}
+.markdown a {
+  @apply text-blue-600 underline underline-offset-2 dark:text-blue-400;
+}
+.markdown blockquote {
+  @apply border-l-4 border-neutral-300 pl-4 italic text-neutral-600 dark:border-neutral-700 dark:text-neutral-400;
+}
+.markdown code {
+  @apply rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm dark:bg-neutral-800;
+}
+.markdown pre {
+  @apply overflow-x-auto rounded-md bg-neutral-100 p-4 dark:bg-neutral-800;
+}
+.markdown pre code {
+  @apply bg-transparent p-0;
+}
+.markdown table {
+  @apply w-full border-collapse text-left text-sm;
+}
+.markdown th,
+.markdown td {
+  @apply border border-neutral-300 px-3 py-1.5 dark:border-neutral-700;
+}

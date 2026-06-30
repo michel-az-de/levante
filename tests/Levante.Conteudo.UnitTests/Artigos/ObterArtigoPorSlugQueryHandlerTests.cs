@@ -49,9 +49,17 @@ public sealed class ObterArtigoPorSlugQueryHandlerTests
         public Task<IReadOnlyList<Artigo>> ListPublicadosAsync(CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<Artigo>>(artigoFixo is null ? [] : [artigoFixo]);
 
+        public Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Artigo>>(artigoFixo is null ? [] : [artigoFixo]);
+
         public Task<Artigo?> GetBySlugAsync(string slug, CancellationToken ct) =>
             Task.FromResult(artigoFixo is not null && artigoFixo.Slug.Valor == slug ? artigoFixo : null);
 
+        public Task<Artigo?> GetByIdAsync(Guid id, CancellationToken ct) =>
+            Task.FromResult(artigoFixo is not null && artigoFixo.Id == id ? artigoFixo : null);
+
         public Task AddAsync(Artigo artigo, CancellationToken ct) => Task.CompletedTask;
+
+        public Task UpdateAsync(Artigo artigo, CancellationToken ct) => Task.CompletedTask;
     }
 }

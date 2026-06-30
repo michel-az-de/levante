@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiAdmin, limparToken, obterToken } from "@/lib/auth";
@@ -62,9 +63,14 @@ export default function AdminDashboardPage() {
       <p className="text-neutral-600 dark:text-neutral-400">
         Logado como <span className="font-medium">{email}</span>.
       </p>
-      <p className="text-sm text-neutral-500">
-        Edicao e publicacao de artigos chegam na Fatia 2b.
-      </p>
+      <nav className="flex flex-col gap-2">
+        <Link
+          href="/admin/artigos"
+          className="rounded-md border border-neutral-300 px-4 py-3 transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+        >
+          Gerenciar artigos
+        </Link>
+      </nav>
     </main>
   );
 }
