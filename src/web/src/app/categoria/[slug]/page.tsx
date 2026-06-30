@@ -23,7 +23,11 @@ const obterCategoria = cache(
       throw new Error(`Falha ao listar a categoria '${slug}': HTTP ${response.status}`);
     }
 
-    const { data: categorias } = await artigoApi.GET("/categorias");
+    const { data: categorias, response: respostaCategorias } = await artigoApi.GET("/categorias");
+    // Falha do fetch auxiliar != categoria inexistente: propaga em vez de virar 404 falso.
+    if (!respostaCategorias.ok) {
+      throw new Error(`Falha ao resolver a categoria '${slug}': HTTP ${respostaCategorias.status}`);
+    }
     const categoria = categorias?.find((c) => c.slug === slug);
     if (!categoria) {
       return null;

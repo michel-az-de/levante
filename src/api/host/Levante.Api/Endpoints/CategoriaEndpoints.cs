@@ -34,14 +34,14 @@ public static class CategoriaEndpoints
             .RequireAuthorization()
             .WithName("CriarCategoria")
             .Produces<CategoriaResponse>(StatusCodes.Status201Created)
-            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         grupo.MapPut("/{id:guid}", Editar)
             .RequireAuthorization()
             .WithName("EditarCategoria")
             .Produces<CategoriaResponse>()
-            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound);
 
         return app;

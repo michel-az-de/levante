@@ -22,13 +22,13 @@ public static class ArtigoAdminEndpoints
         artigos.MapPost("/", Criar)
             .WithName("CriarArtigo")
             .Produces<ArtigoResponse>(StatusCodes.Status201Created)
-            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         artigos.MapPut("/{id:guid}", Editar)
             .WithName("EditarArtigo")
             .Produces<ArtigoResponse>()
-            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 

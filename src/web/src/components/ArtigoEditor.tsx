@@ -17,11 +17,21 @@ export interface ArtigoFormValores {
   tags: string[];
 }
 
-/** Separa tags por virgula, normaliza e remove vazias/duplicadas. */
+/**
+ * Separa tags por vírgula e normaliza para kebab-case (mesma regra do VO Tag do
+ * backend), para que o preview reflita exatamente o que a API aceita. Remove
+ * vazias e duplicadas.
+ */
 function parseTags(texto: string): string[] {
   const tags = texto
     .split(",")
-    .map((t) => t.trim().toLowerCase())
+    .map((t) =>
+      t
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, ""),
+    )
     .filter((t) => t.length > 0);
   return [...new Set(tags)];
 }
