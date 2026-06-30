@@ -5,6 +5,29 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/admin/artigos": {
+      "get": {
+        "tags": [
+          "Artigos (admin)"
+        ],
+        "operationId": "ListarTodosArtigos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArtigoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artigos": {
       "get": {
         "tags": [
@@ -26,6 +49,54 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Artigos (admin)"
+        ],
+        "operationId": "CriarArtigo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarArtigoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtigoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/artigos/{slug}": {
@@ -41,6 +112,148 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtigoResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/artigos/{id}": {
+      "put": {
+        "tags": [
+          "Artigos (admin)"
+        ],
+        "operationId": "EditarArtigo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarArtigoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtigoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artigos/{id}/publicar": {
+      "post": {
+        "tags": [
+          "Artigos (admin)"
+        ],
+        "operationId": "PublicarArtigo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtigoResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artigos/{id}/arquivar": {
+      "post": {
+        "tags": [
+          "Artigos (admin)"
+        ],
+        "operationId": "ArquivarArtigo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -136,7 +349,8 @@
           "slug",
           "resumo",
           "conteudo",
-          "dataPublicacao"
+          "dataPublicacao",
+          "status"
         ],
         "type": "object",
         "properties": {
@@ -160,6 +374,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "status": {
+            "type": "string"
           }
         },
         "description": "Contrato de saida do contexto Conteudo. Vira o tipo TS gerado do OpenAPI\n(PT) consumido pelo Next.js. Nao expor o agregado diretamente."
@@ -179,6 +396,115 @@
           }
         },
         "description": "Corpo do login."
+      },
+      "CriarArtigoRequest": {
+        "required": [
+          "titulo",
+          "slug",
+          "resumo",
+          "conteudo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "resumo": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo de criacao de artigo (slug informado pelo admin)."
+      },
+      "EditarArtigoRequest": {
+        "required": [
+          "titulo",
+          "slug",
+          "resumo",
+          "conteudo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "resumo": {
+            "type": "string"
+          },
+          "conteudo": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo de edicao de artigo (Id vem da rota)."
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        }
       },
       "TokenDeAcessoResponse": {
         "required": [
@@ -200,6 +526,9 @@
     }
   },
   "tags": [
+    {
+      "name": "Artigos (admin)"
+    },
     {
       "name": "Artigos"
     },
