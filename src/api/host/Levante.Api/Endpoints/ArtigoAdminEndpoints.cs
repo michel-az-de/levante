@@ -4,7 +4,6 @@ using Levante.Conteudo.Application.Artigos.CriarArtigo;
 using Levante.Conteudo.Application.Artigos.EditarArtigo;
 using Levante.Conteudo.Application.Artigos.ListarTodosArtigos;
 using Levante.Conteudo.Application.Artigos.PublicarArtigo;
-using Levante.SharedKernel;
 
 namespace Levante.Api.Endpoints;
 
@@ -66,12 +65,14 @@ public static class ArtigoAdminEndpoints
                 requisicao.Conteudo,
                 requisicao.MetaTitulo,
                 requisicao.MetaDescricao,
-                requisicao.ImagemOgUrl),
+                requisicao.ImagemOgUrl,
+                requisicao.CategoriaId,
+                requisicao.Tags),
             ct);
 
         return resultado.Sucesso
             ? Results.Created($"/artigos/{resultado.Valor!.Slug}", resultado.Valor)
-            : MapearFalha(resultado.Erro);
+            : ResultadoHttp.Falha(resultado.Erro);
     }
 
     private static async Task<IResult> Editar(
@@ -89,10 +90,12 @@ public static class ArtigoAdminEndpoints
                 requisicao.Conteudo,
                 requisicao.MetaTitulo,
                 requisicao.MetaDescricao,
-                requisicao.ImagemOgUrl),
+                requisicao.ImagemOgUrl,
+                requisicao.CategoriaId,
+                requisicao.Tags),
             ct);
 
-        return resultado.Sucesso ? Results.Ok(resultado.Valor) : MapearFalha(resultado.Erro);
+        return resultado.Sucesso ? Results.Ok(resultado.Valor) : ResultadoHttp.Falha(resultado.Erro);
     }
 
     private static async Task<IResult> Publicar(
@@ -102,7 +105,7 @@ public static class ArtigoAdminEndpoints
     {
         var resultado = await handler.Handle(new PublicarArtigoCommand(id), ct);
 
-        return resultado.Sucesso ? Results.Ok(resultado.Valor) : MapearFalha(resultado.Erro);
+        return resultado.Sucesso ? Results.Ok(resultado.Valor) : ResultadoHttp.Falha(resultado.Erro);
     }
 
     private static async Task<IResult> Arquivar(
@@ -112,7 +115,7 @@ public static class ArtigoAdminEndpoints
     {
         var resultado = await handler.Handle(new ArquivarArtigoCommand(id), ct);
 
-        return resultado.Sucesso ? Results.Ok(resultado.Valor) : MapearFalha(resultado.Erro);
+        return resultado.Sucesso ? Results.Ok(resultado.Valor) : ResultadoHttp.Falha(resultado.Erro);
     }
 
     private static async Task<IResult> ListarTodos(
@@ -121,22 +124,12 @@ public static class ArtigoAdminEndpoints
     {
         var resultado = await handler.Handle(new ListarTodosArtigosQuery(), ct);
 
-        return resultado.Sucesso ? Results.Ok(resultado.Valor) : MapearFalha(resultado.Erro);
+        return resultado.Sucesso ? Results.Ok(resultado.Valor) : ResultadoHttp.Falha(resultado.Erro);
     }
 
-    /// <summary>Mapeia o codigo de erro de negocio para o status HTTP adequado.</summary>
-    private static IResult MapearFalha(Error erro) => erro.Codigo switch
-    {
-        "artigo_nao_encontrado" => Results.NotFound(),
-        "slug_em_uso" or "transicao_invalida" => Results.Problem(
-            detail: erro.Mensagem, statusCode: StatusCodes.Status409Conflict, title: "Conflito"),
-        "validacao" => Results.Problem(
-            detail: erro.Mensagem, statusCode: StatusCodes.Status400BadRequest, title: "Validacao"),
-        _ => Results.Problem(detail: erro.Mensagem, statusCode: StatusCodes.Status400BadRequest),
-    };
 }
 
-/// <summary>Corpo de criacao de artigo (slug informado pelo admin). Meta SEO opcional.</summary>
+/// <summary>Corpo de criacao de artigo (slug informado pelo admin). Meta SEO, categoria e tags opcionais.</summary>
 public sealed record CriarArtigoRequest(
     string Titulo,
     string Slug,
@@ -144,9 +137,11 @@ public sealed record CriarArtigoRequest(
     string Conteudo,
     string? MetaTitulo = null,
     string? MetaDescricao = null,
-    string? ImagemOgUrl = null);
+    string? ImagemOgUrl = null,
+    Guid? CategoriaId = null,
+    IReadOnlyList<string>? Tags = null);
 
-/// <summary>Corpo de edicao de artigo (Id vem da rota). Meta SEO opcional.</summary>
+/// <summary>Corpo de edicao de artigo (Id vem da rota). Meta SEO, categoria e tags opcionais.</summary>
 public sealed record EditarArtigoRequest(
     string Titulo,
     string Slug,
@@ -154,4 +149,6 @@ public sealed record EditarArtigoRequest(
     string Conteudo,
     string? MetaTitulo = null,
     string? MetaDescricao = null,
-    string? ImagemOgUrl = null);
+    string? ImagemOgUrl = null,
+    Guid? CategoriaId = null,
+    IReadOnlyList<string>? Tags = null);
