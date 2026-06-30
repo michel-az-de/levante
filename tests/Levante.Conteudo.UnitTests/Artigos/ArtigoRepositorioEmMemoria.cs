@@ -16,6 +16,9 @@ internal sealed class ArtigoRepositorioEmMemoria : IArtigoRepository
 
     public int Atualizados { get; private set; }
 
+    /// <summary>Simula a violacao do indice unico (corrida): a escrita lanca SlugEmUsoException.</summary>
+    public bool LancarSlugEmUsoNaEscrita { get; init; }
+
     public Task<IReadOnlyList<Artigo>> ListPublicadosAsync(CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<Artigo>>(
             [.. _artigos.Where(a => a.Status == StatusArtigo.Publicado)]);
@@ -31,6 +34,11 @@ internal sealed class ArtigoRepositorioEmMemoria : IArtigoRepository
 
     public Task AddAsync(Artigo artigo, CancellationToken ct)
     {
+        if (LancarSlugEmUsoNaEscrita)
+        {
+            throw new SlugEmUsoException(artigo.Slug.Valor);
+        }
+
         _artigos.Add(artigo);
         Adicionados++;
         return Task.CompletedTask;
@@ -38,6 +46,11 @@ internal sealed class ArtigoRepositorioEmMemoria : IArtigoRepository
 
     public Task UpdateAsync(Artigo artigo, CancellationToken ct)
     {
+        if (LancarSlugEmUsoNaEscrita)
+        {
+            throw new SlugEmUsoException(artigo.Slug.Valor);
+        }
+
         Atualizados++;
         return Task.CompletedTask;
     }

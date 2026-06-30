@@ -75,6 +75,21 @@ public sealed class EditarArtigoCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_falhaQuandoCorridaViolouIndice()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+        var repo = new ArtigoRepositorioEmMemoria(artigo) { LancarSlugEmUsoNaEscrita = true };
+        var handler = Criar(repo);
+
+        var resultado = await handler.Handle(
+            new EditarArtigoCommand(artigo.Id, "Editado", "novo-slug", "Resumo.", "Conteudo."),
+            CancellationToken.None);
+
+        resultado.Falhou.ShouldBeTrue();
+        resultado.Erro.Codigo.ShouldBe("slug_em_uso");
+    }
+
+    [Fact]
     public async Task Handle_permiteManterOProprioSlug()
     {
         var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");

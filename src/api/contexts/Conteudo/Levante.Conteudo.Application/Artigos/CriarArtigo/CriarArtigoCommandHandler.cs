@@ -25,13 +25,25 @@ public sealed class CriarArtigoCommandHandler(
         var existente = await repositorio.GetBySlugAsync(comando.Slug, ct);
         if (existente is not null)
         {
-            return Result.Falha<ArtigoResponse>(
-                new Error("slug_em_uso", $"Ja existe um artigo com o slug '{comando.Slug}'."));
+            return SlugEmUso(comando.Slug);
         }
 
         var artigo = Artigo.Criar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo);
-        await repositorio.AddAsync(artigo, ct);
+
+        try
+        {
+            await repositorio.AddAsync(artigo, ct);
+        }
+        catch (SlugEmUsoException)
+        {
+            // Corrida: o slug foi inserido entre a pre-checagem e o insert (indice unico).
+            return SlugEmUso(comando.Slug);
+        }
 
         return Result.Ok(ArtigoResponse.DeArtigo(artigo));
     }
+
+    private static Result<ArtigoResponse> SlugEmUso(string slug) =>
+        Result.Falha<ArtigoResponse>(
+            new Error("slug_em_uso", $"Ja existe um artigo com o slug '{slug}'."));
 }

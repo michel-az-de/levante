@@ -56,6 +56,20 @@ public sealed class CriarArtigoCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_falhaQuandoCorridaViolouIndice()
+    {
+        // Slug livre na pre-checagem, mas a escrita bate no indice unico (corrida).
+        var repo = new ArtigoRepositorioEmMemoria { LancarSlugEmUsoNaEscrita = true };
+        var handler = Criar(repo);
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo."), CancellationToken.None);
+
+        resultado.Falhou.ShouldBeTrue();
+        resultado.Erro.Codigo.ShouldBe("slug_em_uso");
+    }
+
+    [Fact]
     public async Task Handle_falhaQuandoTituloVazio()
     {
         var repo = new ArtigoRepositorioEmMemoria();
