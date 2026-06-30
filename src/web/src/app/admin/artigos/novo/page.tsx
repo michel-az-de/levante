@@ -39,7 +39,15 @@ export default function NovoArtigoPage() {
         </Link>
       </div>
       <ArtigoEditor
-        inicial={{ titulo: "", slug: "", resumo: "", conteudo: "" }}
+        inicial={{
+          titulo: "",
+          slug: "",
+          resumo: "",
+          conteudo: "",
+          metaTitulo: "",
+          metaDescricao: "",
+          imagemOgUrl: "",
+        }}
         textoAcao="Criar"
         onSubmit={criar}
       />

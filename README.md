@@ -73,9 +73,9 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 
 ## Status
 
-Em construção. Fatia 2b (CRUD de artigos): criar, editar, publicar e arquivar pelo `/admin` (endpoints protegidos por JWT, validação com FluentValidation). O conteúdo é **markdown**, renderizado no público (SSR) e no editor com preview ao vivo. "Despublicar" = arquivar (estado terminal).
+Em construção. Fatia 2c-i (meta SEO editável por artigo): o admin define, por artigo, **meta título** (≤60), **meta descrição** (≤155) e **imagem Open Graph** (opcionais); o público usa esses overrides no `<title>`, na meta description e no OG/Twitter, com fallback para o título/resumo/OG dinâmico. (Taxonomia — Categoria/Tags — vem na 2c-ii.)
 
-Entregue antes: Fatia 1 (conteúdo público + SEO base — leitura por slug, sitemap, RSS, JSON-LD, Open Graph, canonical e 404) e Fatia 2a (autenticação do admin, JWT bearer).
+Entregue antes: Fatia 2b (CRUD de artigos pelo `/admin`, markdown, publicar/arquivar), Fatia 2a (autenticação do admin, JWT bearer) e Fatia 1 (conteúdo público + SEO base — slug, sitemap, RSS, JSON-LD, Open Graph, canonical e 404).
 
 ## Licença
 

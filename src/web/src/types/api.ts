@@ -154,25 +154,34 @@ export interface components {
             /** Format: date-time */
             dataPublicacao: string | null;
             status: string;
+            metaTitulo: string | null;
+            metaDescricao: string | null;
+            imagemOgUrl: string | null;
         };
         /** @description Corpo do login. */
         AutenticarRequest: {
             email: string;
             senha: string;
         };
-        /** @description Corpo de criacao de artigo (slug informado pelo admin). */
+        /** @description Corpo de criacao de artigo (slug informado pelo admin). Meta SEO opcional. */
         CriarArtigoRequest: {
             titulo: string;
             slug: string;
             resumo: string;
             conteudo: string;
+            metaTitulo?: string | null;
+            metaDescricao?: string | null;
+            imagemOgUrl?: string | null;
         };
-        /** @description Corpo de edicao de artigo (Id vem da rota). */
+        /** @description Corpo de edicao de artigo (Id vem da rota). Meta SEO opcional. */
         EditarArtigoRequest: {
             titulo: string;
             slug: string;
             resumo: string;
             conteudo: string;
+            metaTitulo?: string | null;
+            metaDescricao?: string | null;
+            imagemOgUrl?: string | null;
         };
         HttpValidationProblemDetails: {
             type?: string | null;

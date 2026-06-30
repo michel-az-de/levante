@@ -43,19 +43,31 @@ export async function generateMetadata({
   }
 
   const caminho = `/artigos/${artigo.slug}`;
+  // Overrides de SEO editáveis (Fatia 2c-i); fallback para título/resumo do artigo.
+  const titulo = artigo.metaTitulo ?? artigo.titulo;
+  const descricao = artigo.metaDescricao ?? artigo.resumo;
+  // imagemOgUrl definido sobrepõe o opengraph-image dinâmico (relativo resolve via metadataBase).
+  const imagens = artigo.imagemOgUrl ? [artigo.imagemOgUrl] : undefined;
+
   return {
-    title: artigo.titulo,
-    description: artigo.resumo,
+    title: titulo,
+    description: descricao,
     alternates: { canonical: caminho },
     openGraph: {
-      title: artigo.titulo,
-      description: artigo.resumo,
+      title: titulo,
+      description: descricao,
       url: `${site.url}${caminho}`,
       type: "article",
       publishedTime: artigo.dataPublicacao ?? undefined,
       authors: [site.autor],
+      ...(imagens ? { images: imagens } : {}),
     },
-    twitter: { card: "summary_large_image", title: artigo.titulo, description: artigo.resumo },
+    twitter: {
+      card: "summary_large_image",
+      title: titulo,
+      description: descricao,
+      ...(imagens ? { images: imagens } : {}),
+    },
   };
 }
 

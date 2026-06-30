@@ -46,6 +46,9 @@ export default function EditarArtigoPage() {
           slug: artigo.slug,
           resumo: artigo.resumo,
           conteudo: artigo.conteudo,
+          metaTitulo: artigo.metaTitulo ?? "",
+          metaDescricao: artigo.metaDescricao ?? "",
+          imagemOgUrl: artigo.imagemOgUrl ?? "",
         });
       })
       .catch(() => {

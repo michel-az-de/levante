@@ -41,7 +41,8 @@ public sealed class EditarArtigoCommandHandler(
             return SlugEmUso(comando.Slug);
         }
 
-        artigo.Editar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo);
+        var meta = MetaSeo.Criar(comando.MetaTitulo, comando.MetaDescricao, comando.ImagemOgUrl);
+        artigo.Editar(comando.Titulo, new Slug(comando.Slug), comando.Resumo, comando.Conteudo, meta);
 
         try
         {
