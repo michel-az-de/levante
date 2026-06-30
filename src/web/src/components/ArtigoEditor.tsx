@@ -8,6 +8,9 @@ export interface ArtigoFormValores {
   slug: string;
   resumo: string;
   conteudo: string;
+  metaTitulo: string;
+  metaDescricao: string;
+  imagemOgUrl: string;
 }
 
 /**
@@ -28,6 +31,9 @@ export function ArtigoEditor({
   const [slug, setSlug] = useState(inicial.slug);
   const [resumo, setResumo] = useState(inicial.resumo);
   const [conteudo, setConteudo] = useState(inicial.conteudo);
+  const [metaTitulo, setMetaTitulo] = useState(inicial.metaTitulo);
+  const [metaDescricao, setMetaDescricao] = useState(inicial.metaDescricao);
+  const [imagemOgUrl, setImagemOgUrl] = useState(inicial.imagemOgUrl);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const conteudoRef = useRef<HTMLTextAreaElement>(null);
@@ -70,7 +76,15 @@ export function ArtigoEditor({
     setErro(null);
     setEnviando(true);
     try {
-      const mensagem = await onSubmit({ titulo, slug, resumo, conteudo });
+      const mensagem = await onSubmit({
+        titulo,
+        slug,
+        resumo,
+        conteudo,
+        metaTitulo,
+        metaDescricao,
+        imagemOgUrl,
+      });
       if (mensagem) {
         setErro(mensagem);
       }
@@ -163,6 +177,50 @@ export function ArtigoEditor({
           </div>
         </div>
       </div>
+
+      <fieldset className="flex flex-col gap-4 rounded-md border border-neutral-200 p-4 dark:border-neutral-800">
+        <legend className="px-1 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+          SEO (opcional)
+        </legend>
+        <p className="text-xs text-neutral-500">
+          Sem preencher, o público usa o título e o resumo do artigo.
+        </p>
+
+        <label className="flex flex-col gap-1 text-sm">
+          Meta título (override do &lt;title&gt;)
+          <input
+            type="text"
+            maxLength={60}
+            value={metaTitulo}
+            onChange={(e) => setMetaTitulo(e.target.value)}
+            className="rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900"
+          />
+          <span className="text-xs text-neutral-500">{metaTitulo.length}/60</span>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          Meta descrição
+          <textarea
+            maxLength={155}
+            rows={2}
+            value={metaDescricao}
+            onChange={(e) => setMetaDescricao(e.target.value)}
+            className="rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900"
+          />
+          <span className="text-xs text-neutral-500">{metaDescricao.length}/155</span>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          Imagem Open Graph (URL http(s) ou caminho /relativo)
+          <input
+            type="text"
+            value={imagemOgUrl}
+            onChange={(e) => setImagemOgUrl(e.target.value)}
+            placeholder="/og/meu-artigo.png"
+            className="rounded-md border border-neutral-300 px-3 py-2 font-mono dark:border-neutral-700 dark:bg-neutral-900"
+          />
+        </label>
+      </fieldset>
 
       {erro ? <p className="text-sm text-red-600">{erro}</p> : null}
 
