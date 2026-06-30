@@ -21,17 +21,27 @@ export function useGuardaAdmin(): boolean {
     }
 
     let ativo = true;
-    void apiAdmin.GET("/auth/eu").then(({ data, error }) => {
-      if (!ativo) {
-        return;
-      }
-      if (error || !data) {
-        limparToken();
-        router.replace("/admin/login");
-        return;
-      }
-      setAutorizado(true);
-    });
+    apiAdmin
+      .GET("/auth/eu")
+      .then(({ data, error }) => {
+        if (!ativo) {
+          return;
+        }
+        if (error || !data) {
+          limparToken();
+          router.replace("/admin/login");
+          return;
+        }
+        setAutorizado(true);
+      })
+      .catch(() => {
+        // Falha de rede (API fora/CORS): trata como nao autenticado em vez de
+        // travar a tela em "Carregando..." para sempre.
+        if (ativo) {
+          limparToken();
+          router.replace("/admin/login");
+        }
+      });
 
     return () => {
       ativo = false;

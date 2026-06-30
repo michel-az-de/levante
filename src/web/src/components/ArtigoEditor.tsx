@@ -69,10 +69,16 @@ export function ArtigoEditor({
     evento.preventDefault();
     setErro(null);
     setEnviando(true);
-    const mensagem = await onSubmit({ titulo, slug, resumo, conteudo });
-    setEnviando(false);
-    if (mensagem) {
-      setErro(mensagem);
+    try {
+      const mensagem = await onSubmit({ titulo, slug, resumo, conteudo });
+      if (mensagem) {
+        setErro(mensagem);
+      }
+    } catch {
+      // Rejeicao de rede (API fora/CORS): openapi-fetch rejeita a promise.
+      setErro("Falha de conexao. Tente novamente.");
+    } finally {
+      setEnviando(false);
     }
   }
 

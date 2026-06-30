@@ -14,6 +14,7 @@ export default function EditarArtigoPage() {
   const autorizado = useGuardaAdmin();
   const [inicial, setInicial] = useState<ArtigoFormValores | null>(null);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
+  const [erroCarregar, setErroCarregar] = useState(false);
 
   useEffect(() => {
     if (!autorizado) {
@@ -21,25 +22,37 @@ export default function EditarArtigoPage() {
     }
     let ativo = true;
     // Sem GET admin por id (fora de escopo da 2b): busca na lista e filtra.
-    apiAdmin.GET("/admin/artigos").then(({ data, response }) => {
-      if (!ativo) {
-        return;
-      }
-      if (tratarNaoAutorizado(response.status, router)) {
-        return;
-      }
-      const artigo = data?.find((a) => a.id === id);
-      if (!artigo) {
-        setNaoEncontrado(true);
-        return;
-      }
-      setInicial({
-        titulo: artigo.titulo,
-        slug: artigo.slug,
-        resumo: artigo.resumo,
-        conteudo: artigo.conteudo,
+    apiAdmin
+      .GET("/admin/artigos")
+      .then(({ data, response }) => {
+        if (!ativo) {
+          return;
+        }
+        if (tratarNaoAutorizado(response.status, router)) {
+          return;
+        }
+        // Erro do servidor != artigo inexistente: nao mascarar um 500 como 404.
+        if (!response.ok) {
+          setErroCarregar(true);
+          return;
+        }
+        const artigo = data?.find((a) => a.id === id);
+        if (!artigo) {
+          setNaoEncontrado(true);
+          return;
+        }
+        setInicial({
+          titulo: artigo.titulo,
+          slug: artigo.slug,
+          resumo: artigo.resumo,
+          conteudo: artigo.conteudo,
+        });
+      })
+      .catch(() => {
+        if (ativo) {
+          setErroCarregar(true);
+        }
       });
-    });
     return () => {
       ativo = false;
     };
@@ -60,7 +73,7 @@ export default function EditarArtigoPage() {
     return error?.detail ?? "Falha ao salvar o artigo.";
   }
 
-  if (!autorizado || (!inicial && !naoEncontrado)) {
+  if (!autorizado || (!inicial && !naoEncontrado && !erroCarregar)) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6">
         <p className="text-neutral-500">Carregando...</p>
@@ -76,7 +89,9 @@ export default function EditarArtigoPage() {
           Voltar
         </Link>
       </div>
-      {naoEncontrado || !inicial ? (
+      {erroCarregar ? (
+        <p className="text-sm text-red-600">Falha ao carregar o artigo. Tente novamente.</p>
+      ) : naoEncontrado || !inicial ? (
         <p className="text-neutral-500">Artigo nao encontrado.</p>
       ) : (
         <ArtigoEditor inicial={inicial} textoAcao="Salvar" onSubmit={salvar} />

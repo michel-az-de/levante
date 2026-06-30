@@ -18,15 +18,28 @@ export default function AdminArtigosPage() {
   const autorizado = useGuardaAdmin();
   const [artigos, setArtigos] = useState<Artigo[] | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     // setState dentro do callback assincrono (nao sincrono no efeito).
-    void apiAdmin.GET("/admin/artigos").then(({ data, response }) => {
-      if (tratarNaoAutorizado(response.status, router)) {
-        return;
-      }
-      setArtigos(data ?? []);
-    });
+    apiAdmin
+      .GET("/admin/artigos")
+      .then(({ data, response }) => {
+        if (tratarNaoAutorizado(response.status, router)) {
+          return;
+        }
+        if (!response.ok) {
+          setErro("Falha ao carregar os artigos.");
+          setArtigos([]);
+          return;
+        }
+        setErro(null);
+        setArtigos(data ?? []);
+      })
+      .catch(() => {
+        setErro("Falha de conexao ao carregar os artigos.");
+        setArtigos([]);
+      });
   }, [router]);
 
   useEffect(() => {
@@ -35,22 +48,32 @@ export default function AdminArtigosPage() {
     }
   }, [autorizado, carregar]);
 
-  async function publicar(id: string) {
+  async function executarAcao(operacao: Promise<{ response: Response }>) {
+    setErro(null);
     setOcupado(true);
-    const { response } = await apiAdmin.POST("/artigos/{id}/publicar", { params: { path: { id } } });
-    setOcupado(false);
-    if (!tratarNaoAutorizado(response.status, router)) {
-      await carregar();
+    try {
+      const { response } = await operacao;
+      if (tratarNaoAutorizado(response.status, router)) {
+        return;
+      }
+      if (!response.ok) {
+        setErro("Falha ao atualizar o artigo.");
+        return;
+      }
+      carregar();
+    } catch {
+      setErro("Falha de conexao. Tente novamente.");
+    } finally {
+      setOcupado(false);
     }
   }
 
-  async function arquivar(id: string) {
-    setOcupado(true);
-    const { response } = await apiAdmin.POST("/artigos/{id}/arquivar", { params: { path: { id } } });
-    setOcupado(false);
-    if (!tratarNaoAutorizado(response.status, router)) {
-      await carregar();
-    }
+  function publicar(id: string) {
+    void executarAcao(apiAdmin.POST("/artigos/{id}/publicar", { params: { path: { id } } }));
+  }
+
+  function arquivar(id: string) {
+    void executarAcao(apiAdmin.POST("/artigos/{id}/arquivar", { params: { path: { id } } }));
   }
 
   if (!autorizado || artigos === null) {
@@ -72,6 +95,8 @@ export default function AdminArtigosPage() {
           Novo artigo
         </Link>
       </div>
+
+      {erro ? <p className="text-sm text-red-600">{erro}</p> : null}
 
       {artigos.length === 0 ? (
         <p className="text-neutral-500">Nenhum artigo ainda. Crie o primeiro.</p>
