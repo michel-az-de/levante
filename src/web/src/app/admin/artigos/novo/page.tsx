@@ -11,7 +11,9 @@ export default function NovoArtigoPage() {
   const autorizado = useGuardaAdmin();
 
   async function criar(valores: ArtigoFormValores): Promise<string | null> {
-    const { data, error, response } = await apiAdmin.POST("/artigos", { body: valores });
+    const { data, error, response } = await apiAdmin.POST("/artigos", {
+      body: { ...valores, categoriaId: valores.categoriaId || undefined },
+    });
     if (data && response.ok) {
       router.push("/admin/artigos");
       return null;
@@ -47,6 +49,8 @@ export default function NovoArtigoPage() {
           metaTitulo: "",
           metaDescricao: "",
           imagemOgUrl: "",
+          categoriaId: "",
+          tags: [],
         }}
         textoAcao="Criar"
         onSubmit={criar}

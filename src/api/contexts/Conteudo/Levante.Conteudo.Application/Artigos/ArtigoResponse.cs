@@ -16,7 +16,9 @@ public sealed record ArtigoResponse(
     string Status,
     string? MetaTitulo,
     string? MetaDescricao,
-    string? ImagemOgUrl)
+    string? ImagemOgUrl,
+    Guid? CategoriaId,
+    IReadOnlyList<string> Tags)
 {
     public static ArtigoResponse DeArtigo(Artigo artigo) => new(
         artigo.Id,
@@ -28,5 +30,7 @@ public sealed record ArtigoResponse(
         artigo.Status.ToString(),
         artigo.Meta.Titulo,
         artigo.Meta.Descricao,
-        artigo.Meta.ImagemOgUrl);
+        artigo.Meta.ImagemOgUrl,
+        artigo.CategoriaId,
+        [.. artigo.Tags.Select(t => t.Valor)]);
 }

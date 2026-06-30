@@ -9,4 +9,6 @@ public sealed record EditarArtigoCommand(
     string Conteudo,
     string? MetaTitulo = null,
     string? MetaDescricao = null,
-    string? ImagemOgUrl = null);
+    string? ImagemOgUrl = null,
+    Guid? CategoriaId = null,
+    IReadOnlyList<string>? Tags = null);

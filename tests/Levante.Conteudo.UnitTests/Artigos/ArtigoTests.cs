@@ -166,4 +166,42 @@ public sealed class ArtigoTests
         artigo.Meta.Titulo.ShouldBe("Novo");
         artigo.Meta.Descricao.ShouldBe("Nova desc");
     }
+
+    [Fact]
+    public void Criar_semCategoriaETags_usaPadroes()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+
+        artigo.CategoriaId.ShouldBeNull();
+        artigo.Tags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Criar_comCategoriaETags_preserva()
+    {
+        var categoriaId = Guid.NewGuid();
+
+        var artigo = Artigo.Criar(
+            "Titulo", new Slug("titulo"), "Resumo.", "Conteudo.",
+            categoriaId: categoriaId, tags: [new Tag("clean-architecture"), new Tag("ddd")]);
+
+        artigo.CategoriaId.ShouldBe(categoriaId);
+        artigo.Tags.Select(t => t.Valor).ShouldBe(["clean-architecture", "ddd"]);
+    }
+
+    [Fact]
+    public void Editar_atualizaCategoriaETags()
+    {
+        var artigo = Artigo.Criar(
+            "Titulo", new Slug("titulo"), "Resumo.", "Conteudo.",
+            categoriaId: Guid.NewGuid(), tags: [new Tag("antiga")]);
+        var novaCategoria = Guid.NewGuid();
+
+        artigo.Editar(
+            "Titulo", new Slug("titulo"), "Resumo.", "Conteudo.",
+            categoriaId: novaCategoria, tags: [new Tag("nova")]);
+
+        artigo.CategoriaId.ShouldBe(novaCategoria);
+        artigo.Tags.Select(t => t.Valor).ShouldBe(["nova"]);
+    }
 }

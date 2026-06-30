@@ -49,6 +49,8 @@ export default function EditarArtigoPage() {
           metaTitulo: artigo.metaTitulo ?? "",
           metaDescricao: artigo.metaDescricao ?? "",
           imagemOgUrl: artigo.imagemOgUrl ?? "",
+          categoriaId: artigo.categoriaId ?? "",
+          tags: artigo.tags,
         });
       })
       .catch(() => {
@@ -64,7 +66,7 @@ export default function EditarArtigoPage() {
   async function salvar(valores: ArtigoFormValores): Promise<string | null> {
     const { data, error, response } = await apiAdmin.PUT("/artigos/{id}", {
       params: { path: { id } },
-      body: valores,
+      body: { ...valores, categoriaId: valores.categoriaId || undefined },
     });
     if (data && response.ok) {
       router.push("/admin/artigos");

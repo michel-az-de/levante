@@ -100,6 +100,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/categorias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListarCategorias"];
+        put?: never;
+        post: operations["CriarCategoria"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/categorias/{slug}/artigos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListarArtigosPorCategoria"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/categorias/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EditarCategoria"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -157,13 +205,24 @@ export interface components {
             metaTitulo: string | null;
             metaDescricao: string | null;
             imagemOgUrl: string | null;
+            /** Format: uuid */
+            categoriaId: string | null;
+            tags: string[];
         };
         /** @description Corpo do login. */
         AutenticarRequest: {
             email: string;
             senha: string;
         };
-        /** @description Corpo de criacao de artigo (slug informado pelo admin). Meta SEO opcional. */
+        /** @description Contrato de saida da categoria (vira o tipo TS gerado do OpenAPI). */
+        CategoriaResponse: {
+            /** Format: uuid */
+            id: string;
+            nome: string;
+            slug: string;
+            descricao: string | null;
+        };
+        /** @description Corpo de criacao de artigo (slug informado pelo admin). Meta SEO, categoria e tags opcionais. */
         CriarArtigoRequest: {
             titulo: string;
             slug: string;
@@ -172,8 +231,17 @@ export interface components {
             metaTitulo?: string | null;
             metaDescricao?: string | null;
             imagemOgUrl?: string | null;
+            /** Format: uuid */
+            categoriaId?: string | null;
+            tags?: string[] | null;
         };
-        /** @description Corpo de edicao de artigo (Id vem da rota). Meta SEO opcional. */
+        /** @description Corpo de criacao de categoria (slug informado pelo admin). */
+        CriarCategoriaRequest: {
+            nome: string;
+            slug: string;
+            descricao?: string | null;
+        };
+        /** @description Corpo de edicao de artigo (Id vem da rota). Meta SEO, categoria e tags opcionais. */
         EditarArtigoRequest: {
             titulo: string;
             slug: string;
@@ -182,17 +250,14 @@ export interface components {
             metaTitulo?: string | null;
             metaDescricao?: string | null;
             imagemOgUrl?: string | null;
+            /** Format: uuid */
+            categoriaId?: string | null;
+            tags?: string[] | null;
         };
-        HttpValidationProblemDetails: {
-            type?: string | null;
-            title?: string | null;
-            /** Format: int32 */
-            status?: unknown;
-            detail?: string | null;
-            instance?: string | null;
-            errors?: {
-                [key: string]: string[];
-            };
+        /** @description Corpo de edicao de categoria (Id vem da rota; slug imutavel). */
+        EditarCategoriaRequest: {
+            nome: string;
+            descricao?: string | null;
         };
         ProblemDetails: {
             type?: string | null;
@@ -285,7 +350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Conflict */
@@ -358,7 +423,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Not Found */
@@ -435,6 +500,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArtigoResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListarCategorias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoriaResponse"][];
+                };
+            };
+        };
+    };
+    CriarCategoria: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarCategoriaRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoriaResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListarArtigosPorCategoria: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtigoResponse"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EditarCategoria: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditarCategoriaRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoriaResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Not Found */

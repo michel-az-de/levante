@@ -13,19 +13,27 @@ internal sealed class ConteudoMongoContext
 
         Database = client.GetDatabase(options.Value.DatabaseName);
         Artigos = Database.GetCollection<ArtigoDocument>("artigos");
+        Categorias = Database.GetCollection<CategoriaDocument>("categorias");
     }
 
     public IMongoDatabase Database { get; }
 
     public IMongoCollection<ArtigoDocument> Artigos { get; }
 
-    /// <summary>Cria o indice unico de slug (idempotente; seguro sob scale-out).</summary>
-    public Task EnsureIndexesAsync(CancellationToken ct)
+    public IMongoCollection<CategoriaDocument> Categorias { get; }
+
+    /// <summary>Cria os indices unicos de slug (idempotente; seguro sob scale-out).</summary>
+    public async Task EnsureIndexesAsync(CancellationToken ct)
     {
-        var indice = new CreateIndexModel<ArtigoDocument>(
+        var indiceArtigo = new CreateIndexModel<ArtigoDocument>(
             Builders<ArtigoDocument>.IndexKeys.Ascending(d => d.Slug),
             new CreateIndexOptions { Unique = true, Name = "ux_artigos_slug" });
 
-        return Artigos.Indexes.CreateOneAsync(indice, cancellationToken: ct);
+        var indiceCategoria = new CreateIndexModel<CategoriaDocument>(
+            Builders<CategoriaDocument>.IndexKeys.Ascending(d => d.Slug),
+            new CreateIndexOptions { Unique = true, Name = "ux_categorias_slug" });
+
+        await Artigos.Indexes.CreateOneAsync(indiceArtigo, cancellationToken: ct);
+        await Categorias.Indexes.CreateOneAsync(indiceCategoria, cancellationToken: ct);
     }
 }

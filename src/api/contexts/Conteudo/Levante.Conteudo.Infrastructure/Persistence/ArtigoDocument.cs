@@ -48,6 +48,14 @@ internal sealed class ArtigoDocument
     [BsonIgnoreIfNull]
     public string? ImagemOgUrl { get; set; }
 
+    [BsonElement("categoriaId")]
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    [BsonIgnoreIfNull]
+    public Guid? CategoriaId { get; set; }
+
+    [BsonElement("tags")]
+    public List<string> Tags { get; set; } = [];
+
     public static ArtigoDocument DeDominio(Artigo artigo) => new()
     {
         Id = artigo.Id,
@@ -61,6 +69,8 @@ internal sealed class ArtigoDocument
         MetaTitulo = artigo.Meta.Titulo,
         MetaDescricao = artigo.Meta.Descricao,
         ImagemOgUrl = artigo.Meta.ImagemOgUrl,
+        CategoriaId = artigo.CategoriaId,
+        Tags = [.. artigo.Tags.Select(t => t.Valor)],
     };
 
     public Artigo ParaDominio() => Artigo.Reconstituir(
@@ -72,5 +82,7 @@ internal sealed class ArtigoDocument
         Status,
         DataCriacao,
         DataPublicacao,
-        MetaSeo.Criar(MetaTitulo, MetaDescricao, ImagemOgUrl));
+        MetaSeo.Criar(MetaTitulo, MetaDescricao, ImagemOgUrl),
+        CategoriaId,
+        [.. Tags.Select(t => new Tag(t))]);
 }

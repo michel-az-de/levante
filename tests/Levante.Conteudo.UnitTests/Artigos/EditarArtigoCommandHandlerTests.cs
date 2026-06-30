@@ -8,7 +8,7 @@ namespace Levante.Conteudo.UnitTests.Artigos;
 public sealed class EditarArtigoCommandHandlerTests
 {
     private static EditarArtigoCommandHandler Criar(ArtigoRepositorioEmMemoria repo) =>
-        new(repo, new EditarArtigoCommandValidator());
+        new(repo, new EditarArtigoCommandValidator(new CategoriaRepositorioEmMemoria()));
 
     [Fact]
     public async Task Handle_editaArtigoExistente()

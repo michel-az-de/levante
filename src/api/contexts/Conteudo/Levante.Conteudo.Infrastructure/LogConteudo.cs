@@ -14,6 +14,12 @@ internal static partial class LogConteudo
     [LoggerMessage(Level = LogLevel.Information, Message = "Seed de artigos ja presente; duplicatas ignoradas.")]
     public static partial void SeedJaPresente(ILogger logger, Exception excecao);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Seed de categorias inserido ({Quantidade}).")]
+    public static partial void SeedCategoriasInserido(ILogger logger, int quantidade);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Seed de categorias ja presente; duplicatas ignoradas.")]
+    public static partial void SeedCategoriasJaPresente(ILogger logger, Exception excecao);
+
     [LoggerMessage(
         Level = LogLevel.Critical,
         Message = "A conta de runtime do MongoDB possui privilegio administrativo (papeis: {Papeis}). " +

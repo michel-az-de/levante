@@ -6,9 +6,13 @@ using Levante.Conteudo.Application.Artigos.ArquivarArtigo;
 using Levante.Conteudo.Application.Artigos.CriarArtigo;
 using Levante.Conteudo.Application.Artigos.EditarArtigo;
 using Levante.Conteudo.Application.Artigos.ListarArtigosPublicados;
+using Levante.Conteudo.Application.Artigos.ListarArtigosPublicadosPorCategoria;
 using Levante.Conteudo.Application.Artigos.ListarTodosArtigos;
 using Levante.Conteudo.Application.Artigos.ObterArtigoPorSlug;
 using Levante.Conteudo.Application.Artigos.PublicarArtigo;
+using Levante.Conteudo.Application.Categorias.CriarCategoria;
+using Levante.Conteudo.Application.Categorias.EditarCategoria;
+using Levante.Conteudo.Application.Categorias.ListarCategorias;
 using Levante.Conteudo.Infrastructure;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
@@ -41,6 +45,10 @@ builder.Services.AddScoped<CriarArtigoCommandHandler>();
 builder.Services.AddScoped<EditarArtigoCommandHandler>();
 builder.Services.AddScoped<PublicarArtigoCommandHandler>();
 builder.Services.AddScoped<ArquivarArtigoCommandHandler>();
+builder.Services.AddScoped<ListarArtigosPublicadosPorCategoriaQueryHandler>();
+builder.Services.AddScoped<ListarCategoriasQueryHandler>();
+builder.Services.AddScoped<CriarCategoriaCommandHandler>();
+builder.Services.AddScoped<EditarCategoriaCommandHandler>();
 builder.Services.AddScoped<AutenticarCommandHandler>();
 
 // Validators FluentValidation do contexto Conteudo (IValidator<T> por comando).
@@ -112,6 +120,7 @@ app.MapOpenApi().AllowAnonymous();
 app.MapHealthEndpoints();
 app.MapArtigoEndpoints();
 app.MapArtigoAdminEndpoints();
+app.MapCategoriaEndpoints();
 app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).

@@ -70,6 +70,12 @@ export default function AdminDashboardPage() {
         >
           Gerenciar artigos
         </Link>
+        <Link
+          href="/admin/categorias"
+          className="rounded-md border border-neutral-300 px-4 py-3 transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+        >
+          Gerenciar categorias
+        </Link>
       </nav>
     </main>
   );
