@@ -73,9 +73,9 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 
 ## Status
 
-Em construção. Fatia 2c-i (meta SEO editável por artigo): o admin define, por artigo, **meta título** (≤60), **meta descrição** (≤155) e **imagem Open Graph** (opcionais); o público usa esses overrides no `<title>`, na meta description e no OG/Twitter, com fallback para o título/resumo/OG dinâmico. (Taxonomia — Categoria/Tags — vem na 2c-ii.)
+Em construção. Fatia 2c-ii (taxonomia): **Categoria** como agregado próprio (CRUD no `/admin/categorias`, uma por artigo, opcional) e **Tags** embutidas no artigo (criação implícita). O público navega por `/categoria/[slug]` (SSR, no sitemap); o artigo exibe categoria e tags e enriquece o JSON-LD (`articleSection`/`keywords`). Slug de categoria é imutável. (Página de tag — `/tag/[slug]` — fica para depois.)
 
-Entregue antes: Fatia 2b (CRUD de artigos pelo `/admin`, markdown, publicar/arquivar), Fatia 2a (autenticação do admin, JWT bearer) e Fatia 1 (conteúdo público + SEO base — slug, sitemap, RSS, JSON-LD, Open Graph, canonical e 404).
+Entregue antes: Fatia 2c-i (meta SEO editável por artigo), Fatia 2b (CRUD de artigos pelo `/admin`, markdown, publicar/arquivar), Fatia 2a (autenticação do admin, JWT bearer) e Fatia 1 (conteúdo público + SEO base).
 
 ## Licença
 
