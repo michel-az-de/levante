@@ -5,4 +5,8 @@
     <ProjectReference Include="..\..\..\shared\Levante.SharedKernel\Levante.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+
 </Project>
