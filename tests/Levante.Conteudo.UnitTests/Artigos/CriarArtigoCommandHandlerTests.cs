@@ -27,6 +27,39 @@ public sealed class CriarArtigoCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_persisteMetaSeoNaResposta()
+    {
+        var repo = new ArtigoRepositorioEmMemoria();
+        var handler = Criar(repo);
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand(
+                "Titulo", "meu-artigo", "Resumo.", "Conteudo.",
+                MetaTitulo: "Titulo SEO", MetaDescricao: "Descricao SEO", ImagemOgUrl: "/og.png"),
+            CancellationToken.None);
+
+        resultado.Sucesso.ShouldBeTrue();
+        resultado.Valor!.MetaTitulo.ShouldBe("Titulo SEO");
+        resultado.Valor.MetaDescricao.ShouldBe("Descricao SEO");
+        resultado.Valor.ImagemOgUrl.ShouldBe("/og.png");
+    }
+
+    [Fact]
+    public async Task Handle_semMeta_respostaComMetaNula()
+    {
+        var repo = new ArtigoRepositorioEmMemoria();
+        var handler = Criar(repo);
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo."), CancellationToken.None);
+
+        resultado.Sucesso.ShouldBeTrue();
+        resultado.Valor!.MetaTitulo.ShouldBeNull();
+        resultado.Valor.MetaDescricao.ShouldBeNull();
+        resultado.Valor.ImagemOgUrl.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Handle_falhaQuandoSlugDuplicado()
     {
         var existente = Artigo.Criar("Outro", new Slug("meu-artigo"), "Resumo.", "Conteudo.");

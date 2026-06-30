@@ -47,6 +47,58 @@ public sealed class ArtigoCommandValidatorsTests
     }
 
     [Fact]
+    public void Criar_rejeitaMetaTituloAlemDe60()
+    {
+        var validador = new CriarArtigoCommandValidator();
+        var metaTituloLongo = new string('a', 61);
+
+        var resultado = validador.Validate(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", MetaTitulo: metaTituloLongo));
+
+        resultado.IsValid.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Criar_rejeitaMetaDescricaoAlemDe155()
+    {
+        var validador = new CriarArtigoCommandValidator();
+        var metaDescricaoLonga = new string('a', 156);
+
+        var resultado = validador.Validate(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", MetaDescricao: metaDescricaoLonga));
+
+        resultado.IsValid.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("ftp://exemplo.com/i.png")]
+    [InlineData("og.png")] // relativa sem barra inicial
+    public void Criar_rejeitaImagemOgInvalida(string imagem)
+    {
+        var validador = new CriarArtigoCommandValidator();
+
+        var resultado = validador.Validate(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", ImagemOgUrl: imagem));
+
+        resultado.IsValid.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("/og/imagem.png")]
+    [InlineData("https://cdn.exemplo.com/og.png")]
+    public void Criar_aceitaImagemOgValida(string? imagem)
+    {
+        var validador = new CriarArtigoCommandValidator();
+
+        var resultado = validador.Validate(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", "Conteudo.", ImagemOgUrl: imagem));
+
+        resultado.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
     public void Editar_rejeitaIdVazio()
     {
         var validador = new EditarArtigoCommandValidator();

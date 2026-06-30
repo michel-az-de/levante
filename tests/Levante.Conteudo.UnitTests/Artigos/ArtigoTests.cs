@@ -134,4 +134,36 @@ public sealed class ArtigoTests
 
         artigo.Status.ShouldBe(StatusArtigo.Arquivado);
     }
+
+    [Fact]
+    public void Criar_semMeta_usaMetaVazia()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
+
+        artigo.Meta.ShouldBe(MetaSeo.Vazio);
+        artigo.Meta.Titulo.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Criar_comMeta_preservaMeta()
+    {
+        var meta = MetaSeo.Criar("SEO", "Desc SEO", "/og.png");
+
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.", meta);
+
+        artigo.Meta.Titulo.ShouldBe("SEO");
+        artigo.Meta.Descricao.ShouldBe("Desc SEO");
+        artigo.Meta.ImagemOgUrl.ShouldBe("/og.png");
+    }
+
+    [Fact]
+    public void Editar_atualizaMeta()
+    {
+        var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.", MetaSeo.Criar("Antigo", null, null));
+
+        artigo.Editar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.", MetaSeo.Criar("Novo", "Nova desc", null));
+
+        artigo.Meta.Titulo.ShouldBe("Novo");
+        artigo.Meta.Descricao.ShouldBe("Nova desc");
+    }
 }

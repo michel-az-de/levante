@@ -79,6 +79,52 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     }
 
     [Fact]
+    public async Task Criar_comMetaSeo_persisteERetornaNoPublico()
+    {
+        var client = await ClienteAutenticadoAsync();
+        const string slug = "fatia-2c-meta-seo";
+
+        var criacao = await client.PostAsJsonAsync(
+            "/artigos",
+            new CriarArtigoRequest(
+                "Artigo com SEO", slug, "Resumo.", "Conteudo.",
+                MetaTitulo: "Titulo SEO custom", MetaDescricao: "Descricao SEO custom", ImagemOgUrl: "/og/custom.png"),
+            CancellationToken.None);
+        criacao.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var criado = await criacao.Content.ReadFromJsonAsync<ArtigoResponse>(CancellationToken.None);
+        criado.ShouldNotBeNull();
+
+        var publicacao = await client.PostAsync($"/artigos/{criado.Id}/publicar", content: null, CancellationToken.None);
+        publicacao.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Round-trip pelo Mongo: o publico devolve a meta SEO gravada.
+        var publico = await client.GetFromJsonAsync<ArtigoResponse>($"/artigos/{slug}", CancellationToken.None);
+        publico.ShouldNotBeNull();
+        publico.MetaTitulo.ShouldBe("Titulo SEO custom");
+        publico.MetaDescricao.ShouldBe("Descricao SEO custom");
+        publico.ImagemOgUrl.ShouldBe("/og/custom.png");
+    }
+
+    [Fact]
+    public async Task Criar_semMetaSeo_retornaCamposNulos()
+    {
+        var client = await ClienteAutenticadoAsync();
+        const string slug = "fatia-2c-sem-meta";
+
+        var criacao = await client.PostAsJsonAsync(
+            "/artigos",
+            new CriarArtigoRequest("Sem SEO", slug, "Resumo.", "Conteudo."),
+            CancellationToken.None);
+        criacao.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var criado = await criacao.Content.ReadFromJsonAsync<ArtigoResponse>(CancellationToken.None);
+
+        criado.ShouldNotBeNull();
+        criado.MetaTitulo.ShouldBeNull();
+        criado.MetaDescricao.ShouldBeNull();
+        criado.ImagemOgUrl.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Criar_comSlugDuplicado_retorna409()
     {
         var client = await ClienteAutenticadoAsync();
