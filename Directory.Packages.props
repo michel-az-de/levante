@@ -11,6 +11,10 @@
 
   <ItemGroup Label="Runtime">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <!-- Pin transitivo (CentralPackageTransitivePinningEnabled): o 2.0.0 trazido
+         pelo AspNetCore.OpenApi tem CVE alta (GHSA-v5pm-xwqc-g5wc); 2.7.5 corrige.
+         Remover quando Microsoft.AspNetCore.OpenApi referenciar >= 2.7.5. -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageVersion Include="MongoDB.Driver" Version="3.9.0" />
   </ItemGroup>
 
