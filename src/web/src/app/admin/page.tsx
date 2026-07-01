@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiAdmin, limparToken, obterToken } from "@/lib/auth";
+import { apiAdmin, sairDoAdmin } from "@/lib/auth";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -11,32 +11,33 @@ export default function AdminDashboardPage() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    if (!obterToken()) {
-      router.replace("/admin/login");
-      return;
-    }
-
     let ativo = true;
-    apiAdmin.GET("/auth/eu").then(({ data, error }) => {
-      if (!ativo) {
-        return;
-      }
-      if (error || !data) {
-        limparToken();
-        router.replace("/admin/login");
-        return;
-      }
-      setEmail(data.email);
-      setCarregando(false);
-    });
+    apiAdmin
+      .GET("/auth/eu")
+      .then(({ data, error }) => {
+        if (!ativo) {
+          return;
+        }
+        if (error || !data) {
+          router.replace("/admin/login");
+          return;
+        }
+        setEmail(data.email);
+        setCarregando(false);
+      })
+      .catch(() => {
+        if (ativo) {
+          router.replace("/admin/login");
+        }
+      });
 
     return () => {
       ativo = false;
     };
   }, [router]);
 
-  function sair() {
-    limparToken();
+  async function sair() {
+    await sairDoAdmin();
     router.replace("/admin/login");
   }
 

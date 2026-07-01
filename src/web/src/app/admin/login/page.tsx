@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { apiAdmin, definirToken } from "@/lib/auth";
+import { entrarComoAdmin } from "@/lib/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -16,18 +16,18 @@ export default function AdminLoginPage() {
     setErro(null);
     setEnviando(true);
 
-    const { data, error } = await apiAdmin.POST("/auth/login", {
-      body: { email, senha },
-    });
-
-    setEnviando(false);
-    if (error || !data) {
-      setErro("Credenciais invalidas.");
-      return;
+    try {
+      const autenticado = await entrarComoAdmin(email, senha);
+      if (!autenticado) {
+        setErro("Credenciais invalidas.");
+        return;
+      }
+      router.push("/admin");
+    } catch {
+      setErro("Falha de conexao. Tente novamente.");
+    } finally {
+      setEnviando(false);
     }
-
-    definirToken(data.accessToken);
-    router.push("/admin");
   }
 
   return (
