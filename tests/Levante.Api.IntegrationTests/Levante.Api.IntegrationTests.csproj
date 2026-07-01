@@ -3,9 +3,6 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <!-- TODO: migrar para o construtor MongoDbBuilder(image) (Testcontainers 4.12
-         deprecou o sem parametro; o default ainda funciona). -->
-    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
