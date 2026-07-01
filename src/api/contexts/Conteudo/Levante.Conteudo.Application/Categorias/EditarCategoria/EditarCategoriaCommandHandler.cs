@@ -24,7 +24,7 @@ public sealed class EditarCategoriaCommandHandler(
         if (categoria is null)
         {
             return Result.Falha<CategoriaResponse>(
-                new Error("categoria_nao_encontrada", $"Categoria '{comando.Id}' nao encontrada."));
+                Error.NaoEncontrado("categoria_nao_encontrada", $"Categoria '{comando.Id}' nao encontrada."));
         }
 
         categoria.Editar(comando.Nome, comando.Descricao);

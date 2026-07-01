@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Testes de mapeamento da borda (ResultadoHttp) sem tornar o helper publico. -->
+    <InternalsVisibleTo Include="Levante.Api.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\contexts\Conteudo\Levante.Conteudo.Infrastructure\Levante.Conteudo.Infrastructure.csproj" />
     <ProjectReference Include="..\..\contexts\Identity\Levante.Identity.Infrastructure\Levante.Identity.Infrastructure.csproj" />
   </ItemGroup>

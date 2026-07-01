@@ -18,7 +18,7 @@ public sealed class ObterArtigoPorSlugQueryHandler(IArtigoRepository repositorio
         if (artigo is null || artigo.Status != StatusArtigo.Publicado)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("artigo_nao_encontrado", $"Artigo '{query.Slug}' nao encontrado."));
+                Error.NaoEncontrado("artigo_nao_encontrado", $"Artigo '{query.Slug}' nao encontrado."));
         }
 
         return Result.Ok(ArtigoResponse.DeArtigo(artigo));
