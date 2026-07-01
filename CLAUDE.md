@@ -100,6 +100,7 @@ Estas regras vêm de incidentes reais. Não relaxe nenhuma.
 1. SSR/SSG para todo conteúdo público (SEO). Sem SPA puro.
 2. Tipos da API sempre gerados do OpenAPI. Nunca duplicar contrato à mão.
 3. Tailwind + shadcn/ui; componentes de domínio no padrão de nomes acima.
+4. Toda fatia de UI nasce com teste (Vitest + Testing Library, arquivos `*.test.ts(x)` ao lado do código). `npm test` roda no gate `polish`.
 
 ## Estrutura de pastas
 
@@ -141,6 +142,7 @@ levante/
 | Front dev | `npm run dev` (em `src/web`) |
 | Front build | `npm run build` (em `src/web`) |
 | Front lint | `npm run lint` (em `src/web`) |
+| Front testes | `npm test` (em `src/web`; `npm run test:watch` para watch) |
 | Gerar tipos do OpenAPI | `npm run gen:api` (em `src/web`, a partir de `openapi/levante.json`) |
 
 Versões de pacote NuGet são centralizadas em `Directory.Packages.props` (Central Package Management). Não declare versão em `.csproj` nem invente versão fora do arquivo central.
