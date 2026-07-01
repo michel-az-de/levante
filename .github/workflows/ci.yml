@@ -130,11 +130,17 @@ jobs:
           -p:Threshold=80
           -p:Include="[Levante.Identity.Domain]*%2c[Levante.Identity.Application]*"
 
+      - name: Instala dependencias web
+        working-directory: src/web
+        run: npm ci
+
+      - name: Testes do front (Vitest)
+        working-directory: src/web
+        run: npm test
+
       - name: Build do front (Next.js + typecheck)
         working-directory: src/web
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
   # SAST em paralelo; raise exige verde.
   codeql:
