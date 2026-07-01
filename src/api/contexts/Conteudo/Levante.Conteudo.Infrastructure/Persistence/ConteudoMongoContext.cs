@@ -1,3 +1,4 @@
+using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -6,7 +7,7 @@ namespace Levante.Conteudo.Infrastructure.Persistence;
 /// <summary>Acesso tipado ao banco do contexto Conteudo (singleton).</summary>
 internal sealed class ConteudoMongoContext
 {
-    public ConteudoMongoContext(IMongoClient client, IOptions<ConteudoMongoOptions> options)
+    public ConteudoMongoContext(IMongoClient client, IOptions<MongoOptions> options)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(options);

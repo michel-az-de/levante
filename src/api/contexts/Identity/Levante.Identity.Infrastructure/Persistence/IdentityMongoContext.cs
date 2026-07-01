@@ -1,3 +1,4 @@
+using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -6,7 +7,7 @@ namespace Levante.Identity.Infrastructure.Persistence;
 /// <summary>Acesso tipado a collection de administradores.</summary>
 internal sealed class IdentityMongoContext
 {
-    public IdentityMongoContext(IMongoClient client, IOptions<IdentityMongoOptions> options)
+    public IdentityMongoContext(IMongoClient client, IOptions<MongoOptions> options)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(options);

@@ -1,4 +1,4 @@
-using Levante.Conteudo.Infrastructure.Persistence;
+using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -10,7 +10,7 @@ namespace Levante.Conteudo.Infrastructure.HealthChecks;
 /// Readiness do banco: roda <c>ping</c> no Mongo. Registrado com a tag "ready"
 /// (o endpoint /health/ready filtra por ela).
 /// </summary>
-internal sealed class MongoHealthCheck(IMongoClient client, IOptions<ConteudoMongoOptions> options)
+internal sealed class MongoHealthCheck(IMongoClient client, IOptions<MongoOptions> options)
     : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(
