@@ -73,16 +73,29 @@ internal sealed class ArtigoDocument
         Tags = [.. artigo.Tags.Select(t => t.Valor)],
     };
 
-    public Artigo ParaDominio() => Artigo.Reconstituir(
-        Id,
-        Titulo,
-        new Slug(Slug),
-        Resumo,
-        Conteudo,
-        Status,
-        DataCriacao,
-        DataPublicacao,
-        MetaSeo.Criar(MetaTitulo, MetaDescricao, ImagemOgUrl),
-        CategoriaId,
-        [.. Tags.Select(t => new Tag(t))]);
+    public Artigo ParaDominio()
+    {
+        try
+        {
+            return Artigo.Reconstituir(
+                Id,
+                Titulo,
+                new Slug(Slug),
+                Resumo,
+                Conteudo,
+                Status,
+                DataCriacao,
+                DataPublicacao,
+                MetaSeo.Criar(MetaTitulo, MetaDescricao, ImagemOgUrl),
+                CategoriaId,
+                [.. Tags.Select(t => new Tag(t))]);
+        }
+        catch (ArgumentException ex)
+        {
+            // Documento que viola invariante do dominio (migration manual, corrupcao):
+            // falha ALTO, mas com o id do documento para localizar no Mongo.
+            throw new InvalidOperationException(
+                $"Documento invalido na collection 'artigos' (id {Id}, slug '{Slug}'): {ex.Message}", ex);
+        }
+    }
 }

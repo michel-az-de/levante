@@ -1,5 +1,6 @@
 using Levante.Conteudo.Application.Artigos.PublicarArtigo;
 using Levante.Conteudo.Domain.Artigos;
+using Levante.SharedKernel;
 using Shouldly;
 using Xunit;
 
@@ -31,6 +32,7 @@ public sealed class PublicarArtigoCommandHandlerTests
 
         resultado.Falhou.ShouldBeTrue();
         resultado.Erro.Codigo.ShouldBe("artigo_nao_encontrado");
+        resultado.Erro.Tipo.ShouldBe(TipoErro.NaoEncontrado);
     }
 
     [Fact]

@@ -17,13 +17,13 @@ public sealed class PublicarArtigoCommandHandler(IArtigoRepository repositorio)
         if (artigo is null)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
+                Error.NaoEncontrado("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
         }
 
         if (artigo.Status == StatusArtigo.Arquivado)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("transicao_invalida", "Artigo arquivado nao pode ser publicado."));
+                Error.Conflito("transicao_invalida", "Artigo arquivado nao pode ser publicado."));
         }
 
         artigo.Publicar();

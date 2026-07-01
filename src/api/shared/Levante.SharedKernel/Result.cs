@@ -1,11 +1,34 @@
 namespace Levante.SharedKernel;
 
 /// <summary>
-/// Erro de negocio (codigo + mensagem em PT, voltada ao usuario).
+/// Classe do erro de negocio. E o que a borda HTTP usa para escolher o status
+/// (400/404/409/500) sem conhecer os codigos de cada contexto.
 /// </summary>
-public sealed record Error(string Codigo, string Mensagem)
+public enum TipoErro
+{
+    /// <summary>Falha nao classificada (vira 500 na borda; classifique na Application).</summary>
+    Falha = 0,
+    Validacao,
+    NaoEncontrado,
+    Conflito,
+}
+
+/// <summary>
+/// Erro de negocio (codigo + mensagem em PT, voltada ao usuario). Prefira as
+/// factories tipadas: o Tipo dirige o mapeamento HTTP na borda.
+/// </summary>
+public sealed record Error(string Codigo, string Mensagem, TipoErro Tipo = TipoErro.Falha)
 {
     public static readonly Error Nenhum = new(string.Empty, string.Empty);
+
+    public static Error Validacao(string codigo, string mensagem) =>
+        new(codigo, mensagem, TipoErro.Validacao);
+
+    public static Error NaoEncontrado(string codigo, string mensagem) =>
+        new(codigo, mensagem, TipoErro.NaoEncontrado);
+
+    public static Error Conflito(string codigo, string mensagem) =>
+        new(codigo, mensagem, TipoErro.Conflito);
 }
 
 /// <summary>

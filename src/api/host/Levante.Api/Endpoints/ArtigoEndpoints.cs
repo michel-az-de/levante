@@ -35,7 +35,7 @@ public static class ArtigoEndpoints
 
         return resultado.Sucesso
             ? Results.Ok(resultado.Valor)
-            : Results.Problem(resultado.Erro.Mensagem);
+            : ResultadoHttp.Falha(resultado.Erro);
     }
 
     private static async Task<IResult> ObterPorSlug(

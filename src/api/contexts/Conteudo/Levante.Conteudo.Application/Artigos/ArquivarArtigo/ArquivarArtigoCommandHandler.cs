@@ -17,7 +17,7 @@ public sealed class ArquivarArtigoCommandHandler(IArtigoRepository repositorio)
         if (artigo is null)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
+                Error.NaoEncontrado("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
         }
 
         artigo.Arquivar();
