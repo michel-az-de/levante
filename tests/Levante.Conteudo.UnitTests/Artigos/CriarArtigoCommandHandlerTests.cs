@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Levante.Conteudo.UnitTests.Artigos;
 
+[Trait("Category", "Unit")]
 public sealed class CriarArtigoCommandHandlerTests
 {
     private static CriarArtigoCommandHandler Criar(ArtigoRepositorioEmMemoria repo) =>
