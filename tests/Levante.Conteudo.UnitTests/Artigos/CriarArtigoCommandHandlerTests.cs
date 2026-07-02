@@ -1,6 +1,7 @@
 using Levante.Conteudo.Application.Artigos.CriarArtigo;
 using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Domain.Categorias;
+using Levante.SharedKernel;
 using Shouldly;
 using Xunit;
 
@@ -92,6 +93,7 @@ public sealed class CriarArtigoCommandHandlerTests
 
         resultado.Falhou.ShouldBeTrue();
         resultado.Erro.Codigo.ShouldBe("validacao");
+        resultado.Erro.Tipo.ShouldBe(TipoErro.Validacao);
         repo.Adicionados.ShouldBe(0);
     }
 
@@ -120,6 +122,7 @@ public sealed class CriarArtigoCommandHandlerTests
 
         resultado.Falhou.ShouldBeTrue();
         resultado.Erro.Codigo.ShouldBe("slug_em_uso");
+        resultado.Erro.Tipo.ShouldBe(TipoErro.Conflito);
         repo.Adicionados.ShouldBe(0);
     }
 

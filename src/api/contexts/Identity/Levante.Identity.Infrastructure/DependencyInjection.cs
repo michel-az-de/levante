@@ -2,11 +2,9 @@ using Levante.Identity.Application.Ports;
 using Levante.Identity.Domain.Administradores;
 using Levante.Identity.Infrastructure.Persistence;
 using Levante.Identity.Infrastructure.Seguranca;
+using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 
 namespace Levante.Identity.Infrastructure;
 
@@ -23,9 +21,8 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var mongo = services.AddOptions<IdentityMongoOptions>()
-            .Bind(configuration.GetSection(IdentityMongoOptions.SecaoConfig))
-            .ValidateDataAnnotations();
+        // Options + IMongoClient compartilhados (registro idempotente entre contextos).
+        services.AddLevanteMongo(configuration, validarNoBoot: registrarServicosDeBoot);
 
         var jwt = services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SecaoConfig))
@@ -36,12 +33,9 @@ public static class DependencyInjection
 
         if (registrarServicosDeBoot)
         {
-            mongo.ValidateOnStart();
             jwt.ValidateOnStart();
         }
 
-        services.TryAddSingleton<IMongoClient>(sp =>
-            new MongoClient(sp.GetRequiredService<IOptions<IdentityMongoOptions>>().Value.ConnectionString));
         services.AddSingleton<IdentityMongoContext>();
         services.AddScoped<IAdministradorRepository, AdministradorRepository>();
         services.AddSingleton<IHashDeSenha, HashDeSenhaPasswordHasher>();

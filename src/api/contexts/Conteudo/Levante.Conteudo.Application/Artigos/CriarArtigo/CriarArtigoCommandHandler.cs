@@ -48,5 +48,5 @@ public sealed class CriarArtigoCommandHandler(
 
     private static Result<ArtigoResponse> SlugEmUso(string slug) =>
         Result.Falha<ArtigoResponse>(
-            new Error("slug_em_uso", $"Ja existe um artigo com o slug '{slug}'."));
+            Error.Conflito("slug_em_uso", $"Ja existe um artigo com o slug '{slug}'."));
 }

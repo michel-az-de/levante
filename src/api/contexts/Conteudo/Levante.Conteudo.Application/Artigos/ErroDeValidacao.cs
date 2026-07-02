@@ -12,5 +12,5 @@ internal static class ErroDeValidacao
     public const string Codigo = "validacao";
 
     public static Error De(ValidationResult resultado) =>
-        new(Codigo, string.Join(" ", resultado.Errors.Select(e => e.ErrorMessage)));
+        Error.Validacao(Codigo, string.Join(" ", resultado.Errors.Select(e => e.ErrorMessage)));
 }

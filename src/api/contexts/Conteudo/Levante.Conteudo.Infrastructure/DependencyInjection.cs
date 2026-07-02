@@ -3,10 +3,9 @@ using Levante.Conteudo.Domain.Categorias;
 using Levante.Conteudo.Infrastructure.HealthChecks;
 using Levante.Conteudo.Infrastructure.Persistence;
 using Levante.Conteudo.Infrastructure.Seguranca;
+using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 
 namespace Levante.Conteudo.Infrastructure;
 
@@ -24,20 +23,8 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var opcoes = services.AddOptions<ConteudoMongoOptions>()
-            .Bind(configuration.GetSection(ConteudoMongoOptions.SecaoConfig))
-            .ValidateDataAnnotations();
-
-        if (registrarServicosDeBoot)
-        {
-            opcoes.ValidateOnStart();
-        }
-
-        services.AddSingleton<IMongoClient>(sp =>
-        {
-            var valor = sp.GetRequiredService<IOptions<ConteudoMongoOptions>>().Value;
-            return new MongoClient(valor.ConnectionString);
-        });
+        // Options + IMongoClient compartilhados (registro idempotente entre contextos).
+        services.AddLevanteMongo(configuration, validarNoBoot: registrarServicosDeBoot);
 
         services.AddSingleton<ConteudoMongoContext>();
         services.AddScoped<IArtigoRepository, ArtigoRepository>();

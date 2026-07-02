@@ -183,10 +183,15 @@ Stack de teste: xUnit + Testcontainers (Mongo real, não mock) + Shouldly + Bogu
 
 Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 
-- Mediator: sem lib por enquanto (handler chamado direto).
+- Mediator (GAP-F): sem lib por enquanto (handler chamado direto); decisão no spike que antecede a fatia do Outbox.
 - Nível de assinatura de documentos (1 a 4): fora da Fatia 0.
 - Profundidade do modelo científico (template vs DOI/ORCID): fora da Fatia 0.
 - WhatsApp Cloud API: por ora só click-to-chat (`wa.me`).
-- Idioma do site (PT vs PT+EN), hospedagem (Container Apps vs App Service) e contrato de eventos com o Hiram: pendentes.
+- Contrato de eventos com o Hiram (GAP-I): o Felipe define no spike que antecede a fatia do Outbox, junto com GAP-F.
+- Domínio do site (GAP-A): pendente; bloqueia a fatia de lançamento. Não assumir URL base definitiva (sempre via `SITE_URL`/env).
+
+Decididos (não são mais GAPs): idioma PT-only (GAP-H) e hospedagem Azure Container Apps (GAP-J).
+
+O roadmap de fatias vigente está em `docs/roadmap.md`.
 
 Nota: alguns pontos da convenção (verbo de Command em PT, métodos de Repository em EN, contexto em PT) seguem o default acordado. Se o Felipe pedir para inverter algum, este arquivo é a fonte a atualizar.

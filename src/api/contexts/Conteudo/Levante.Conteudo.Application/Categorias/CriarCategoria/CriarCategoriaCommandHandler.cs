@@ -46,5 +46,5 @@ public sealed class CriarCategoriaCommandHandler(
 
     private static Result<CategoriaResponse> SlugEmUso(string slug) =>
         Result.Falha<CategoriaResponse>(
-            new Error("slug_em_uso", $"Ja existe uma categoria com o slug '{slug}'."));
+            Error.Conflito("slug_em_uso", $"Ja existe uma categoria com o slug '{slug}'."));
 }
