@@ -25,6 +25,9 @@ public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifeti
     // Chave JWT apenas de teste (baixa entropia, descritiva): nao e segredo real.
     private const string SegredoJwtDeTeste = "chave-de-teste-jwt-nao-secreta-com-mais-de-32-caracteres";
 
+    // Segredo do HMAC de origem (dedup de reacao). Apenas de teste, nao e segredo real.
+    private const string SegredoOrigemDeTeste = "segredo-de-teste-origem-hash-com-mais-de-32-caracteres";
+
     private readonly MongoDbContainer _mongo = new MongoDbBuilder(ImagensDeTeste.Mongo)
         .WithUsername("root")
         .WithPassword("root-pwd")
@@ -49,6 +52,7 @@ public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifeti
                 ["Jwt:SecretKey"] = SegredoJwtDeTeste,
                 ["Admin:Email"] = EmailAdmin,
                 ["Admin:SenhaInicial"] = SenhaAdmin,
+                ["Engajamento:OrigemHashSecret"] = SegredoOrigemDeTeste,
             }));
     }
 }

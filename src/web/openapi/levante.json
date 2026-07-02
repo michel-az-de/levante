@@ -435,6 +435,135 @@
         }
       }
     },
+    "/artigos/{id}/reacoes": {
+      "get": {
+        "tags": [
+          "Reacoes"
+        ],
+        "operationId": "ObterReacoes",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReacoesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reacoes"
+        ],
+        "operationId": "RegistrarReacao",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarReacaoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReacoesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artigos/{id}/reacoes/{tipo}": {
+      "delete": {
+        "tags": [
+          "Reacoes"
+        ],
+        "operationId": "RemoverReacao",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReacoesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
@@ -770,6 +899,48 @@
           }
         }
       },
+      "ReacoesResponse": {
+        "required": [
+          "curtir",
+          "amei",
+          "relevante",
+          "minhas"
+        ],
+        "type": "object",
+        "properties": {
+          "curtir": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "amei": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "relevante": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "minhas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Contagem de reacoes de um artigo por tipo + os tipos que o visitante atual\nja marcou (nomes do enum, ex. \"Curtir\"; para o front destacar os botoes ativos)."
+      },
+      "RegistrarReacaoRequest": {
+        "required": [
+          "tipo"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo do POST de reacao (nome do tipo, ex. \"Curtir\"; o id do artigo vem da rota)."
+      },
       "TokenDeAcessoResponse": {
         "required": [
           "accessToken",
@@ -798,6 +969,9 @@
     },
     {
       "name": "Categorias"
+    },
+    {
+      "name": "Reacoes"
     },
     {
       "name": "Auth"

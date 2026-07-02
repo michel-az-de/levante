@@ -148,6 +148,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artigos/{id}/reacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ObterReacoes"];
+        put?: never;
+        post: operations["RegistrarReacao"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artigos/{id}/reacoes/{tipo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["RemoverReacao"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -266,6 +298,23 @@ export interface components {
             status?: unknown;
             detail?: string | null;
             instance?: string | null;
+        };
+        /**
+         * @description Contagem de reacoes de um artigo por tipo + os tipos que o visitante atual
+         *     ja marcou (nomes do enum, ex. "Curtir"; para o front destacar os botoes ativos).
+         */
+        ReacoesResponse: {
+            /** Format: int32 */
+            curtir: unknown;
+            /** Format: int32 */
+            amei: unknown;
+            /** Format: int32 */
+            relevante: unknown;
+            minhas: string[];
+        };
+        /** @description Corpo do POST de reacao (nome do tipo, ex. "Curtir"; o id do artigo vem da rota). */
+        RegistrarReacaoRequest: {
+            tipo: string;
         };
         /** @description Token de acesso emitido no login (JWT bearer). Contrato consumido pelo admin. */
         TokenDeAcessoResponse: {
@@ -641,6 +690,95 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    ObterReacoes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReacoesResponse"];
+                };
+            };
+        };
+    };
+    RegistrarReacao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrarReacaoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReacoesResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RemoverReacao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                tipo: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReacoesResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
             };
         };
     };

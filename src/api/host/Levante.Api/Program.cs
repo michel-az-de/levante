@@ -14,6 +14,10 @@ using Levante.Conteudo.Application.Categorias.CriarCategoria;
 using Levante.Conteudo.Application.Categorias.EditarCategoria;
 using Levante.Conteudo.Application.Categorias.ListarCategorias;
 using Levante.Conteudo.Infrastructure;
+using Levante.Engajamento.Application.Reacoes.ObterReacoesDoArtigo;
+using Levante.Engajamento.Application.Reacoes.RegistrarReacao;
+using Levante.Engajamento.Application.Reacoes.RemoverReacao;
+using Levante.Engajamento.Infrastructure;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
 using Levante.Identity.Infrastructure.Seguranca;
@@ -30,6 +34,7 @@ var modoEmitOpenApi = args.Contains(Levante.Api.OpenApiExport.Argumento);
 // inicializacao (indices + seed) e self-check de privilegio minimo no boot.
 // Em modo emit do contrato, nao registra os servicos de boot (nao toca o Mongo).
 builder.Services.AddConteudoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
+builder.Services.AddEngajamentoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddIdentityInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 
 if (modoEmitOpenApi)
@@ -51,8 +56,14 @@ builder.Services.AddScoped<CriarCategoriaCommandHandler>();
 builder.Services.AddScoped<EditarCategoriaCommandHandler>();
 builder.Services.AddScoped<AutenticarCommandHandler>();
 
-// Validators FluentValidation do contexto Conteudo (IValidator<T> por comando).
+// Handlers do contexto Engajamento (reacoes).
+builder.Services.AddScoped<ObterReacoesDoArtigoQueryHandler>();
+builder.Services.AddScoped<RegistrarReacaoCommandHandler>();
+builder.Services.AddScoped<RemoverReacaoCommandHandler>();
+
+// Validators FluentValidation (IValidator<T> por comando), um por contexto.
 builder.Services.AddValidatorsFromAssemblyContaining<CriarArtigoCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegistrarReacaoCommandValidator>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
 builder.Services.AddOpenApi();
@@ -121,6 +132,7 @@ app.MapHealthEndpoints();
 app.MapArtigoEndpoints();
 app.MapArtigoAdminEndpoints();
 app.MapCategoriaEndpoints();
+app.MapReacaoEndpoints();
 app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).

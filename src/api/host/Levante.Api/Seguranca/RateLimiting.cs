@@ -11,6 +11,7 @@ public static class RateLimiting
 {
     public const string PolicyReady = "ready";
     public const string PolicyAuth = "auth";
+    public const string PolicyPublico = "publico";
 
     public static IServiceCollection AddLevanteRateLimiting(this IServiceCollection services)
     {
@@ -44,6 +45,18 @@ public static class RateLimiting
                 limiter.Window = TimeSpan.FromMinutes(1);
                 limiter.QueueLimit = 0;
             });
+
+            // Escrita publica (reacoes/comentarios): por IP do cliente (X-Forwarded-For
+            // posto pelo BFF), para frear spam sem afetar outros visitantes.
+            options.AddPolicy(PolicyPublico, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    OrigemDoCliente.Ip(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                    }));
         });
     }
 }
