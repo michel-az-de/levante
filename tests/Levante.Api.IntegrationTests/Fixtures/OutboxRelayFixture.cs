@@ -9,10 +9,11 @@ using Xunit;
 namespace Levante.Api.IntegrationTests.Fixtures;
 
 /// <summary>
-/// Sobe a API com o relay do Outbox LIGADO, sobre um Mongo em REPLICA SET (exigido
-/// por transacoes + Change Streams) e um RabbitMQ efemero. Exercita o caminho
-/// transacional + relay ponta a ponta. Isolada das demais fixtures (single-node)
-/// para conter a instabilidade do combo replica set + Testcontainers.
+/// Sobe a API com o relay do Outbox LIGADO, sobre um Mongo efemero e um RabbitMQ
+/// efemero, e exercita a entrega ponta a ponta (evento -> outbox -> relay -> fila).
+/// Mongo single-node: o gravador cai para escrita sequencial e o relay reconcilia
+/// por polling — sem depender de replica set/Change Streams (fragilidade em
+/// Testcontainers). A garantia transacional roda em producao (Atlas replica set).
 /// </summary>
 public sealed class OutboxRelayFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -21,10 +22,7 @@ public sealed class OutboxRelayFixture : WebApplicationFactory<Program>, IAsyncL
     private const string SegredoJwtDeTeste = "chave-de-teste-jwt-nao-secreta-com-mais-de-32-caracteres";
     private const string SegredoOrigemDeTeste = "segredo-de-teste-origem-hash-com-mais-de-32-caracteres";
 
-    // Replica set single-node: habilita transacoes e Change Streams.
-    private readonly MongoDbContainer _mongo = new MongoDbBuilder(ImagensDeTeste.Mongo)
-        .WithReplicaSet("rs0")
-        .Build();
+    private readonly MongoDbContainer _mongo = new MongoDbBuilder(ImagensDeTeste.Mongo).Build();
 
     private readonly RabbitMqContainer _rabbit = new RabbitMqBuilder(ImagensDeTeste.RabbitMq).Build();
 

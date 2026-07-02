@@ -12,7 +12,7 @@ O Levante produz fatos de domínio (`ArtigoPublicado`, `ComentarioCriado`, `Come
 
 2. **Escrita atômica com degradação**: o agregado e seus eventos são gravados na **mesma transação** (`GravadorDeAgregadoMongo`). Transação exige replica set; onde não há (dev/test single-node), degrada para escrita sequencial best-effort (logada). Produção (Atlas) sempre é replica set.
 
-3. **Relay como fila com delete-após-publicar**: o `outbox` é a fila. O relay (`RelayDeOutbox`, BackgroundService) observa inserts por Change Stream, publica no RabbitMQ e **apaga** o doc. Um *sweep* no start republica o que sobrou de uma queda entre publicar e apagar. Entrega **at-least-once** — o consumidor deduplica por `eventId`.
+3. **Relay como fila com reconciliação por polling**: o `outbox` é a fila. O relay (`RelayDeOutbox`, BackgroundService) varre a collection a cada poucos segundos, publica cada evento no RabbitMQ e **apaga** o doc. Entrega **at-least-once** — o consumidor deduplica por `eventId`. Optou-se por polling em vez de Change Streams: é robusto em qualquer topologia, é a rede de segurança correta contra perdas em failover (Change Streams podem pular eventos em failover/resharding), e a latência de segundos é irrelevante para notificação. Change Streams para latência menor ficam como otimização futura.
 
 4. **Transporte**: RabbitMQ, exchange **topic durável** `levante.eventos`, **routing key = nome do evento** (o Hiram faz bind seletivo). Mensagens persistentes; `messageId = eventId`.
 

@@ -90,7 +90,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | Result pattern | Rec. | exception só para falha de infra |
 | FluentValidation | Rec. | no pipeline |
 | Mapster | Rec. | evitar AutoMapper (licença) |
-| Mediator | Trav. | GAP-F resolvido → sem lib (handler direto); Outbox hand-rolled + Change Streams (ADR 0001) |
+| Mediator | Trav. | GAP-F resolvido → sem lib (handler direto); Outbox hand-rolled, relay por reconciliação (ADR 0001) |
 
 ### Bounded contexts (domínio)
 | Item | Status | Nota |
@@ -117,7 +117,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | Item | Status | Nota |
 |------|--------|------|
 | Outbox transacional | Trav. | |
-| Change Streams (relay) | Rec. | no lugar de polling |
+| Relay por reconciliação (polling) | Trav. | robusto e à prova de failover; Change Streams = otimização futura de latência (ADR 0001) |
 | RabbitMQ → Hiram | Trav. | |
 | Integration events versionados | Rec. | |
 | Contrato com Hiram | Rec. | GAP-I encaminhado: envelope provisório no exchange `levante.eventos` (ADR 0001) |
@@ -204,7 +204,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | B | Nível de assinatura de documentos | MVP 1-2; jurídico só se necessário |
 | C | Profundidade do modelo científico | template + DOI via Zenodo |
 | E | MongoDB Atlas vs self-host | Atlas (replica set) |
-| F | Mediator | **Resolvido → sem lib (handler direto); Outbox hand-rolled + Change Streams** (Wolverine core virou MIT/grátis mas não adotado — muda o estilo e o outbox dele com Mongo é não-validado). Ver `docs/adr/0001`. |
+| F | Mediator | **Resolvido → sem lib (handler direto); Outbox hand-rolled, relay por reconciliação** (Wolverine core virou MIT/grátis mas não adotado — muda o estilo e o outbox dele com Mongo é não-validado). Ver `docs/adr/0001`. |
 | G | WhatsApp Cloud API | click-to-chat agora, Cloud API com automação |
 | I | Contrato de eventos com Hiram | **Encaminhado → envelope provisório** (`docs/adr/0001`): JSON versionado no exchange `levante.eventos`; o Felipe alinha o Hiram. |
 

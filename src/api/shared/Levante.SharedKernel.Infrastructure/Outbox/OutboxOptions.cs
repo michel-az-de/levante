@@ -9,4 +9,7 @@ public sealed class OutboxOptions
     public const string SecaoConfig = "Outbox";
 
     public bool RelayHabilitado { get; set; }
+
+    /// <summary>Intervalo de reconciliacao do relay (varre a fila e publica pendentes).</summary>
+    public int IntervaloSegundos { get; set; } = 2;
 }
