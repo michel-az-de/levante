@@ -2,6 +2,8 @@ using System.Reflection;
 using Levante.Conteudo.Application.Artigos;
 using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Infrastructure;
+using Levante.Engajamento.Application.Reacoes;
+using Levante.Engajamento.Domain.Reacoes;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Domain.Administradores;
 using NetArchTest.Rules;
@@ -20,6 +22,8 @@ public sealed class ArquiteturaTests
     private static readonly Assembly Application = typeof(ArtigoResponse).Assembly;
     private static readonly Assembly IdentityDomain = typeof(Administrador).Assembly;
     private static readonly Assembly IdentityApplication = typeof(AutenticarCommand).Assembly;
+    private static readonly Assembly EngajamentoDomain = typeof(Reacao).Assembly;
+    private static readonly Assembly EngajamentoApplication = typeof(ReacoesResponse).Assembly;
 
     [Fact]
     public void Domain_naoDependeDeApplicationInfraEFramework()
@@ -74,6 +78,36 @@ public sealed class ArquiteturaTests
             .ShouldNot()
             .HaveDependencyOnAny(
                 "Levante.Identity.Infrastructure",
+                "MongoDB",
+                "Microsoft.AspNetCore")
+            .GetResult();
+
+        resultado.IsSuccessful.ShouldBeTrue(MensagemDeFalha(resultado));
+    }
+
+    [Fact]
+    public void EngajamentoDomain_naoDependeDeApplicationInfraEFramework()
+    {
+        var resultado = Types.InAssembly(EngajamentoDomain)
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "Levante.Engajamento.Application",
+                "Levante.Engajamento.Infrastructure",
+                "MongoDB",
+                "Microsoft.AspNetCore",
+                "Microsoft.Extensions")
+            .GetResult();
+
+        resultado.IsSuccessful.ShouldBeTrue(MensagemDeFalha(resultado));
+    }
+
+    [Fact]
+    public void EngajamentoApplication_naoDependeDeInfraNemDoDriverMongo()
+    {
+        var resultado = Types.InAssembly(EngajamentoApplication)
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "Levante.Engajamento.Infrastructure",
                 "MongoDB",
                 "Microsoft.AspNetCore")
             .GetResult();

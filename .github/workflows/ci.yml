@@ -130,6 +130,16 @@ jobs:
           -p:Threshold=80
           -p:Include="[Levante.Identity.Domain]*%2c[Levante.Identity.Application]*"
 
+      - name: Gate de cobertura de Engajamento (Domain + Application >= 80% linha)
+        run: >
+          dotnet test tests/Levante.Engajamento.UnitTests/Levante.Engajamento.UnitTests.csproj
+          -c Release
+          -p:CollectCoverage=true
+          -p:ThresholdType=line
+          -p:ThresholdStat=minimum
+          -p:Threshold=80
+          -p:Include="[Levante.Engajamento.Domain]*%2c[Levante.Engajamento.Application]*"
+
       - name: Instala dependencias web
         working-directory: src/web
         run: npm ci

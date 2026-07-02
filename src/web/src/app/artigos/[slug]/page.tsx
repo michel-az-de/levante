@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
+import { ReacoesArtigo } from "@/components/ReacoesArtigo";
 import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
 import type { Artigo, Categoria } from "@/types/domain";
@@ -142,6 +143,7 @@ export default async function ArtigoPage({
           <p className="text-lg text-neutral-600 dark:text-neutral-400">{artigo.resumo}</p>
         </header>
         <Markdown>{artigo.conteudo}</Markdown>
+        <ReacoesArtigo artigoId={artigo.id} />
         {artigo.tags.length > 0 ? (
           <footer className="flex flex-wrap gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">
             {artigo.tags.map((tag) => (
