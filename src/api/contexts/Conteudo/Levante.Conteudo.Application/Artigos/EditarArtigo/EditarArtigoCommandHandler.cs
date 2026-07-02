@@ -26,13 +26,13 @@ public sealed class EditarArtigoCommandHandler(
         if (artigo is null)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
+                Error.NaoEncontrado("artigo_nao_encontrado", $"Artigo '{comando.Id}' nao encontrado."));
         }
 
         if (artigo.Status == StatusArtigo.Arquivado)
         {
             return Result.Falha<ArtigoResponse>(
-                new Error("transicao_invalida", "Artigo arquivado nao pode ser editado."));
+                Error.Conflito("transicao_invalida", "Artigo arquivado nao pode ser editado."));
         }
 
         var conflito = await repositorio.GetBySlugAsync(comando.Slug, ct);
@@ -61,5 +61,5 @@ public sealed class EditarArtigoCommandHandler(
 
     private static Result<ArtigoResponse> SlugEmUso(string slug) =>
         Result.Falha<ArtigoResponse>(
-            new Error("slug_em_uso", $"Ja existe um artigo com o slug '{slug}'."));
+            Error.Conflito("slug_em_uso", $"Ja existe um artigo com o slug '{slug}'."));
 }
