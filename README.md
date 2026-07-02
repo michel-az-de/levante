@@ -73,9 +73,9 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 
 ## Status
 
-Em construção. Fatia 2c-ii (taxonomia): **Categoria** como agregado próprio (CRUD no `/admin/categorias`, uma por artigo, opcional) e **Tags** embutidas no artigo (criação implícita). O público navega por `/categoria/[slug]` (SSR, no sitemap); o artigo exibe categoria e tags e enriquece o JSON-LD (`articleSection`/`keywords`). Slug de categoria é imutável. (Página de tag — `/tag/[slug]` — fica para depois.)
+Em construção. Roadmap vigente em [`docs/roadmap.md`](docs/roadmap.md): Fase A (fundações — testes de front, higiene de CI, contrato de erro, BFF do admin) → Engajamento → Outbox+Audiência (Hiram) → lançamento (Azure Container Apps, PT-only) → portfólio + leads = MVP concluído.
 
-Entregue antes: Fatia 2c-i (meta SEO editável por artigo), Fatia 2b (CRUD de artigos pelo `/admin`, markdown, publicar/arquivar), Fatia 2a (autenticação do admin, JWT bearer) e Fatia 1 (conteúdo público + SEO base).
+Entregue até aqui: Fatia 2c-ii (taxonomia: **Categoria** como agregado próprio e **Tags** embutidas, browse `/categoria/[slug]`), 2c-i (meta SEO editável por artigo), 2b (CRUD de artigos pelo `/admin`, markdown, publicar/arquivar), 2a (autenticação do admin, JWT bearer), 1 (conteúdo público + SEO base) e 0 (walking skeleton). (Página de tag — `/tag/[slug]` — fica para depois.)
 
 ## Licença
 

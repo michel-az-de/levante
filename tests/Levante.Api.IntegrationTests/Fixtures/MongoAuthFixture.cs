@@ -14,7 +14,7 @@ public sealed class MongoAuthFixture : IAsyncLifetime
 {
     private const string Banco = "levante";
 
-    private readonly MongoDbContainer _mongo = new MongoDbBuilder()
+    private readonly MongoDbContainer _mongo = new MongoDbBuilder(ImagensDeTeste.Mongo)
         .WithUsername("root")
         .WithPassword("root-pwd")
         .Build();

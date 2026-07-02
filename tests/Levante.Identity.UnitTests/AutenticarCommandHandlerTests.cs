@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Levante.Identity.UnitTests;
 
+[Trait("Category", "Unit")]
 public sealed class AutenticarCommandHandlerTests
 {
     private const string EmailAdmin = "admin@levante.dev";

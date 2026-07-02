@@ -9,6 +9,7 @@ namespace Levante.Api.IntegrationTests;
 /// logica de <see cref="InspecaoDePrivilegioMongo.EhPrivilegioAdministrativo"/>
 /// nos dois sentidos.
 /// </summary>
+[Trait("Category", "Unit")]
 public sealed class InspecaoDePrivilegioMongoTests
 {
     [Theory]

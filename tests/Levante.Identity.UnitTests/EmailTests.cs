@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Levante.Identity.UnitTests;
 
+[Trait("Category", "Unit")]
 public sealed class EmailTests
 {
     [Theory]
