@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Levante.Identity.Application\Levante.Identity.Application.csproj" />
     <ProjectReference Include="..\Levante.Identity.Domain\Levante.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\shared\Levante.SharedKernel.Infrastructure\Levante.SharedKernel.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
