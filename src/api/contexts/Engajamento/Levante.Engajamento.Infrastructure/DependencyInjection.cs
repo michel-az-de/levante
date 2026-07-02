@@ -1,4 +1,5 @@
 using Levante.Engajamento.Application.Ports;
+using Levante.Engajamento.Domain.Comentarios;
 using Levante.Engajamento.Domain.Reacoes;
 using Levante.Engajamento.Infrastructure.Persistence;
 using Levante.Engajamento.Infrastructure.Seguranca;
@@ -35,6 +36,7 @@ public static class DependencyInjection
 
         services.AddSingleton<EngajamentoMongoContext>();
         services.AddScoped<IReacaoRepository, ReacaoRepository>();
+        services.AddScoped<IComentarioRepository, ComentarioRepository>();
         services.AddSingleton<IGeradorDeOrigemHash, GeradorDeOrigemHashHmac>();
 
         if (registrarServicosDeBoot)

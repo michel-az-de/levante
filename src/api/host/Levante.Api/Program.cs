@@ -14,6 +14,11 @@ using Levante.Conteudo.Application.Categorias.CriarCategoria;
 using Levante.Conteudo.Application.Categorias.EditarCategoria;
 using Levante.Conteudo.Application.Categorias.ListarCategorias;
 using Levante.Conteudo.Infrastructure;
+using Levante.Engajamento.Application.Comentarios.AprovarComentario;
+using Levante.Engajamento.Application.Comentarios.CriarComentario;
+using Levante.Engajamento.Application.Comentarios.ListarComentariosAprovados;
+using Levante.Engajamento.Application.Comentarios.ListarComentariosPendentes;
+using Levante.Engajamento.Application.Comentarios.RejeitarComentario;
 using Levante.Engajamento.Application.Reacoes.ObterReacoesDoArtigo;
 using Levante.Engajamento.Application.Reacoes.RegistrarReacao;
 using Levante.Engajamento.Application.Reacoes.RemoverReacao;
@@ -60,6 +65,13 @@ builder.Services.AddScoped<AutenticarCommandHandler>();
 builder.Services.AddScoped<ObterReacoesDoArtigoQueryHandler>();
 builder.Services.AddScoped<RegistrarReacaoCommandHandler>();
 builder.Services.AddScoped<RemoverReacaoCommandHandler>();
+
+// Handlers do contexto Engajamento (comentarios).
+builder.Services.AddScoped<ListarComentariosAprovadosQueryHandler>();
+builder.Services.AddScoped<ListarComentariosPendentesQueryHandler>();
+builder.Services.AddScoped<CriarComentarioCommandHandler>();
+builder.Services.AddScoped<AprovarComentarioCommandHandler>();
+builder.Services.AddScoped<RejeitarComentarioCommandHandler>();
 
 // Validators FluentValidation (IValidator<T> por comando), um por contexto.
 builder.Services.AddValidatorsFromAssemblyContaining<CriarArtigoCommandValidator>();
@@ -133,6 +145,7 @@ app.MapArtigoEndpoints();
 app.MapArtigoAdminEndpoints();
 app.MapCategoriaEndpoints();
 app.MapReacaoEndpoints();
+app.MapComentarioEndpoints();
 app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).

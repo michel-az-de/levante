@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Comentarios } from "@/components/Comentarios";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { ReacoesArtigo } from "@/components/ReacoesArtigo";
@@ -156,6 +157,7 @@ export default async function ArtigoPage({
             ))}
           </footer>
         ) : null}
+        <Comentarios artigoId={artigo.id} artigoSlug={artigo.slug} />
       </article>
     </main>
   );
