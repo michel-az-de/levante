@@ -56,6 +56,11 @@ dotnet user-secrets --project src/api/host/Levante.Api set "Admin:Email" "voce@e
 dotnet user-secrets --project src/api/host/Levante.Api set "Admin:SenhaInicial" "<senha-forte>"
 # Engajamento: segredo do HMAC que pseudonimiza IP+User-Agent na dedup de reacao (LGPD: IP nunca guardado cru)
 dotnet user-secrets --project src/api/host/Levante.Api set "Engajamento:OrigemHashSecret" "<>=32-chars>"
+# Outbox -> Hiram (opcional em dev): liga o relay e aponta o RabbitMQ. Exige Mongo replica set.
+# dotnet user-secrets --project src/api/host/Levante.Api set "Outbox:RelayHabilitado" "true"
+# dotnet user-secrets --project src/api/host/Levante.Api set "RabbitMq:Hostname" "localhost"
+# dotnet user-secrets --project src/api/host/Levante.Api set "RabbitMq:Username" "<user>"
+# dotnet user-secrets --project src/api/host/Levante.Api set "RabbitMq:Password" "<senha>"
 dotnet run --project src/api/host/Levante.Api      # /health, /artigos, /auth/*, /admin/artigos, /openapi/v1.json
 # Admin (Next.js): /admin/login -> /admin -> /admin/artigos (CRUD + publicar/arquivar, JWT bearer).
 # Endpoints de escrita exigem token: POST/PUT /artigos, POST /artigos/{id}/publicar|arquivar.
@@ -76,6 +81,8 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 ## Status
 
 Em construção. Roadmap vigente em [`docs/roadmap.md`](docs/roadmap.md): Fase A (fundações — testes de front, higiene de CI, contrato de erro, BFF do admin) → Engajamento → Outbox+Audiência (Hiram) → lançamento (Azure Container Apps, PT-only) → portfólio + leads = MVP concluído.
+
+**Fase C — em andamento** (C1, outbox): eventos de domínio (`ArtigoPublicado`, `ComentarioCriado`, `ComentarioAprovado`) agora vão a um **Outbox transacional** e um relay (Change Streams → RabbitMQ) os publica para o **Hiram** entregar. Envelope provisório documentado em [`docs/adr/0001-outbox-envelope-hiram.md`](docs/adr/0001-outbox-envelope-hiram.md). Exige Mongo replica set (Atlas); em single-node degrada para escrita sequencial (dev/test).
 
 **Fase B — Engajamento** (contexto novo): **reações anônimas** (curtir/amei/relevante) e **comentários moderados** por artigo. Unicidade/atribuição por **cookie de visitante** (`lev_vid`, httpOnly first-party, id opaco) + hash de IP como sinal anti-abuso (LGPD: IP nunca guardado cru). A escrita pública passa por um **BFF público** no Next (`/api/publico/*`), mantendo a invariante de que o browser nunca fala com a API direto. Comentários nascem **pendentes** (fila de moderação em `/admin/comentarios`), só têm nome + texto (sem e-mail), e têm anti-spam por honeypot + rate limit.
 

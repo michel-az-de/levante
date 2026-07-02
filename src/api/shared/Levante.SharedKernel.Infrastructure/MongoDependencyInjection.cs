@@ -1,3 +1,4 @@
+using Levante.SharedKernel.Infrastructure.Outbox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -40,6 +41,9 @@ public static class MongoDependencyInjection
 
         services.TryAddSingleton<IMongoClient>(sp =>
             new MongoClient(sp.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString));
+
+        // Gravador transacional do Outbox (agregado + eventos na mesma transacao).
+        services.TryAddSingleton<IGravadorDeAgregado, GravadorDeAgregadoMongo>();
 
         return services;
     }

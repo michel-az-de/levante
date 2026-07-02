@@ -1,15 +1,30 @@
 using Levante.Engajamento.Domain.Comentarios;
+using Levante.SharedKernel.Infrastructure.Outbox;
 using MongoDB.Driver;
 
 namespace Levante.Engajamento.Infrastructure.Persistence;
 
-/// <summary>Repositorio do agregado Comentario (encapsula o MongoDB.Driver).</summary>
-internal sealed class ComentarioRepository(EngajamentoMongoContext contexto) : IComentarioRepository
+/// <summary>
+/// Repositorio do agregado Comentario. As escritas passam pelo
+/// <see cref="IGravadorDeAgregado"/>: os eventos (ComentarioCriado/ComentarioAprovado)
+/// vao ao Outbox na mesma transacao da gravacao.
+/// </summary>
+internal sealed class ComentarioRepository(EngajamentoMongoContext contexto, IGravadorDeAgregado gravador)
+    : IComentarioRepository
 {
-    public Task AddAsync(Comentario comentario, CancellationToken ct)
+    public async Task AddAsync(Comentario comentario, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(comentario);
-        return contexto.Comentarios.InsertOneAsync(ComentarioDocument.DeDominio(comentario), options: null, ct);
+
+        var documento = ComentarioDocument.DeDominio(comentario);
+        await gravador.ExecutarAsync(
+            (sessao, c) => sessao is null
+                ? contexto.Comentarios.InsertOneAsync(documento, options: null, c)
+                : contexto.Comentarios.InsertOneAsync(sessao, documento, options: null, c),
+            comentario.Eventos,
+            ct);
+
+        comentario.LimparEventos();
     }
 
     public async Task<Comentario?> GetByIdAsync(Guid id, CancellationToken ct)
@@ -18,11 +33,19 @@ internal sealed class ComentarioRepository(EngajamentoMongoContext contexto) : I
         return doc?.ParaDominio();
     }
 
-    public Task UpdateAsync(Comentario comentario, CancellationToken ct)
+    public async Task UpdateAsync(Comentario comentario, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(comentario);
-        return contexto.Comentarios.ReplaceOneAsync(
-            d => d.Id == comentario.Id, ComentarioDocument.DeDominio(comentario), new ReplaceOptions(), ct);
+
+        var documento = ComentarioDocument.DeDominio(comentario);
+        await gravador.ExecutarAsync(
+            (sessao, c) => sessao is null
+                ? contexto.Comentarios.ReplaceOneAsync(d => d.Id == documento.Id, documento, new ReplaceOptions(), c)
+                : contexto.Comentarios.ReplaceOneAsync(sessao, d => d.Id == documento.Id, documento, new ReplaceOptions(), c),
+            comentario.Eventos,
+            ct);
+
+        comentario.LimparEventos();
     }
 
     public async Task<IReadOnlyList<Comentario>> ListarAprovadosPorArtigoAsync(Guid artigoId, CancellationToken ct)
