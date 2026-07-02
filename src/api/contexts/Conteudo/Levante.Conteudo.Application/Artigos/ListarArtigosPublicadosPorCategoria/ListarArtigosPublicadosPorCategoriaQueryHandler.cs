@@ -22,7 +22,7 @@ public sealed class ListarArtigosPublicadosPorCategoriaQueryHandler(
         if (categoria is null)
         {
             return Result.Falha<IReadOnlyList<ArtigoResponse>>(
-                new Error("categoria_nao_encontrada", $"Categoria '{query.Slug}' nao encontrada."));
+                Error.NaoEncontrado("categoria_nao_encontrada", $"Categoria '{query.Slug}' nao encontrada."));
         }
 
         var publicados = await artigos.ListPublicadosAsync(ct);
