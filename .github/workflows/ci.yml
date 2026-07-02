@@ -102,26 +102,33 @@ jobs:
           cache: npm
           cache-dependency-path: src/web/package-lock.json
 
-      - name: Testes (unit + integracao com Testcontainers)
-        run: dotnet test ${{ env.SLN }} -c Release
+      - name: Testes de unidade (sem Docker)
+        run: dotnet test ${{ env.SLN }} -c Release --filter "Category!=Integration"
 
-      - name: Gate de cobertura do Conteudo.Domain (>= 80% linha)
+      - name: Testes de integracao (Testcontainers)
+        run: dotnet test ${{ env.SLN }} -c Release --filter "Category=Integration"
+
+      # ThresholdStat=minimum: CADA assembly (Domain e Application) precisa
+      # atingir 80% de linha, nao a media entre eles.
+      - name: Gate de cobertura de Conteudo (Domain + Application >= 80% linha)
         run: >
           dotnet test tests/Levante.Conteudo.UnitTests/Levante.Conteudo.UnitTests.csproj
           -c Release
           -p:CollectCoverage=true
           -p:ThresholdType=line
+          -p:ThresholdStat=minimum
           -p:Threshold=80
-          -p:Include="[Levante.Conteudo.Domain]*"
+          -p:Include="[Levante.Conteudo.Domain]*%2c[Levante.Conteudo.Application]*"
 
-      - name: Gate de cobertura do Identity.Domain (>= 80% linha)
+      - name: Gate de cobertura de Identity (Domain + Application >= 80% linha)
         run: >
           dotnet test tests/Levante.Identity.UnitTests/Levante.Identity.UnitTests.csproj
           -c Release
           -p:CollectCoverage=true
           -p:ThresholdType=line
+          -p:ThresholdStat=minimum
           -p:Threshold=80
-          -p:Include="[Levante.Identity.Domain]*"
+          -p:Include="[Levante.Identity.Domain]*%2c[Levante.Identity.Application]*"
 
       - name: Build do front (Next.js + typecheck)
         working-directory: src/web
@@ -179,6 +186,13 @@ jobs:
 
       - name: NuGet audit (CVE falha o build)
         run: dotnet restore ${{ env.SLN }}
+
+      # O restore acima ja falha em CVE (NuGetAudit + warnings as errors);
+      # este step da visibilidade: lista nominalmente qualquer pacote vulneravel.
+      - name: NuGet audit (relatorio nominal)
+        run: |
+          dotnet list ${{ env.SLN }} package --vulnerable --include-transitive | tee audit.txt
+          ! grep -q ">" audit.txt
 
       - name: SBOM (CycloneDX)
         run: |

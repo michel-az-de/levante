@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Levante.Conteudo.UnitTests.Artigos;
 
+[Trait("Category", "Unit")]
 public sealed class ArtigoCommandValidatorsTests
 {
     private static readonly string ResumoLongo = new('a', Artigo.TamanhoMaximoResumo + 1);

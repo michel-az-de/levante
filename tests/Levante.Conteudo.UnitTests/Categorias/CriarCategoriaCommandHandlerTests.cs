@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Levante.Conteudo.UnitTests.Categorias;
 
+[Trait("Category", "Unit")]
 public sealed class CriarCategoriaCommandHandlerTests
 {
     private static CriarCategoriaCommandHandler Criar(CategoriaRepositorioEmMemoria repo) =>
