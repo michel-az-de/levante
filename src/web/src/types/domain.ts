@@ -7,3 +7,5 @@ import type { components } from "@/types/api";
 export type Artigo = components["schemas"]["ArtigoResponse"];
 
 export type Categoria = components["schemas"]["CategoriaResponse"];
+
+export type Comentario = components["schemas"]["ComentarioResponse"];

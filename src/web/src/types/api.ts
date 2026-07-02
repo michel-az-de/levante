@@ -180,6 +180,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artigos/{id}/comentarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListarComentariosAprovados"];
+        put?: never;
+        post: operations["CriarComentario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/comentarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListarComentariosPendentes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/comentarios/{id}/aprovar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AprovarComentario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/comentarios/{id}/rejeitar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RejeitarComentario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -254,6 +318,19 @@ export interface components {
             slug: string;
             descricao: string | null;
         };
+        /** @description Contrato de saida de comentario (publico e admin). Status vira string (convencao). */
+        ComentarioResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            artigoId: string;
+            artigoSlug: string;
+            autor: string;
+            texto: string;
+            status: string;
+            /** Format: date-time */
+            dataCriacao: string;
+        };
         /** @description Corpo de criacao de artigo (slug informado pelo admin). Meta SEO, categoria e tags opcionais. */
         CriarArtigoRequest: {
             titulo: string;
@@ -272,6 +349,13 @@ export interface components {
             nome: string;
             slug: string;
             descricao?: string | null;
+        };
+        /** @description Corpo do POST de comentario. `Armadilha` e o honeypot (deve vir vazio). */
+        CriarComentarioRequest: {
+            artigoSlug: string;
+            autor: string;
+            texto: string;
+            armadilha?: string | null;
         };
         /** @description Corpo de edicao de artigo (Id vem da rota). Meta SEO, categoria e tags opcionais. */
         EditarArtigoRequest: {
@@ -779,6 +863,135 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
+            };
+        };
+    };
+    ListarComentariosAprovados: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComentarioResponse"][];
+                };
+            };
+        };
+    };
+    CriarComentario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarComentarioRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListarComentariosPendentes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComentarioResponse"][];
+                };
+            };
+        };
+    };
+    AprovarComentario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RejeitarComentario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

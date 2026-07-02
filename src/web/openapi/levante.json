@@ -564,6 +564,159 @@
         }
       }
     },
+    "/artigos/{id}/comentarios": {
+      "get": {
+        "tags": [
+          "Comentarios"
+        ],
+        "operationId": "ListarComentariosAprovados",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComentarioResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Comentarios"
+        ],
+        "operationId": "CriarComentario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarComentarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/comentarios": {
+      "get": {
+        "tags": [
+          "Comentarios (admin)"
+        ],
+        "operationId": "ListarComentariosPendentes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComentarioResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/comentarios/{id}/aprovar": {
+      "post": {
+        "tags": [
+          "Comentarios (admin)"
+        ],
+        "operationId": "AprovarComentario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/admin/comentarios/{id}/rejeitar": {
+      "post": {
+        "tags": [
+          "Comentarios (admin)"
+        ],
+        "operationId": "RejeitarComentario",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
@@ -741,6 +894,45 @@
         },
         "description": "Contrato de saida da categoria (vira o tipo TS gerado do OpenAPI)."
       },
+      "ComentarioResponse": {
+        "required": [
+          "id",
+          "artigoId",
+          "artigoSlug",
+          "autor",
+          "texto",
+          "status",
+          "dataCriacao"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "artigoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "artigoSlug": {
+            "type": "string"
+          },
+          "autor": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "dataCriacao": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Contrato de saida de comentario (publico e admin). Status vira string (convencao)."
+      },
       "CriarArtigoRequest": {
         "required": [
           "titulo",
@@ -808,6 +1000,30 @@
           }
         },
         "description": "Corpo de criacao de categoria (slug informado pelo admin)."
+      },
+      "CriarComentarioRequest": {
+        "required": [
+          "artigoSlug",
+          "autor",
+          "texto"
+        ],
+        "type": "object",
+        "properties": {
+          "artigoSlug": {
+            "type": "string"
+          },
+          "autor": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string"
+          },
+          "armadilha": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "description": "Corpo do POST de comentario. `Armadilha` e o honeypot (deve vir vazio)."
       },
       "EditarArtigoRequest": {
         "required": [
@@ -972,6 +1188,12 @@
     },
     {
       "name": "Reacoes"
+    },
+    {
+      "name": "Comentarios"
+    },
+    {
+      "name": "Comentarios (admin)"
     },
     {
       "name": "Auth"
