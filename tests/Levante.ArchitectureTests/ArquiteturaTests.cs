@@ -1,4 +1,6 @@
 using System.Reflection;
+using Levante.Audiencia.Application.Assinantes.SolicitarAssinatura;
+using Levante.Audiencia.Domain.Assinantes;
 using Levante.Conteudo.Application.Artigos;
 using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Infrastructure;
@@ -24,6 +26,8 @@ public sealed class ArquiteturaTests
     private static readonly Assembly IdentityApplication = typeof(AutenticarCommand).Assembly;
     private static readonly Assembly EngajamentoDomain = typeof(Reacao).Assembly;
     private static readonly Assembly EngajamentoApplication = typeof(ReacoesResponse).Assembly;
+    private static readonly Assembly AudienciaDomain = typeof(Assinante).Assembly;
+    private static readonly Assembly AudienciaApplication = typeof(SolicitarAssinaturaCommand).Assembly;
 
     [Fact]
     public void Domain_naoDependeDeApplicationInfraEFramework()
@@ -108,6 +112,36 @@ public sealed class ArquiteturaTests
             .ShouldNot()
             .HaveDependencyOnAny(
                 "Levante.Engajamento.Infrastructure",
+                "MongoDB",
+                "Microsoft.AspNetCore")
+            .GetResult();
+
+        resultado.IsSuccessful.ShouldBeTrue(MensagemDeFalha(resultado));
+    }
+
+    [Fact]
+    public void AudienciaDomain_naoDependeDeApplicationInfraEFramework()
+    {
+        var resultado = Types.InAssembly(AudienciaDomain)
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "Levante.Audiencia.Application",
+                "Levante.Audiencia.Infrastructure",
+                "MongoDB",
+                "Microsoft.AspNetCore",
+                "Microsoft.Extensions")
+            .GetResult();
+
+        resultado.IsSuccessful.ShouldBeTrue(MensagemDeFalha(resultado));
+    }
+
+    [Fact]
+    public void AudienciaApplication_naoDependeDeInfraNemDoDriverMongo()
+    {
+        var resultado = Types.InAssembly(AudienciaApplication)
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "Levante.Audiencia.Infrastructure",
                 "MongoDB",
                 "Microsoft.AspNetCore")
             .GetResult();

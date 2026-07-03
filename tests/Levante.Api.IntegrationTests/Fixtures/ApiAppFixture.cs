@@ -33,6 +33,9 @@ public sealed class ApiAppFixture : WebApplicationFactory<Program>, IAsyncLifeti
         .WithPassword("root-pwd")
         .Build();
 
+    /// <summary>Connection string do Mongo de teste (para os testes inspecionarem colecoes).</summary>
+    public string MongoConnectionString => _mongo.GetConnectionString();
+
     Task IAsyncLifetime.InitializeAsync() => _mongo.StartAsync();
 
     async Task IAsyncLifetime.DisposeAsync()

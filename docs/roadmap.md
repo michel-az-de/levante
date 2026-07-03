@@ -32,9 +32,9 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 | # | Fatia | Tamanho | Notas |
 |---|-------|---------|-------|
 | C0 | Spike GAP-F (mediator/Wolverine) + contrato Hiram (GAP-I) → ADR | P | Decisão do Felipe antes de C1; define envelope do IntegrationEvent |
-| C1 | Outbox transacional + Change Streams relay + publisher RabbitMQ | G | Evento na mesma transação do agregado; resume token; idempotência; Testcontainers (Mongo RS + Rabbit) |
-| C2 | Audiencia: newsletter double opt-in via Hiram | G | Consentimento LGPD registrado; site nunca chama provedor de e-mail |
-| C3 | Notificação de comentário pendente via Hiram | P | Retrofit barato de B2 |
+| C1 | Outbox transacional + relay (reconciliação/polling) + publisher RabbitMQ | G | **Entregue.** Evento na mesma transação do agregado; at-least-once (dedup por `eventId`); Testcontainers (Mongo + Rabbit). Polling em vez de Change Streams (ADR 0001) |
+| C2 | Audiencia: newsletter double opt-in via Hiram | G | **Entregue.** Agregado `Assinante`; consentimento LGPD com timestamp; token opaco; site nunca chama provedor de e-mail; não vaza existência de e-mail |
+| C3 | Notificação de comentário pendente via Hiram | P | **Subsumido pela C1**: `ComentarioCriado` já flui pelo Outbox → Hiram (só falta o Hiram consumir e formatar) |
 
 ## Fase D — Lançamento
 

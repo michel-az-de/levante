@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\Levante.SharedKernel\Levante.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -4,7 +4,9 @@ Status: **Aceito (provisório no contrato)** · Fatia C1 · jul/2026
 
 ## Contexto
 
-O Levante produz fatos de domínio (`ArtigoPublicado`, `ComentarioCriado`, `ComentarioAprovado`) que o Hiram (projeto separado) precisa entregar como notificação (e-mail/push/WhatsApp). O site nunca chama provedor direto (CLAUDE.md, regra 7): publica eventos e o Hiram consome. Faltava o transporte.
+O Levante produz fatos de domínio (`ArtigoPublicado`, `ComentarioCriado`, `ComentarioAprovado` e, desde a Fatia C2, `AssinaturaSolicitada`, `AssinanteConfirmado`, `AssinaturaCancelada`) que o Hiram (projeto separado) precisa entregar como notificação (e-mail/push/WhatsApp). O site nunca chama provedor direto (CLAUDE.md, regra 7): publica eventos e o Hiram consome. Faltava o transporte.
+
+**C2 (newsletter):** `AssinaturaSolicitada` carrega `email` + `token` no `dados` — é com eles que o Hiram monta o link de confirmação (`SITE_URL/newsletter/confirmar?token=…`). O e-mail é do próprio assinante (finalidade explícita: enviar a newsletter); nenhum outro dado pessoal entra no envelope.
 
 ## Decisões
 

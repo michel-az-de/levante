@@ -34,12 +34,20 @@ export default function HomePage() {
       <p className="text-lg text-neutral-600 dark:text-neutral-400">
         Da pedra bruta a pedra polida. Blog tecnico, publicacoes e portfolio de {site.autor}.
       </p>
-      <Link
-        href="/artigos"
-        className="w-fit rounded-md bg-neutral-900 px-4 py-2 text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
-      >
-        Ver artigos
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href="/artigos"
+          className="w-fit rounded-md bg-neutral-900 px-4 py-2 text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+        >
+          Ver artigos
+        </Link>
+        <Link
+          href="/newsletter"
+          className="w-fit rounded-md border border-neutral-300 px-4 py-2 transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+        >
+          Assinar newsletter
+        </Link>
+      </div>
     </main>
   );
 }

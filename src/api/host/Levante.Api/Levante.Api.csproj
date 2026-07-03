@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\contexts\Conteudo\Levante.Conteudo.Infrastructure\Levante.Conteudo.Infrastructure.csproj" />
     <ProjectReference Include="..\..\contexts\Engajamento\Levante.Engajamento.Infrastructure\Levante.Engajamento.Infrastructure.csproj" />
     <ProjectReference Include="..\..\contexts\Identity\Levante.Identity.Infrastructure\Levante.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\contexts\Audiencia\Levante.Audiencia.Infrastructure\Levante.Audiencia.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
