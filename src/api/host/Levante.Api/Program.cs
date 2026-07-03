@@ -26,6 +26,7 @@ using Levante.Engajamento.Infrastructure;
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
 using Levante.Identity.Infrastructure.Seguranca;
+using Levante.SharedKernel.Infrastructure.Outbox;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,9 @@ var modoEmitOpenApi = args.Contains(Levante.Api.OpenApiExport.Argumento);
 builder.Services.AddConteudoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddEngajamentoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddIdentityInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
+
+// Relay do Outbox -> RabbitMQ (so quando Outbox:RelayHabilitado e nao e modo emit).
+builder.Services.AddLevanteOutboxRelay(builder.Configuration, ligarNoBoot: !modoEmitOpenApi);
 
 if (modoEmitOpenApi)
 {

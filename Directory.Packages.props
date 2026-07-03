@@ -16,6 +16,8 @@
          Remover quando Microsoft.AspNetCore.OpenApi referenciar >= 2.7.5. -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageVersion Include="MongoDB.Driver" Version="3.9.0" />
+    <!-- Mensageria do Outbox -> Hiram. MPL-2.0 / Apache-2.0 (nao e armadilha de licenca). -->
+    <PackageVersion Include="RabbitMQ.Client" Version="7.2.1" />
   </ItemGroup>
 
   <ItemGroup Label="Auth (Identity / JWT)">
@@ -44,6 +46,7 @@
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="coverlet.msbuild" Version="10.0.1" />
     <PackageVersion Include="Testcontainers.MongoDb" Version="4.12.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="4.12.0" />
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.9" />
   </ItemGroup>

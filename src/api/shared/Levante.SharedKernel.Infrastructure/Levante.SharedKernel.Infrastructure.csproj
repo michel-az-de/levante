@@ -7,7 +7,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Levante.SharedKernel\Levante.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="RabbitMQ.Client" />
   </ItemGroup>
 
 </Project>

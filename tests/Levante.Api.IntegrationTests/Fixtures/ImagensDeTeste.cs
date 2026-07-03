@@ -8,4 +8,6 @@ namespace Levante.Api.IntegrationTests.Fixtures;
 internal static class ImagensDeTeste
 {
     public const string Mongo = "mongo:8.0";
+
+    public const string RabbitMq = "rabbitmq:4.0";
 }
