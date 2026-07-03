@@ -2,6 +2,10 @@ using System.Text;
 using FluentValidation;
 using Levante.Api.Endpoints;
 using Levante.Api.Seguranca;
+using Levante.Audiencia.Application.Assinantes.CancelarAssinatura;
+using Levante.Audiencia.Application.Assinantes.ConfirmarAssinatura;
+using Levante.Audiencia.Application.Assinantes.SolicitarAssinatura;
+using Levante.Audiencia.Infrastructure;
 using Levante.Conteudo.Application.Artigos.ArquivarArtigo;
 using Levante.Conteudo.Application.Artigos.CriarArtigo;
 using Levante.Conteudo.Application.Artigos.EditarArtigo;
@@ -42,6 +46,7 @@ var modoEmitOpenApi = args.Contains(Levante.Api.OpenApiExport.Argumento);
 builder.Services.AddConteudoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddEngajamentoInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddIdentityInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
+builder.Services.AddAudienciaInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 
 // Relay do Outbox -> RabbitMQ (so quando Outbox:RelayHabilitado e nao e modo emit).
 builder.Services.AddLevanteOutboxRelay(builder.Configuration, ligarNoBoot: !modoEmitOpenApi);
@@ -77,9 +82,15 @@ builder.Services.AddScoped<CriarComentarioCommandHandler>();
 builder.Services.AddScoped<AprovarComentarioCommandHandler>();
 builder.Services.AddScoped<RejeitarComentarioCommandHandler>();
 
+// Handlers do contexto Audiencia (newsletter, double opt-in).
+builder.Services.AddScoped<SolicitarAssinaturaCommandHandler>();
+builder.Services.AddScoped<ConfirmarAssinaturaCommandHandler>();
+builder.Services.AddScoped<CancelarAssinaturaCommandHandler>();
+
 // Validators FluentValidation (IValidator<T> por comando), um por contexto.
 builder.Services.AddValidatorsFromAssemblyContaining<CriarArtigoCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegistrarReacaoCommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<SolicitarAssinaturaCommandValidator>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
 builder.Services.AddOpenApi();
@@ -150,6 +161,7 @@ app.MapArtigoAdminEndpoints();
 app.MapCategoriaEndpoints();
 app.MapReacaoEndpoints();
 app.MapComentarioEndpoints();
+app.MapNewsletterEndpoints();
 app.MapAuthEndpoints();
 
 // Modo de emissao do contrato OpenAPI (porta efemera, sem tocar o Mongo).

@@ -244,6 +244,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/newsletter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SolicitarAssinatura"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/newsletter/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ConfirmarAssinatura"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/newsletter/cancelar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CancelarAssinatura"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -310,6 +358,10 @@ export interface components {
             email: string;
             senha: string;
         };
+        /** @description Corpo do POST de cancelamento (token de descadastro). */
+        CancelarNewsletterRequest: {
+            token: string;
+        };
         /** @description Contrato de saida da categoria (vira o tipo TS gerado do OpenAPI). */
         CategoriaResponse: {
             /** Format: uuid */
@@ -330,6 +382,10 @@ export interface components {
             status: string;
             /** Format: date-time */
             dataCriacao: string;
+        };
+        /** @description Corpo do POST de confirmacao (token do link enviado por e-mail). */
+        ConfirmarNewsletterRequest: {
+            token: string;
         };
         /** @description Corpo de criacao de artigo (slug informado pelo admin). Meta SEO, categoria e tags opcionais. */
         CriarArtigoRequest: {
@@ -399,6 +455,11 @@ export interface components {
         /** @description Corpo do POST de reacao (nome do tipo, ex. "Curtir"; o id do artigo vem da rota). */
         RegistrarReacaoRequest: {
             tipo: string;
+        };
+        /** @description Corpo do POST de inscricao. `Armadilha` e o honeypot (deve vir vazio). */
+        SolicitarNewsletterRequest: {
+            email: string;
+            armadilha?: string | null;
         };
         /** @description Token de acesso emitido no login (JWT bearer). Contrato consumido pelo admin. */
         TokenDeAcessoResponse: {
@@ -978,6 +1039,95 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SolicitarAssinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SolicitarNewsletterRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ConfirmarAssinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarNewsletterRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CancelarAssinatura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelarNewsletterRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

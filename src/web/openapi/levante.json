@@ -717,6 +717,91 @@
         }
       }
     },
+    "/newsletter": {
+      "post": {
+        "tags": [
+          "Newsletter"
+        ],
+        "operationId": "SolicitarAssinatura",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitarNewsletterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/newsletter/confirmar": {
+      "post": {
+        "tags": [
+          "Newsletter"
+        ],
+        "operationId": "ConfirmarAssinatura",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmarNewsletterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/newsletter/cancelar": {
+      "post": {
+        "tags": [
+          "Newsletter"
+        ],
+        "operationId": "CancelarAssinatura",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarNewsletterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
@@ -868,6 +953,18 @@
         },
         "description": "Corpo do login."
       },
+      "CancelarNewsletterRequest": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo do POST de cancelamento (token de descadastro)."
+      },
       "CategoriaResponse": {
         "required": [
           "id",
@@ -932,6 +1029,18 @@
           }
         },
         "description": "Contrato de saida de comentario (publico e admin). Status vira string (convencao)."
+      },
+      "ConfirmarNewsletterRequest": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "description": "Corpo do POST de confirmacao (token do link enviado por e-mail)."
       },
       "CriarArtigoRequest": {
         "required": [
@@ -1157,6 +1266,22 @@
         },
         "description": "Corpo do POST de reacao (nome do tipo, ex. \"Curtir\"; o id do artigo vem da rota)."
       },
+      "SolicitarNewsletterRequest": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "armadilha": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "description": "Corpo do POST de inscricao. `Armadilha` e o honeypot (deve vir vazio)."
+      },
       "TokenDeAcessoResponse": {
         "required": [
           "accessToken",
@@ -1194,6 +1319,9 @@
     },
     {
       "name": "Comentarios (admin)"
+    },
+    {
+      "name": "Newsletter"
     },
     {
       "name": "Auth"

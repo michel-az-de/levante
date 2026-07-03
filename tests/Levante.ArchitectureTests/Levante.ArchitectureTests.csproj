@@ -27,6 +27,9 @@
     <ProjectReference Include="..\..\src\api\contexts\Engajamento\Levante.Engajamento.Domain\Levante.Engajamento.Domain.csproj" />
     <ProjectReference Include="..\..\src\api\contexts\Engajamento\Levante.Engajamento.Application\Levante.Engajamento.Application.csproj" />
     <ProjectReference Include="..\..\src\api\contexts\Engajamento\Levante.Engajamento.Infrastructure\Levante.Engajamento.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Audiencia\Levante.Audiencia.Domain\Levante.Audiencia.Domain.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Audiencia\Levante.Audiencia.Application\Levante.Audiencia.Application.csproj" />
+    <ProjectReference Include="..\..\src\api\contexts\Audiencia\Levante.Audiencia.Infrastructure\Levante.Audiencia.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
