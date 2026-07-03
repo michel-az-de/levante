@@ -4,8 +4,9 @@ namespace Levante.SharedKernel.Infrastructure.Outbox;
 
 /// <summary>
 /// Conexao do RabbitMQ (destino do relay do Outbox). Credenciais via user-secrets
-/// (dev) e env / Key Vault (prod), NUNCA do repositorio. Validado no boot so quando
-/// o relay esta habilitado.
+/// (dev) e env / Key Vault (prod), NUNCA do repositorio. Bind lazy: quando o relay
+/// esta desabilitado nada e lido; habilitado sem broker, o relay falha ao publicar
+/// e refaz com backoff (logado), em vez de derrubar o boot.
 /// </summary>
 public sealed class RabbitMqOptions
 {

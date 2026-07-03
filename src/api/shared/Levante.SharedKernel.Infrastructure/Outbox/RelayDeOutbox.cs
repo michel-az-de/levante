@@ -24,6 +24,7 @@ internal sealed class RelayDeOutbox : BackgroundService
     private readonly IPublicadorDeEventos _publicador;
     private readonly ILogger<RelayDeOutbox> _logger;
     private readonly string _exchange;
+    private readonly bool _habilitado;
     private readonly TimeSpan _intervalo;
 
     public RelayDeOutbox(
@@ -43,11 +44,18 @@ internal sealed class RelayDeOutbox : BackgroundService
         _publicador = publicador;
         _logger = logger;
         _exchange = rabbit.Value.Exchange;
+        _habilitado = outbox.Value.RelayHabilitado;
         _intervalo = TimeSpan.FromSeconds(Math.Max(1, outbox.Value.IntervaloSegundos));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Decisao de ligar e em runtime (config so fica completa apos o build do host).
+        if (!_habilitado)
+        {
+            return;
+        }
+
         LogOutbox.RelayIniciado(_logger, _exchange);
 
         while (!stoppingToken.IsCancellationRequested)
