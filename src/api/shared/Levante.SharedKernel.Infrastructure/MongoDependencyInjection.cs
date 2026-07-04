@@ -42,6 +42,9 @@ public static class MongoDependencyInjection
         services.TryAddSingleton<IMongoClient>(sp =>
             new MongoClient(sp.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString));
 
+        // Sequencia monotonica (emissionSeq) usada pelo gravador dentro da transacao.
+        services.TryAddSingleton<ISequenciaDeEmissao, SequenciaMongo>();
+
         // Gravador transacional do Outbox (agregado + eventos na mesma transacao).
         services.TryAddSingleton<IGravadorDeAgregado, GravadorDeAgregadoMongo>();
 

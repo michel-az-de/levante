@@ -12,8 +12,7 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Testcontainers.MongoDb" />
-    <PackageReference Include="Testcontainers.RabbitMq" />
-    <PackageReference Include="RabbitMQ.Client" />
+    <PackageReference Include="WireMock.Net" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
@@ -23,6 +22,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\api\host\Levante.Api\Levante.Api.csproj" />
+  </ItemGroup>
+
+  <!-- Snapshot do contrato do Hiram, lido em runtime pelo contract-test. -->
+  <ItemGroup>
+    <Content Include="Contracts\hiram-events.contract.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

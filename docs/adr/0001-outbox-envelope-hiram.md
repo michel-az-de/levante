@@ -1,6 +1,6 @@
 # ADR 0001 — Outbox transacional e contrato de eventos com o Hiram
 
-Status: **Aceito (provisório no contrato)** · Fatia C1 · jul/2026
+Status: **Aceito** (outbox transacional + relay por polling) · Fatia C1 · jul/2026 · **transporte superado pela [ADR 0002](0002-emissao-hiram-http.md)** (o envelope/exchange RabbitMQ deste ADR foi substituído pelo HTTP `POST /v1/events` do Hiram; a decisão de outbox/relay/at-least-once permanece)
 
 ## Contexto
 

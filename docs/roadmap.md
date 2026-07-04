@@ -6,7 +6,7 @@ Sequenciamento vigente das fatias, derivado do blueprint (§14) e de uma auditor
 
 Site no ar te vendendo: conteúdo público + admin (entregues) + engajamento + audiência com notificações via Hiram + **portfólio + leads**, em produção no domínio final. Todo o resto é evolução contínua, sem compromisso de escopo.
 
-Decisões já tomadas: hospedagem = Azure Container Apps (GAP-J), idioma = PT-only (GAP-H), contrato Hiram definível no spike do Outbox (GAP-I). **Pendente: domínio (GAP-A) — única decisão externa que bloqueia o lançamento.**
+Decisões já tomadas: hospedagem = Azure Container Apps (GAP-J), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — única decisão externa que bloqueia o lançamento.**
 
 ## Fase A — Fundações rápidas (1 PR por fatia)
 
@@ -34,7 +34,7 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 | C0 | Spike GAP-F (mediator/Wolverine) + contrato Hiram (GAP-I) → ADR | P | Decisão do Felipe antes de C1; define envelope do IntegrationEvent |
 | C1 | Outbox transacional + relay (reconciliação/polling) + publisher RabbitMQ | G | **Entregue.** Evento na mesma transação do agregado; at-least-once (dedup por `eventId`); Testcontainers (Mongo + Rabbit). Polling em vez de Change Streams (ADR 0001) |
 | C2 | Audiencia: newsletter double opt-in via Hiram | G | **Entregue.** Agregado `Assinante`; consentimento LGPD com timestamp; token opaco; site nunca chama provedor de e-mail; não vaza existência de e-mail |
-| C3 | Notificação de comentário pendente via Hiram | P | **Subsumido pela C1**: `ComentarioCriado` já flui pelo Outbox → Hiram (só falta o Hiram consumir e formatar) |
+| C3 | Notificação de comentário pendente via Hiram | P | `ComentarioCriado` já flui pelo Outbox; a **entrega** depende da Fatia D (emissão HTTP para o Hiram, [ADR 0002](adr/0002-emissao-hiram-http.md)) — mapeado como `comentario_pendente` → alerta ao admin |
 
 ## Fase D — Lançamento
 

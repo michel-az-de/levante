@@ -12,7 +12,19 @@
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" />
-    <PackageReference Include="RabbitMQ.Client" />
+  </ItemGroup>
+
+  <!-- Emissao HTTP para o Hiram: resiliencia in-flight (timeout + circuit breaker, sem retry). -->
+  <ItemGroup Label="Resiliencia HTTP">
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <!-- OpenTelemetry (traces/metricas/logs -> OTLP). Todos Apache-2.0. -->
+  <ItemGroup Label="OpenTelemetry">
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
 
 </Project>

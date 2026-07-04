@@ -9,25 +9,34 @@ namespace Levante.SharedKernel.Infrastructure.Outbox;
 /// <summary>
 /// Grava agregado + eventos no Outbox atomicamente. Detecta uma vez (cache) se o
 /// Mongo suporta transacao (replica set): com suporte usa transacao; senao degrada
-/// para escrita sequencial (dev/test single-node). Ver <see cref="IGravadorDeAgregado"/>.
+/// para escrita sequencial (dev/test single-node). O <c>emissionSeq</c> monotonico e
+/// atribuido aqui, dentro do mesmo escopo transacional. Ver <see cref="IGravadorDeAgregado"/>.
 /// </summary>
 internal sealed class GravadorDeAgregadoMongo : IGravadorDeAgregado
 {
+    private static readonly JsonSerializerOptions JsonOpcoes = new(JsonSerializerDefaults.Web);
+
     private readonly IMongoClient _client;
     private readonly IMongoCollection<OutboxDocument> _outbox;
     private readonly IMongoDatabase _database;
+    private readonly ISequenciaDeEmissao _sequencia;
     private readonly ILogger<GravadorDeAgregadoMongo> _logger;
     private readonly Lazy<Task<bool>> _suportaTransacao;
 
     public GravadorDeAgregadoMongo(
-        IMongoClient client, IOptions<MongoOptions> options, ILogger<GravadorDeAgregadoMongo> logger)
+        IMongoClient client,
+        IOptions<MongoOptions> options,
+        ISequenciaDeEmissao sequencia,
+        ILogger<GravadorDeAgregadoMongo> logger)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(sequencia);
 
         _client = client;
         _database = client.GetDatabase(options.Value.DatabaseName);
         _outbox = _database.GetCollection<OutboxDocument>(NomesOutbox.Collection);
+        _sequencia = sequencia;
         _logger = logger;
         _suportaTransacao = new Lazy<Task<bool>>(DetectarSuporteTransacaoAsync);
     }
@@ -47,8 +56,6 @@ internal sealed class GravadorDeAgregadoMongo : IGravadorDeAgregado
             return;
         }
 
-        var documentos = eventos.Select(Mapear).ToList();
-
         if (await _suportaTransacao.Value)
         {
             using var sessao = await _client.StartSessionAsync(cancellationToken: ct);
@@ -56,6 +63,7 @@ internal sealed class GravadorDeAgregadoMongo : IGravadorDeAgregado
                 async (s, c) =>
                 {
                     await escrita(s, c);
+                    var documentos = await MapearTodosAsync(eventos, s, c);
                     await _outbox.InsertManyAsync(s, documentos, cancellationToken: c);
                     return true;
                 },
@@ -66,16 +74,28 @@ internal sealed class GravadorDeAgregadoMongo : IGravadorDeAgregado
         // Fallback single-node (dev/test): sequencial best-effort.
         LogOutbox.GravacaoSequencial(_logger);
         await escrita(null, ct);
-        await _outbox.InsertManyAsync(documentos, cancellationToken: ct);
+        var docsFallback = await MapearTodosAsync(eventos, null, ct);
+        await _outbox.InsertManyAsync(docsFallback, cancellationToken: ct);
     }
 
-    private static readonly JsonSerializerOptions JsonOpcoes = new(JsonSerializerDefaults.Web);
+    private async Task<List<OutboxDocument>> MapearTodosAsync(
+        IReadOnlyList<IEventoDeDominio> eventos, IClientSessionHandle? sessao, CancellationToken ct)
+    {
+        var documentos = new List<OutboxDocument>(eventos.Count);
+        foreach (var evento in eventos)
+        {
+            var seq = await _sequencia.ProximoAsync(sessao, ct);
+            documentos.Add(Mapear(evento, seq));
+        }
 
-    private static OutboxDocument Mapear(IEventoDeDominio evento)
+        return documentos;
+    }
+
+    private static OutboxDocument Mapear(IEventoDeDominio evento, long emissionSeq)
     {
         var agora = DateTime.UtcNow;
         // Serializa pelo tipo em runtime (IEventoDeDominio nao tem campos). Via JSON
-        // limpo (Guid vira string, nao BSON binary) para o envelope na fila sair legivel.
+        // limpo (Guid vira string, nao BSON binary) para o mapeador ler campos legiveis.
         var json = JsonSerializer.Serialize(evento, evento.GetType(), JsonOpcoes);
         return new OutboxDocument
         {
@@ -85,6 +105,9 @@ internal sealed class GravadorDeAgregadoMongo : IGravadorDeAgregado
             OcorridoEm = agora,
             Dados = BsonDocument.Parse(json),
             DataCriacao = agora,
+            EmissionSeq = emissionSeq,
+            Status = (int)StatusEmissao.Pendente,
+            Tentativas = 0,
         };
     }
 
