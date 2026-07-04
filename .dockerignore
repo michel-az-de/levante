@@ -1,0 +1,12 @@
+# Contexto do build da imagem da API (raiz do repo). Mantem so o necessario para
+# restaurar/publicar src/api/host/Levante.Api.
+**/bin/
+**/obj/
+**/node_modules/
+**/.next/
+.git/
+.github/
+tests/
+docs/
+src/web/
+*.user
