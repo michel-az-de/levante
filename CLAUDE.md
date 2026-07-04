@@ -187,10 +187,9 @@ Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 - Nível de assinatura de documentos (1 a 4): fora da Fatia 0.
 - Profundidade do modelo científico (template vs DOI/ORCID): fora da Fatia 0.
 - WhatsApp Cloud API: por ora só click-to-chat (`wa.me`).
-- Contrato de eventos com o Hiram (GAP-I): o Felipe define no spike que antecede a fatia do Outbox, junto com GAP-F.
 - Domínio do site (GAP-A): pendente; bloqueia a fatia de lançamento. Não assumir URL base definitiva (sempre via `SITE_URL`/env).
 
-Decididos (não são mais GAPs): idioma PT-only (GAP-H) e hospedagem Azure Container Apps (GAP-J).
+Decididos (não são mais GAPs): idioma PT-only (GAP-H), hospedagem Azure Container Apps (GAP-J) e **contrato de eventos com o Hiram (GAP-I) = HTTP `POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**.
 
 O roadmap de fatias vigente está em `docs/roadmap.md`.
 
