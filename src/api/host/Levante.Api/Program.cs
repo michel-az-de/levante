@@ -31,6 +31,7 @@ using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Infrastructure;
 using Levante.Identity.Infrastructure.Seguranca;
 using Levante.SharedKernel.Infrastructure.Outbox;
+using Levante.SharedKernel.Infrastructure.Telemetry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -48,8 +49,14 @@ builder.Services.AddEngajamentoInfrastructure(builder.Configuration, registrarSe
 builder.Services.AddIdentityInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 builder.Services.AddAudienciaInfrastructure(builder.Configuration, registrarServicosDeBoot: !modoEmitOpenApi);
 
-// Relay do Outbox -> RabbitMQ (so quando Outbox:RelayHabilitado e nao e modo emit).
+// Relay do Outbox -> HTTP Hiram (so quando Outbox:RelayHabilitado e nao e modo emit).
 builder.Services.AddLevanteOutboxRelay(builder.Configuration, ligarNoBoot: !modoEmitOpenApi);
+
+// OpenTelemetry (traces/metricas/logs -> OTLP). Fora do modo emit (nao instrumenta o emit).
+if (!modoEmitOpenApi)
+{
+    builder.Services.AddLevanteTelemetry(builder.Configuration);
+}
 
 if (modoEmitOpenApi)
 {

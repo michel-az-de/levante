@@ -1,12 +1,22 @@
 namespace Levante.SharedKernel.Infrastructure.Outbox;
 
-/// <summary>Nome tecnico da collection do Outbox (EN, conforme convencao).</summary>
+/// <summary>Nomes tecnicos das collections do Outbox (EN, conforme convencao).</summary>
 internal static class NomesOutbox
 {
     /// <summary>
-    /// Fila de eventos pendentes. O relay observa por Change Stream e DELETA cada
-    /// evento apos publicar (o doc existir = ainda nao publicado). Um sweep no start
-    /// recupera o que ficou de uma queda entre publicar e deletar (at-least-once).
+    /// Fila de emissoes. Gravada na mesma transacao do agregado. O relay le os
+    /// pendentes por <c>emissionSeq</c> e MARCA (Enviada/Falhada/Ignorada) em vez de
+    /// deletar — a linha vira trilha de auditoria de emissao (ADR 0002).
     /// </summary>
     public const string Collection = "outbox";
+
+    /// <summary>
+    /// Contadores monotonicos (Mongo nao tem bigserial). O doc <c>outbox_emission</c>
+    /// guarda o proximo <c>emissionSeq</c>, incrementado via findOneAndUpdate($inc)
+    /// dentro da transacao do gravador.
+    /// </summary>
+    public const string Sequencias = "sequencias";
+
+    /// <summary>Chave do contador de <c>emissionSeq</c> na collection de sequencias.</summary>
+    public const string ChaveEmissionSeq = "outbox_emission";
 }

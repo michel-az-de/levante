@@ -1,0 +1,5 @@
+{
+  "_fonte": "hiram/docs/contracts/v1-events.md + Hiram.Contracts (SubmitEventRequest, EventRecipient). Contrato congelado; mudanca aqui exige version bump no Hiram e revisao no Levante.",
+  "request": ["eventType", "eventId", "emissionSeq", "recipient", "logicalAlertId", "timezone", "data"],
+  "recipient": ["userId", "email", "phone"]
+}

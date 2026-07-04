@@ -12,8 +12,7 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Testcontainers.MongoDb" />
-    <PackageReference Include="Testcontainers.RabbitMq" />
-    <PackageReference Include="RabbitMQ.Client" />
+    <PackageReference Include="WireMock.Net" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
