@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Levante.SharedKernel.Infrastructure.Hiram;
 using Shouldly;
@@ -38,9 +37,11 @@ public sealed class HiramContratoTests
     private static string[] ChavesDe(JsonElement elemento) =>
         elemento.EnumerateObject().Select(p => p.Name).ToArray();
 
-    private static Contrato CarregarContrato([CallerFilePath] string arquivo = "")
+    private static Contrato CarregarContrato()
     {
-        var caminho = Path.Combine(Path.GetDirectoryName(arquivo)!, "hiram-events.contract.json");
+        // Copiado para o output pelo csproj: caminho estavel em qualquer build (o [CallerFilePath]
+        // vira caminho deterministico /_/... no CI e nao existe em runtime).
+        var caminho = Path.Combine(AppContext.BaseDirectory, "Contracts", "hiram-events.contract.json");
         return JsonSerializer.Deserialize<Contrato>(File.ReadAllText(caminho), Web)!;
     }
 

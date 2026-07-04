@@ -24,4 +24,9 @@
     <ProjectReference Include="..\..\src\api\host\Levante.Api\Levante.Api.csproj" />
   </ItemGroup>
 
+  <!-- Snapshot do contrato do Hiram, lido em runtime pelo contract-test. -->
+  <ItemGroup>
+    <Content Include="Contracts\hiram-events.contract.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
