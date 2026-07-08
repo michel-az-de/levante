@@ -6,7 +6,9 @@ Sequenciamento vigente das fatias, derivado do blueprint (§14) e de uma auditor
 
 Site no ar te vendendo: conteúdo público + admin (entregues) + engajamento + audiência com notificações via Hiram + **portfólio + leads**, em produção no domínio final. Todo o resto é evolução contínua, sem compromisso de escopo.
 
-Decisões já tomadas: hospedagem = Azure Container Apps (GAP-J), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — única decisão externa que bloqueia o lançamento.**
+Decisões já tomadas: hospedagem = Azure Container Apps (GAP-J), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — decidido durante a Fase D (marco D0 dentro de D3), sem bloquear o trabalho técnico anterior.**
+
+O plano operacional da reta final (D+E), com as decisões de produção e o checklist de go-live, está em [plano-mvp-producao.md](plano-mvp-producao.md).
 
 ## Fase A — Fundações rápidas (1 PR por fatia)
 
@@ -14,18 +16,18 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 
 | # | Fatia | Tamanho | Critério de pronto |
 |---|-------|---------|--------------------|
-| A1 | Higiene de CI: `[Trait(Category)]` nos unit tests, split unit/integração no polish, cobertura na Application (ou ADR), NuGet audit explícito, `MongoDbBuilder(image)` | P | `--filter "Category!=Integration"` filtra de verdade; CI com steps separados |
-| A2 | Harness de testes do frontend (Vitest + Testing Library) + job no polish | P/M | `npm test` existe e quebra o CI; regra "fatia de UI nasce com teste" |
-| A3 | Contrato de erro Result→HTTP consistente (400/404/409/500, ProblemDetails); validação de `MetaSeo` no validator; rehidratação tolerante | P | Teste de integração asserta status code por classe de erro |
-| A4 | Consolidação de MongoOptions em módulo compartilhado (TODO existente) | P | Uma única definição da seção `Mongo`; arch tests verdes |
-| A5 | Admin JWT: localStorage → cookie httpOnly via BFF no Next + CSRF | M | Nenhum token em localStorage; obrigatório antes de comentários |
+| A1 | Higiene de CI: `[Trait(Category)]` nos unit tests, split unit/integração no polish, cobertura na Application (ou ADR), NuGet audit explícito, `MongoDbBuilder(image)` | P | **Entregue.** `ci.yml` com split `Category!=Integration`/`=Integration` e cobertura como gate (`Threshold=80`) por assembly |
+| A2 | Harness de testes do frontend (Vitest + Testing Library) + job no polish | P/M | **Entregue.** `npm test` no job `polish`; 13 arquivos `*.test.ts(x)` em `src/web/src` |
+| A3 | Contrato de erro Result→HTTP consistente (400/404/409/500, ProblemDetails); validação de `MetaSeo` no validator; rehidratação tolerante | P | **Entregue.** `ResultadoHttpTests` asserta status por tipo de `Error` + ProblemDetails |
+| A4 | Consolidação de MongoOptions em módulo compartilhado (TODO existente) | P | **Entregue.** `MongoOptions` único no `SharedKernel.Infrastructure`; arch tests verdes |
+| A5 | Admin JWT: localStorage → cookie httpOnly via BFF no Next + CSRF | M | **Entregue.** Cookie httpOnly em `sessao/route.ts`; proxy admin 403 em origem cruzada |
 
 ## Fase B — Engajamento (contexto novo)
 
 | # | Fatia | Tamanho | Notas |
 |---|-------|---------|-------|
-| B1 | Reações/curtidas anônimas (rate limit + honeypot) | P/M | Primeiro contexto novo; replica o molde de Conteudo já com o contrato de erro da A3 |
-| B2 | Comentários com fila de moderação + anti-spam | G | `StatusComentario { Pendente, Aprovado, Rejeitado }`; depende de A5; eventos de domínio prontos para o Outbox |
+| B1 | Reações/curtidas anônimas (rate limit + honeypot) | P/M | **Entregue.** Contexto `Engajamento` (`Reacao`, endpoints com rate limit, `ReacoesArtigo.tsx` + teste) |
+| B2 | Comentários com fila de moderação + anti-spam | G | **Entregue.** `Comentario` (Pendente→Aprovado/Rejeitado), honeypot, `/admin/comentarios`; `ComentarioCriado` no Outbox |
 
 ## Fase C — Outbox + Audiência (a arquitetura de eventos vira real)
 
@@ -34,13 +36,13 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 | C0 | Spike GAP-F (mediator/Wolverine) + contrato Hiram (GAP-I) → ADR | P | Decisão do Felipe antes de C1; define envelope do IntegrationEvent |
 | C1 | Outbox transacional + relay (reconciliação/polling) + publisher RabbitMQ | G | **Entregue.** Evento na mesma transação do agregado; at-least-once (dedup por `eventId`); Testcontainers (Mongo + Rabbit). Polling em vez de Change Streams (ADR 0001) |
 | C2 | Audiencia: newsletter double opt-in via Hiram | G | **Entregue.** Agregado `Assinante`; consentimento LGPD com timestamp; token opaco; site nunca chama provedor de e-mail; não vaza existência de e-mail |
-| C3 | Notificação de comentário pendente via Hiram | P | `ComentarioCriado` já flui pelo Outbox; a **entrega** depende da Fatia D (emissão HTTP para o Hiram, [ADR 0002](adr/0002-emissao-hiram-http.md)) — mapeado como `comentario_pendente` → alerta ao admin |
+| C3 | Notificação de comentário pendente via Hiram | P | **Entregue (código).** `ComentarioCriado` → `comentario_pendente` no `MapeadorDeEmissao`, emitido pelo relay HTTP ([ADR 0002](adr/0002-emissao-hiram-http.md)). Entrega **fim-a-fim** depende do Hiram em produção (dependência operacional) |
 
 ## Fase D — Lançamento
 
 | # | Fatia | Tamanho | Notas |
 |---|-------|---------|-------|
-| D0 | **Decisão GAP-A (domínio)** | — | Do Felipe; sem ela a fase não inicia |
+| D0 | **Decisão GAP-A (domínio)** | — | **Marco dentro de D3, não pré-requisito da fase.** D1/D2 e a maior parte de D3 usam `SITE_URL` via env; a decisão do domínio entra no cutover (antes de DNS/canonical/Search Console) |
 | D1 | Observabilidade mínima: Serilog JSON + OpenTelemetry → App Insights | M | No ar junto com o primeiro deploy, não depois |
 | D2 | Vitrine de identidade (home/`/sobre`) + wa.me + política de privacidade | P/M | LGPD base: comentários e newsletter já coletam dados pessoais |
 | D3 | IaC (Bicep) + deploy Container Apps: API + web, Key Vault, CORS/CSP prod, DNS/TLS, deploy pós-`raise` com environment protection, Search Console | M/G | Pronto: merge na main → produção; securityheaders.com nota A |
