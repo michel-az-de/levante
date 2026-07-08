@@ -59,6 +59,11 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.9" />
     <!-- Stub HTTP do Hiram nos testes de integracao do relay (Apache-2.0). -->
     <PackageVersion Include="WireMock.Net" Version="2.11.0" />
+    <!-- Pin transitivo (CentralPackageTransitivePinningEnabled): o Scriban.Signed 7.2.0
+         trazido pelo WireMock.Net tem NU1902 moderado (GHSA-6q7j-xr26-3h2c /
+         GHSA-q6rr-fm2g-g5x8, corrigido em 7.2.1). 7.2.5 e a ultima do ramo 7.2.x.
+         Remover quando WireMock.Net referenciar >= 7.2.1. -->
+    <PackageVersion Include="Scriban.Signed" Version="7.2.5" />
   </ItemGroup>
 
   <!--
