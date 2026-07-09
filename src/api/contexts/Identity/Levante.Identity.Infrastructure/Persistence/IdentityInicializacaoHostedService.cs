@@ -9,8 +9,9 @@ using Microsoft.Extensions.Options;
 namespace Levante.Identity.Infrastructure.Persistence;
 
 /// <summary>
-/// Boot do contexto Identity: garante indices (sempre) e semeia o admin
-/// (somente fora de Producao, a partir de user-secrets; nunca senha no repo).
+/// Boot do contexto Identity: garante indices (sempre) e semeia o admin a partir de
+/// user-secrets/env (nunca senha no repo). Fora de Producao semeia automaticamente; em
+/// Producao so com o opt-in explicito Admin:PermitirSeedEmProducao.
 /// </summary>
 internal sealed class IdentityInicializacaoHostedService(
     IServiceProvider provider,
@@ -26,12 +27,15 @@ internal sealed class IdentityInicializacaoHostedService(
         var contexto = sp.GetRequiredService<IdentityMongoContext>();
         await contexto.EnsureIndexesAsync(cancellationToken);
 
-        if (ambiente.IsProduction())
+        var seed = seedOptions.Value;
+
+        // Em Producao o seed so ocorre com opt-in explicito (Admin:PermitirSeedEmProducao=true),
+        // usado pela stack conjunta na VM: cria o primeiro admin a partir do .env (chmod 600).
+        if (ambiente.IsProduction() && !seed.PermitirSeedEmProducao)
         {
-            return; // admin de producao = passo unico seguro, fora do boot
+            return;
         }
 
-        var seed = seedOptions.Value;
         if (string.IsNullOrWhiteSpace(seed.Email) || string.IsNullOrWhiteSpace(seed.SenhaInicial))
         {
             return; // sem seed configurado

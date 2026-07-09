@@ -107,7 +107,7 @@ Idempotência por `eventId`, retry e DLQ no consumidor. Esse é o mesmo padrão 
 | Persistência | **MongoDB.Driver** (nativo) + abstração de repositório | Provider EF Core p/ Mongo existe, mas para agregados ricos o driver nativo dá controle total |
 | Banco | **MongoDB Atlas**, replica set | Necessário para transações + Change Streams + Atlas Search (full-text) |
 | Validação | FluentValidation | No pipeline de Application |
-| Logs/Tracing | Serilog + OpenTelemetry → Application Insights | Estruturado desde o dia 1 |
+| Logs/Tracing | Serilog + OpenTelemetry → otel-lgtm na VM | Estruturado desde o dia 1; App Insights só se voltar ao Azure |
 | PDF | **QuestPDF** (licença Community grátis abaixo do limite de receita) | §11 |
 | Word | OpenXML SDK (skill docx) | §11 |
 
@@ -253,14 +253,14 @@ Isso é o que transforma "blog" em "fonte oficial". (GAP-C define a profundidade
 - Auth: ASP.NET Core Identity + **TOTP MFA** (admin único). Alternativa: Entra ID externo. Roles: Admin (futuro: Editor).
 - **Moderação**: fila de comentários pendentes → aprovar/reprovar/spam; anti-spam (honeypot + rate limit + heurística).
 - Headers: HSTS, CSP, X-Content-Type-Options, Referrer-Policy; anti-forgery; rate limiting nativo do .NET; validação de entrada.
-- Secrets: **Azure Key Vault** (prod) / User Secrets (dev).
+- Secrets: **`.env` na VM (chmod 600, backup off-host cifrado)** (prod) / User Secrets (dev). Key Vault fica como hardening se voltar ao Azure (ADR 0003).
 
 ### Infra
-- Host: **Azure Container Apps** (equilíbrio custo/escala) ou App Service (mais simples). AKS é overkill (GAP-J).
-- DB: **MongoDB Atlas** (replica set, backup gerenciado, Atlas Search).
+- Host: **VM conjunta com o Hiram via Docker Compose**, Caddy como borda pública (GAP-J resolvido, ver `docs/adr/0003-hospedagem-vm-conjunta-hiram.md`). A análise original comparava Container Apps vs App Service; a VM ganhou por custo e por encaixar o relay always-on.
+- DB: **MongoDB Atlas** (replica set, backup gerenciado, Atlas Search), externo à VM com usuário de privilégio mínimo.
 - **Backup/DR como item de primeira classe**: backup automático testado com restore periódico. Backup que nunca foi restaurado não é backup.
-- CI/CD: **GitHub Actions** (fecha o ciclo com a integração GitHub) → build/test/deploy, ambientes dev/prod.
-- IaC: Bicep (Azure-native) ou Terraform.
+- CI/CD: **GitHub Actions** (fecha o ciclo com a integração GitHub) → build/test, publica imagens no GHCR, CD escopado por SSH na VM.
+- IaC/config: stack **Docker Compose** + scripts de provisionamento (repo Hiram, `deploy/stack`). Bicep/Terraform ficaram fora com a VM (ADR 0003).
 - CDN: Azure Front Door para cache de borda e assets (ajuda CWV/SEO).
 
 ---
@@ -297,4 +297,4 @@ Princípio: cada fatia é vertical (entrega valor de ponta a ponta), não horizo
 | **G** | WhatsApp: click-to-chat (MVP) vs Cloud API | Click-to-chat agora, Cloud API só com automação |
 | **H** | Idiomas: PT só ou PT + EN | PT+EN amplia alcance mas dobra esforço de conteúdo e exige hreflang |
 | **I** | Contrato de eventos com Hiram | Reusar schema existente; alinhar como o Hiram consome hoje |
-| **J** | Hospedagem: Container Apps vs App Service | Container Apps |
+| **J** | Hospedagem: Container Apps vs App Service vs VM | **VM conjunta com o Hiram (ADR 0003)** |

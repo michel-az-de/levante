@@ -189,7 +189,7 @@ Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 - WhatsApp Cloud API: por ora só click-to-chat (`wa.me`).
 - Domínio do site (GAP-A): pendente; bloqueia a fatia de lançamento. Não assumir URL base definitiva (sempre via `SITE_URL`/env).
 
-Decididos (não são mais GAPs): idioma PT-only (GAP-H), hospedagem Azure Container Apps (GAP-J) e **contrato de eventos com o Hiram (GAP-I) = HTTP `POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**.
+Decididos (não são mais GAPs): idioma PT-only (GAP-H), **hospedagem = VM conjunta com o Hiram via Docker Compose (GAP-J, ver `docs/adr/0003-hospedagem-vm-conjunta-hiram.md`)** e **contrato de eventos com o Hiram (GAP-I) = HTTP `POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**.
 
 O roadmap de fatias vigente está em `docs/roadmap.md`.
 

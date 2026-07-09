@@ -6,7 +6,7 @@ Sequenciamento vigente das fatias, derivado do blueprint (§14) e de uma auditor
 
 Site no ar te vendendo: conteúdo público + admin (entregues) + engajamento + audiência com notificações via Hiram + **portfólio + leads**, em produção no domínio final. Todo o resto é evolução contínua, sem compromisso de escopo.
 
-Decisões já tomadas: hospedagem = Azure Container Apps (GAP-J), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — decidido durante a Fase D (marco D0 dentro de D3), sem bloquear o trabalho técnico anterior.**
+Decisões já tomadas: hospedagem = **VM conjunta com o Hiram via Docker Compose** (GAP-J resolvido, [ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — decidido durante a Fase D (marco D0 dentro de D3), sem bloquear o trabalho técnico anterior.**
 
 O plano operacional da reta final (D+E), com as decisões de produção e o checklist de go-live, está em [plano-mvp-producao.md](plano-mvp-producao.md).
 
@@ -43,9 +43,9 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 | # | Fatia | Tamanho | Notas |
 |---|-------|---------|-------|
 | D0 | **Decisão GAP-A (domínio)** | — | **Marco dentro de D3, não pré-requisito da fase.** D1/D2 e a maior parte de D3 usam `SITE_URL` via env; a decisão do domínio entra no cutover (antes de DNS/canonical/Search Console) |
-| D1 | Observabilidade mínima: Serilog JSON + OpenTelemetry → App Insights | M | No ar junto com o primeiro deploy, não depois |
+| D1 | Observabilidade mínima: logs JSON + OpenTelemetry (OTLP) → `otel-lgtm` na VM (Tempo/Loki/Prometheus) | M | No ar junto com o primeiro deploy, não depois |
 | D2 | Vitrine de identidade (home/`/sobre`) + wa.me + política de privacidade | P/M | LGPD base: comentários e newsletter já coletam dados pessoais |
-| D3 | IaC (Bicep) + deploy Container Apps: API + web, Key Vault, CORS/CSP prod, DNS/TLS, deploy pós-`raise` com environment protection, Search Console | M/G | Pronto: merge na main → produção; securityheaders.com nota A |
+| D3 | Deploy na VM conjunta (Compose): imagens `levante-api`+`levante-web` no GHCR, Mongo Atlas (privilégio mínimo), CORS/CSP prod, DNS/TLS via Caddy, CD escopado pós-`raise` com environment protection, Search Console | M/G | Pronto: merge na main → produção ([ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)); securityheaders.com nota A |
 
 ## Fase E — Completar o MVP (em produção)
 
