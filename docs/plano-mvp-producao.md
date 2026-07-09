@@ -44,11 +44,11 @@ Ordem: **D1 → D2 → D3 (com o marco D0 no meio) → E1 → E2 → E3**. Obser
 
 ### D1 — Observabilidade mínima
 
-Logs estruturados em JSON, export OTel → Application Insights, request logging. Antes de somar Serilog como segundo stack, avaliar o caminho enxuto: OTel logs + formatter JSON no console.
+Logs estruturados em JSON, export OTel (OTLP) → coletor `otel-lgtm` na VM (traces em Tempo, logs em Loki, métricas em Prometheus; Grafana por túnel SSH), com trace único Levante→Hiram→provider. O app já emite OTLP (`OTEL_EXPORTER_OTLP_ENDPOINT`), então é só apontar para `http://lgtm:4317` — sem SDK de Azure. Antes de somar Serilog como segundo stack, avaliar o caminho enxuto: OTel logs + formatter JSON no console.
 
 - Ligar os probes existentes (`/health/live`, `/health/ready`) no **healthcheck do compose** com **`retries`/intervalo tolerantes a blips curtos** do Atlas — readiness afirma Mongo, e sem essa folga um blip vira flapping de restart. O healthcheck do web usa a rota `/api/health` (**feita**).
-- **Request logging cria coleta nova de dado pessoal** (IPs, user-agents no App Insights): D1 **fixa o período de retenção** (default 90 dias — escolher e registrar) e avalia mascarar o IP no telemetry processor para simplificar a base legal. Esse número é escrito na política em D2.
-- A partir daqui `emissoes_falhadas` tem export/alerta — pré-requisito do trigger de rollback.
+- **Request logging cria coleta nova de dado pessoal** (IPs, user-agents na telemetria): fica na VM (Loki no `lgtm`), não sai para terceiro. D1 **fixa o período de retenção** (retention do Loki — escolher e registrar) e avalia mascarar o IP no processor OTel antes do export, para simplificar a base legal. Esse número é escrito na política em D2.
+- A partir daqui `emissoes_falhadas` tem export/alerta (Grafana/Alertmanager sobre a métrica no `lgtm`) — pré-requisito do trigger de rollback.
 
 ### D2 — Vitrine de identidade + LGPD
 

@@ -73,6 +73,7 @@ Esse é o único fator que inverte a recomendação.
   off-host com restore testado do keyring/provision-state/dumps; seed de admin em Produção via opt-in
   `Admin:PermitirSeedEmProducao` (senão não há admin); `ForwardedHeaders` e `SITE_URL` fail-fast;
   auditoria do Caddyfile confirmando que nenhuma UI de gestão (`/mailpit`, rabbit, grafana) é pública.
+- **Observabilidade:** OTLP → coletor `otel-lgtm` na VM (Tempo/Loki/Prometheus, Grafana por túnel SSH), com trace único Levante→Hiram→provider. **App Insights não é reintroduzido** (re-adicionaria dependência do Azure, veria só o Levante e mandaria PII ao Azure); fica como fallback só se voltar ao Azure. O app já é OTLP-native (sem código de Azure); dar `mem_limit` ao `lgtm` e alertar `emissoes_falhadas` via Grafana/Alertmanager. Ver D1 do plano de MVP.
 - **Docs:** o **D3** do plano de MVP é reescrito para a stack Compose na VM (Bicep/ACA/Key Vault/OIDC/
   Container-Apps-Job saem); o que continua válido permanece (CSP Report-Only, `ForwardedHeaders`,
   noindex provisório, `SITE_URL` em runtime, web em 1 réplica, smoke, rollback em par API/web,

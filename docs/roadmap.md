@@ -43,7 +43,7 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 | # | Fatia | Tamanho | Notas |
 |---|-------|---------|-------|
 | D0 | **Decisão GAP-A (domínio)** | — | **Marco dentro de D3, não pré-requisito da fase.** D1/D2 e a maior parte de D3 usam `SITE_URL` via env; a decisão do domínio entra no cutover (antes de DNS/canonical/Search Console) |
-| D1 | Observabilidade mínima: Serilog JSON + OpenTelemetry → App Insights | M | No ar junto com o primeiro deploy, não depois |
+| D1 | Observabilidade mínima: logs JSON + OpenTelemetry (OTLP) → `otel-lgtm` na VM (Tempo/Loki/Prometheus) | M | No ar junto com o primeiro deploy, não depois |
 | D2 | Vitrine de identidade (home/`/sobre`) + wa.me + política de privacidade | P/M | LGPD base: comentários e newsletter já coletam dados pessoais |
 | D3 | Deploy na VM conjunta (Compose): imagens `levante-api`+`levante-web` no GHCR, Mongo Atlas (privilégio mínimo), CORS/CSP prod, DNS/TLS via Caddy, CD escopado pós-`raise` com environment protection, Search Console | M/G | Pronto: merge na main → produção ([ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)); securityheaders.com nota A |
 

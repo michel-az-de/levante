@@ -107,7 +107,7 @@ Idempotência por `eventId`, retry e DLQ no consumidor. Esse é o mesmo padrão 
 | Persistência | **MongoDB.Driver** (nativo) + abstração de repositório | Provider EF Core p/ Mongo existe, mas para agregados ricos o driver nativo dá controle total |
 | Banco | **MongoDB Atlas**, replica set | Necessário para transações + Change Streams + Atlas Search (full-text) |
 | Validação | FluentValidation | No pipeline de Application |
-| Logs/Tracing | Serilog + OpenTelemetry → Application Insights | Estruturado desde o dia 1 |
+| Logs/Tracing | Serilog + OpenTelemetry → otel-lgtm na VM | Estruturado desde o dia 1; App Insights só se voltar ao Azure |
 | PDF | **QuestPDF** (licença Community grátis abaixo do limite de receita) | §11 |
 | Word | OpenXML SDK (skill docx) | §11 |
 

@@ -187,7 +187,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | VM conjunta (Docker Compose) | Trav. | GAP-J resolvido → VM com o Hiram (ADR 0003) |
 | GitHub Actions | Rec. | CI/CD (imagens no GHCR + CD por SSH) |
 | Docker Compose (stack conjunta) | Trav. | stack + provisioning no repo Hiram (ADR 0003) |
-| OpenTelemetry + App Insights | Rec. | observabilidade |
+| OpenTelemetry (OTLP) → otel-lgtm | Trav. | observabilidade na VM (Tempo/Loki/Prometheus); App Insights só se voltar ao Azure |
 | Serilog | Rec. | logs estruturados |
 | Azure Front Door | Rec. | CDN, ajuda CWV |
 
