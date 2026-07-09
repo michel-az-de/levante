@@ -3,8 +3,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Central Package Management: os props da raiz precisam existir antes do restore.
-COPY global.json Directory.Build.props Directory.Packages.props ./
+# Config da raiz herdada por src/api: CPM (props), analyzers (.editorconfig) e a lista do
+# BannedApiAnalyzers (BannedSymbols.txt, AdditionalFile em Directory.Build.props). Sem esses
+# arquivos o publish quebra (CS2001 + regras de analyzer viram erro com warnings-as-errors).
+COPY global.json Directory.Build.props Directory.Packages.props .editorconfig BannedSymbols.txt ./
 COPY src/api/ src/api/
 RUN --mount=type=cache,target=/root/.nuget/packages,id=nuget \
     dotnet restore src/api/host/Levante.Api/Levante.Api.csproj
