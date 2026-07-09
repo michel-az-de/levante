@@ -184,9 +184,9 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 ### Infra & DevOps
 | Item | Status | Nota |
 |------|--------|------|
-| Azure Container Apps | Trav. | GAP-J resolvido → Container Apps |
-| GitHub Actions | Rec. | CI/CD |
-| Bicep / Terraform | Rec. | IaC |
+| VM conjunta (Docker Compose) | Trav. | GAP-J resolvido → VM com o Hiram (ADR 0003) |
+| GitHub Actions | Rec. | CI/CD (imagens no GHCR + CD por SSH) |
+| Docker Compose (stack conjunta) | Trav. | stack + provisioning no repo Hiram (ADR 0003) |
 | OpenTelemetry + App Insights | Rec. | observabilidade |
 | Serilog | Rec. | logs estruturados |
 | Azure Front Door | Rec. | CDN, ajuda CWV |
@@ -199,7 +199,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 |-----|----------|--------------|
 | D | Frontend | **Resolvido → React/Next.js** |
 | H | Idiomas | **Resolvido → PT-only** (PT+EN fica como evolução futura; sem hreflang por ora) |
-| J | Host | **Resolvido → Azure Container Apps** |
+| J | Host | **Resolvido → VM conjunta com o Hiram (ADR 0003)** |
 | A | Domínio (.dev) do site | **decisão do Felipe pendente — bloqueia a fatia de lançamento** (afeta SEO/schema/canonical/`SITE_URL`) |
 | B | Nível de assinatura de documentos | MVP 1-2; jurídico só se necessário |
 | C | Profundidade do modelo científico | template + DOI via Zenodo |
@@ -219,4 +219,4 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 
 ---
 
-Estado geral: 10 GAPs no total, 3 resolvidos (D frontend → React/Next.js, H idioma → PT-only, J host → Container Apps) e 7 abertos — sendo GAP-A (domínio) o único que bloqueia o lançamento, e GAP-F/GAP-I agendados para o spike da fatia do Outbox. 4 armadilhas de licença mapeadas com saída. O núcleo arquitetural (Clean Arch, DDD, contextos, outbox → Hiram, React/Next.js + .NET) está travado; o que falta é decisão pontual de ferramenta e escopo. O sequenciamento das fatias está em `docs/roadmap.md`.
+Estado geral: 10 GAPs no total, 3 resolvidos (D frontend → React/Next.js, H idioma → PT-only, J host → VM conjunta com o Hiram) e 7 abertos — sendo GAP-A (domínio) o único que bloqueia o lançamento, e GAP-F/GAP-I agendados para o spike da fatia do Outbox. 4 armadilhas de licença mapeadas com saída. O núcleo arquitetural (Clean Arch, DDD, contextos, outbox → Hiram, React/Next.js + .NET) está travado; o que falta é decisão pontual de ferramenta e escopo. O sequenciamento das fatias está em `docs/roadmap.md`.

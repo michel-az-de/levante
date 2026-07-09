@@ -31,7 +31,7 @@ Fases A, B e C entregues. Evidência direta no repositório (não inferência):
 Base de testes do backend: 214 `[Fact]`/`[Theory]` em 6 projetos. CI verde na `main`.
 
 Achados que orientam as decisões de produção abaixo:
-- O claim do relay **não é atômico** (`Find` + `UpdateOne`): sob concorrência há emissão duplicada; com scale-to-zero o relay para e o outbox acumula.
+- O claim do relay **não é atômico** (`Find` + `UpdateOne`): sob concorrência (múltiplas réplicas) há emissão duplicada — seguro com 1 réplica na VM. Se o processo do relay parar (deploy/restart), o outbox acumula até voltar.
 - `Idempotency-Key` = `eventId` = id da linha do outbox (dedupa retry sem colapsar eventos distintos) — correto no lado Levante; falta validar em produção que o **Hiram** persiste e respeita a chave.
 - A métrica `emissoes_falhadas` existe como counter OTel, mas sem export/alerta até **D1**.
 - Health probes `/health/live` e `/health/ready` já existem na API; o web ainda não tem healthcheck.
@@ -46,7 +46,7 @@ Ordem: **D1 → D2 → D3 (com o marco D0 no meio) → E1 → E2 → E3**. Obser
 
 Logs estruturados em JSON, export OTel → Application Insights, request logging. Antes de somar Serilog como segundo stack, avaliar o caminho enxuto: OTel logs + formatter JSON no console.
 
-- Ligar os probes existentes (`/health/live`, `/health/ready`) no Container Apps com **`failureThreshold`/intervalo tolerantes a blips curtos** do Atlas — readiness afirma Mongo, e sem essa folga um blip vira flapping de rotação. Adicionar healthcheck simples no web.
+- Ligar os probes existentes (`/health/live`, `/health/ready`) no **healthcheck do compose** com **`retries`/intervalo tolerantes a blips curtos** do Atlas — readiness afirma Mongo, e sem essa folga um blip vira flapping de restart. O healthcheck do web usa a rota `/api/health` (**feita**).
 - **Request logging cria coleta nova de dado pessoal** (IPs, user-agents no App Insights): D1 **fixa o período de retenção** (default 90 dias — escolher e registrar) e avalia mascarar o IP no telemetry processor para simplificar a base legal. Esse número é escrito na política em D2.
 - A partir daqui `emissoes_falhadas` tem export/alerta — pré-requisito do trigger de rollback.
 
@@ -57,19 +57,19 @@ Logs estruturados em JSON, export OTel → Application Insights, request logging
 - A política cobre **o que já se coleta hoje**: comentários (nome, conteúdo), e-mail de assinante, IP usado em rate limiting e no hash de origem, logs/telemetria com o período de retenção fixado em D1 (base legal por item: interesse legítimo vs consentimento). E **descreve prospectivamente os leads** (UTM/origem) para não nascer defasada quando E1 entrar — E1 tem passo de revisão da política.
 - Encaixes de confiabilidade do front: `error.tsx` global (500 gracioso) e `LINKEDIN_URL` no JSON-LD `Person`.
 
-### D3 — IaC + deploy
+### D3 — Deploy na VM conjunta
 
-Bicep, Container Apps (API + web), Key Vault, MongoDB Atlas de produção, CORS/CSP de produção, DNS/TLS, environment protection, Search Console. Meta de headers: **A no securityheaders.com exceto a CSP** (ver decisão abaixo).
+Stack Compose na VM do Hiram ([ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)): imagens `levante-api`+`levante-web` no GHCR, MongoDB Atlas de produção (privilégio mínimo), CORS/CSP de produção, DNS/TLS via **Caddy** (Let's Encrypt automático), CD escopado pós-`raise` com environment protection, Search Console. Meta de headers: **A no securityheaders.com exceto a CSP** (ver decisão abaixo).
 
-**Acesso de rede ao Atlas.** Os IPs de egress do Container Apps não são estáticos por default (só com VNet custom + NAT Gateway). Opção do MVP: allowlist `0.0.0.0/0` + TLS + auth forte + conta least-privilege — comum e aceitável, registrado como **aceite consciente**. Hardening: **Private Endpoint** (suportado no tier de produção; soma custo de Private Link). O deploy trava aqui no primeiro connect se a decisão não existir.
+**Acesso de rede ao Atlas.** A VM tem IP público fixo, então o allowlist do Atlas é o **IP da VM** (não `0.0.0.0/0`) + TLS + auth forte + conta least-privilege. Hardening: **Private Endpoint/PrivateLink** se a nuvem da VM suportar. A conta de runtime é **de privilégio mínimo** (sem role administrativa): o self-check de boot aborta em Produção se não for, e há teste no gate `polish`. Os containers `mongo`/`mongo-rs-init` embutidos da stack são removidos (Mongo fica externo no Atlas). O deploy trava no primeiro connect se allowlist/usuário não existir.
 
 **Tier do Atlas.** Backup automático + PITR exige **M10+** — é o piso de custo que o checklist de backup/restore assume. Alternativa mais barata (M0/M2 + snapshot/`mongodump`) rebaixa a garantia e, se adotada, precisa ser dita.
 
-**Topologia do relay do outbox.** Default: **Container Apps Job** (cron ~2–5 min) — mais barato (a API pode escalar a zero; latência de minutos é aceitável para double opt-in). Alternativa: API com `min replicas 1` para latência quase-zero, ao custo de uma réplica always-on. Independentemente da topologia, **o claim do outbox passa a ser atômico** (`FindOneAndUpdate` com filtro de status + lease/timeout): o Job **não é single-writer por construção** (não há equivalente a `concurrencyPolicy: Forbid`; execução seguinte inicia em paralelo se a anterior ainda roda, e KEDA na profundidade do outbox pode disparar execuções concorrentes). `replicaTimeout < intervalo do cron` é mitigação frágil, não substitui o claim.
+**Topologia do relay do outbox.** Na VM o relay é o `BackgroundService` in-process da `levante-api`, com **1 réplica sempre ligada** (`restart: unless-stopped`) — a forma natural do workload (sem scale-to-zero para o relay parar, sem cold start; latência quase-zero). Como é single-writer por construção (1 réplica, sem `deploy.replicas>1`) e a idempotência por `eventId` do Hiram cobre um POST concorrente, o claim `Find`+`UpdateOne` atual é seguro aqui. **Escalar além de 1 réplica exige antes tornar o claim atômico** (`FindOneAndUpdate` com filtro de status + lease/timeout) — follow-up, ver [ADR 0002](adr/0002-emissao-hiram-http.md).
 
 **CSP.** No go-live a CSP vai como **`Content-Security-Policy-Report-Only`**, com endurecimento para enforcement como item pós-D3. Motivo: nenhuma CSP estrita sobrevive à arquitetura SSG/ISR atual. Nonce por request força dynamic rendering global e mata o cache do blog. Hash-based quebra no ISR — o payload RSC é inlinado (`self.__next_f.push(...)`) e a primeira revalidação regenera inlines cujos hashes não estão na CSP assada no build. A escolha é binária: nota A agora (dynamic global) **ou** CSP correta sem matar o ISR — o MVP escolhe a segunda. O Report-Only exige `report-to`/`report-uri` apontando para um **route handler próprio que loga o JSON da violação** (App Insights não recebe CSP reports nativamente); sem endpoint, as violações morrem no console dos visitantes e o endurecimento nunca tem dados. A CSP já antecipa as fontes de E2/E3 (imagens/avatares do GitHub em `img-src`, GitHub API em `connect-src` do server).
 
-**IP real atrás do ingress.** Configurar `ForwardedHeadersOptions` com **`ForwardLimit = 1`** (confiar só no último hop, o do ingress) e **limpar `KnownNetworks`/`KnownProxies`** (o default é loopback-only; limpar é pré-condição para confiar no proxy do ACA, cujos IPs não são estáticos). Sem isso os buckets de rate limit por IP já em produção viram globais ou spoofáveis — pior que o estado atual.
+**IP real atrás do Caddy.** `ForwardedHeadersOptions` com **`ForwardLimit = 1`** (confiar só no último hop) e **`KnownIPNetworks`/`KnownProxies` limpos**, ativado **só fora de Development** (honrar `X-Forwarded-For` sem proxy confiável na frente permitiria spoof em dev/testes). **Feito** em `Program.cs`. Ressalva: o caminho público é browser→Caddy→web(BFF)→api, então o rate limit por-cliente real ainda exige o BFF do web propagar o `X-Forwarded-For` do cliente (follow-up); sem isso os buckets de rate limit por IP agregam no IP do container web.
 
 **noindex no host provisório.** `X-Robots-Tag: noindex` **condicional ao header `Host`** (`*.azurecontainerapps.io`), via middleware — a mesma app serve o domínio final pós-cutover, e um header fixo vazaria para ele.
 
@@ -77,7 +77,7 @@ Bicep, Container Apps (API + web), Key Vault, MongoDB Atlas de produção, CORS/
 
 **Web em 1 réplica no MVP** (`min=max=1`). O cache ISR do Next é filesystem por instância: `revalidatePath` atinge só a réplica que recebeu o request, as outras servem stale até o TTL. O fluxo "publicar no admin → revalidar o blog" só é determinístico com 1 réplica ou `cacheHandler` compartilhado (Redis, fora do MVP). Amarra a dívida "revalidate ISR centralizado", que passa a ser "cacheHandler compartilhado quando escalar".
 
-**Fecho de D3:** fail-fast de `SITE_URL` no boot do container (TODO em `src/web/src/lib/site.ts`), `.env.example` do web, confirmação dos índices Mongo em produção.
+**Fecho de D3:** fail-fast de `SITE_URL` no boot do container (**feito** em `src/web/src/instrumentation.ts`), `.env.example` do web (existe) e da API (`src/api/.env.example`, **feito**), seed de admin em Produção via `Admin:PermitirSeedEmProducao` (**feito**), limites de recurso/OOM nos data stores da stack (`hiram/deploy/stack`), confirmação dos índices Mongo em produção.
 
 #### Marco D0 — domínio (dentro de D3)
 
@@ -109,16 +109,16 @@ Semântica de disponibilidade: **`/health/ready` afirma Mongo, não Hiram** — 
 
 1. Decidir newsletter in/out conforme prontidão do Hiram (form ativado sempre pós-D0).
 2. Atlas de produção: tier definido, modelo de acesso de rede decidido, conta least-privilege.
-3. Key Vault + secrets.
-4. Pipeline publica **imagem imutável taggeada por SHA do commit** (nunca `latest`) — fundação dos dois runbooks de rollback; com `latest`, a revision anterior aponta para tag mutada e o rollback vira no-op silencioso.
-5. Deploy GitHub Actions → Azure via **OIDC federated credentials** (sem secret de service principal de longa duração).
-6. Deploy no Container Apps: API + web (1 réplica) + Job do relay.
+3. `.env` da stack na VM (chmod 600, dono = usuário de deploy) + secrets; backup **off-host cifrado** do keyring do Hiram, `.provision-state` e dumps (Postgres/Mongo).
+4. Pipeline publica **imagens imutáveis** (`levante-api`+`levante-web`, do mesmo commit) taggeadas por SHA (nunca `latest` em produção) — fundação do rollback; produção fixa o `<sha>` no `LEVANTE_IMAGE_TAG`, com `latest` o re-pin viraria no-op silencioso.
+5. Deploy GitHub Actions → VM via **SSH** (chave dedicada, `known_hosts` fixado, environment protection), escopado por serviço/tag; inerte até a variável `DEPLOY_ENABLED`.
+6. Deploy na VM (Compose): `levante-api` (relay in-process, 1 réplica) + `levante-web` (1 réplica), atrás do Caddy. O deploy do Levante recria **só esses 2 serviços** (Hiram/Postgres/Caddy intactos).
 7. **Smoke automatizado como step do pipeline**: `/health/ready` + 2–3 páginas públicas + **1 chamada dinâmica não autenticada que atravessa o contrato web→API** (a rota pública de reações que o `ReacoesArtigo.tsx` consome — não o proxy admin, que exige sessão). Páginas SSG passam de cache mesmo com a API incompatível; só a chamada dinâmica pega o cenário "par API/web quebrado".
 8. Marco D0 (domínio, DNS/TLS, revalidate, remover noindex, ativar newsletter).
 9. Search Console + Bing Webmaster.
 10. Verificar headers: A exceto CSP (que está em Report-Only).
 11. Backup automático + **restore testado em cluster scratch** (nunca em produção).
-12. **Rollback definido.** Gatilho: smoke falho, 5xx sustentado, `emissoes_falhadas` disparando (esse último só vale pós-D1). Procedimento no MVP: **o pipeline falha e um humano executa o runbook** (sem rollback automático condicional). Reverter **em par API/web** (o web assa o contrato da API no build; reverter um lado só exige checar compatibilidade). O **relay tem procedimento próprio** — Container Apps Jobs não têm revisions, então o rollback do Job é redeploy da image tag (SHA) anterior via update do template. **Rollback cobre código, não dados**: disciplina forward-only para qualquer mudança de schema/collection nas fatias E.
+12. **Rollback definido.** Gatilho: smoke falho, 5xx sustentado, `emissoes_falhadas` disparando (esse último só vale pós-D1). Procedimento no MVP: **o pipeline falha e um humano executa o runbook** (sem rollback automático condicional). Reverter **em par API/web** (o web assa o contrato da API no build; reverter um lado só exige checar compatibilidade), re-pinando o `LEVANTE_IMAGE_TAG` no SHA anterior + `up -d levante-api levante-web`. O **relay volta junto com a API** (é in-process na `levante-api`), sem procedimento separado. **Rollback cobre código, não dados**: disciplina forward-only para qualquer mudança de schema/collection nas fatias E.
 
 ## Riscos residuais aceitos
 
@@ -126,7 +126,8 @@ Semântica de disponibilidade: **`/health/ready` afirma Mongo, não Hiram** — 
 - **Dependência operacional do Hiram** para o caminho de e-mail (mitigada pela flag de fallback).
 - **Sem staging**: a Fase E itera direto em produção sob environment protection — aceitável para leads/portfólio, barateado pelo smoke automatizado.
 - **Relay at-least-once dedupado a jusante** (lease sem fencing).
-- **Efeitos do scale-to-zero**: cold start de segundos no primeiro comentário/reação após ociosidade (UX do engajamento) e rate limit in-memory que reseta a cada cold start e é por réplica quando escala além de 1.
+- **VM compartilhada com o Hiram** ([ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)): uma VM cai = os dois produtos caem; vizinho barulhento mitigado por limites de recurso/OOM nos data stores. Reversão da decisão se o Hiram ganhar tenants externos.
+- **Rate limit in-memory**: reseta a cada restart/deploy do container e é por réplica (1 réplica na VM = global por instância). Sem scale-to-zero na VM, não há cold start no engajamento.
 
 ## Fora de escopo do MVP
 
