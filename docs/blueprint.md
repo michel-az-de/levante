@@ -160,7 +160,7 @@ Pontos de atenção (são onde Mongo "morde"):
   - `BreadcrumbList`, `WebSite` + `SearchAction`.
 - **Meta por artigo** (editável no admin): title ≤60 char, description ≤155, Open Graph, Twitter Card, `article:published_time`, autor.
 - **RSS/Atom feed**.
-- **hreflang** se houver PT + EN (GAP-H).
+- **hreflang**: não se aplica — GAP-H reabriu chrome bilíngue PT/EN (nav, labels, textos estáticos), mas sem rotas por locale nem tradução do corpo do artigo (ver `docs/adr/0005-idioma-chrome-bilingue.md`).
 - 404 custom, HTTPS, HSTS.
 - Integração com **Google Search Console** + envio de sitemap; Bing Webmaster.
 

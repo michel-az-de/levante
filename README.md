@@ -80,7 +80,7 @@ dotnet tool restore && dotnet husky install            # gitleaks deve estar no 
 
 ## Status
 
-Em construção. Roadmap vigente em [`docs/roadmap.md`](docs/roadmap.md): Fase A (fundações — testes de front, higiene de CI, contrato de erro, BFF do admin) → Engajamento → Outbox+Audiência (Hiram) → lançamento (Azure Container Apps, PT-only) → portfólio + leads = MVP concluído.
+Em construção. Roadmap vigente em [`docs/roadmap.md`](docs/roadmap.md): Fase A (fundações — testes de front, higiene de CI, contrato de erro, BFF do admin) → Engajamento → Outbox+Audiência (Hiram) → lançamento (VM conjunta com o Hiram) → portfólio + leads = MVP concluído.
 
 **Fase C — em andamento** (C1 outbox + C2 audiência): eventos de domínio (`ArtigoPublicado`, `ComentarioCriado`, `ComentarioAprovado`, e agora `AssinaturaSolicitada`/`AssinanteConfirmado`/`AssinaturaCancelada`) vão a um **Outbox transacional** e um relay (reconciliação por polling → RabbitMQ) os publica para o **Hiram** entregar. Envelope provisório documentado em [`docs/adr/0001-outbox-envelope-hiram.md`](docs/adr/0001-outbox-envelope-hiram.md). A escrita usa transação onde há replica set (Atlas); em single-node degrada para sequencial (dev/test).
 

@@ -6,7 +6,7 @@ Sequenciamento vigente das fatias, derivado do blueprint (§14) e de uma auditor
 
 Site no ar te vendendo: conteúdo público + admin (entregues) + engajamento + audiência com notificações via Hiram + **portfólio + leads**, em produção no domínio final. Todo o resto é evolução contínua, sem compromisso de escopo.
 
-Decisões já tomadas: hospedagem = **VM conjunta com o Hiram via Docker Compose** (GAP-J resolvido, [ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)), idioma = PT-only (GAP-H), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — decidido durante a Fase D (marco D0 dentro de D3), sem bloquear o trabalho técnico anterior.**
+Decisões já tomadas: hospedagem = **VM conjunta com o Hiram via Docker Compose** (GAP-J resolvido, [ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.md)), idioma = **chrome bilíngue PT/EN, conteúdo de artigo continua PT-only** (GAP-H reaberto, [ADR 0005](adr/0005-idioma-chrome-bilingue.md)), **contrato Hiram = HTTP `POST /v1/events` (GAP-I resolvido, [ADR 0002](adr/0002-emissao-hiram-http.md))**. **Pendente: domínio (GAP-A) — decidido durante a Fase D (marco D0 dentro de D3), sem bloquear o trabalho técnico anterior.**
 
 O plano operacional da reta final (D+E), com as decisões de produção e o checklist de go-live, está em [plano-mvp-producao.md](plano-mvp-producao.md).
 
@@ -59,7 +59,7 @@ Dívidas baratas que apodrecem a cada contexto novo. Fazer antes de multiplicar 
 
 ## Evolução contínua (pós-MVP, sem compromisso)
 
-`/tag/[slug]` (quick win, cabe em qualquer folga) · MFA TOTP · Analytics first-party + banner de consentimento (banner ANTES de rastrear) · dashboard admin · página `/arquitetura` (meta-portfólio) · Documents (bloqueado por GAP-B/GAP-C; decidir só com demanda real) · design tokens / passada de Core Web Vitals. i18n descartado enquanto GAP-H = PT-only.
+`/tag/[slug]` (quick win, cabe em qualquer folga) · MFA TOTP · Analytics first-party + banner de consentimento (banner ANTES de rastrear) · dashboard admin · página `/arquitetura` (meta-portfólio) · Documents (bloqueado por GAP-B/GAP-C; decidir só com demanda real) · design tokens / passada de Core Web Vitals. tradução do corpo de artigo (i18n de conteúdo — distinto do chrome bilíngue PT/EN já reaberto, GAP-H/ADR 0005).
 
 ## Dívidas conhecidas fora das fatias (oportunistas)
 
