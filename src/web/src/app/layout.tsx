@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/lib/site";
+import { scriptBootTemaIdioma } from "@/lib/tema-idioma-boot";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,8 +19,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" data-theme="dark" data-idioma="pt" suppressHydrationWarning>
+      <body>
+        {/* Anti-FOUC: restaura tema/idioma salvos antes do primeiro paint. */}
+        <script dangerouslySetInnerHTML={{ __html: scriptBootTemaIdioma }} />
+        {children}
+      </body>
     </html>
   );
 }

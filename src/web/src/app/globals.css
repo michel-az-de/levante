@@ -88,10 +88,157 @@
 
 :root {
   color-scheme: light dark;
+  /* Grade do fundo ambiente do site (default dark; [data-theme="light"] sobrescreve). */
+  --grid-site: rgb(255 255 255 / 0.022);
 }
 
 body {
   @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
+}
+
+/* Pinta o fundo atras do overscroll nas superficies do site (marca pessoal) sem
+   afetar o admin, que segue no tema neutro. */
+html:has([data-surface="site"]) {
+  background-color: var(--color-site-bg);
+}
+
+/* ==========================================================================
+   Efeitos visuais do site pessoal (fatia da home). Todos degradam com
+   prefers-reduced-motion. Escopados por classe para nao vazar ao admin.
+   ========================================================================== */
+
+/* Grain: textura de ruido fina sobre tudo, sem interceptar clique. */
+.site-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Ambiente: halo radial no topo + grade sutil de fundo. */
+.site-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      900px 520px at 50% -8%,
+      color-mix(in srgb, var(--color-site-acc) 9%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(var(--grid-site) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-site) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    64px 64px,
+    64px 64px;
+}
+
+/* Luz que segue o cursor (posicionada por --spot-x/--spot-y via JS). */
+.site-spot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  transform: translate(calc(var(--spot-x, 50vw) - 50%), calc(var(--spot-y, 50vh) - 50%));
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--color-site-acc) 16%, transparent),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.site-spot[data-ativo="true"] {
+  opacity: 1;
+}
+
+/* Reveal-on-scroll: entra ao ficar visivel (classe .vis via IntersectionObserver). */
+.site-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.site-reveal.vis {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Barra de progresso de leitura (escala em X via --progresso). */
+.site-progresso {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--progresso, 0));
+  background: var(--color-site-acc);
+  z-index: 70;
+}
+
+/* Rotulo mono em caixa alta (kickers de secao) e pill de destaque. */
+.site-label {
+  @apply font-site-mono text-[11px] uppercase tracking-[0.14em] text-site-faint;
+}
+.site-pill {
+  @apply inline-block border border-site-acc px-2 py-[3px] font-site-mono text-[10.5px] uppercase tracking-[0.1em] text-site-acc;
+}
+
+/* Terminal do hero: cada linha de saida entra escalonada (delay inline por
+   indice). Cursor pisca. Tudo CSS — sem JS, sem mismatch de hidratacao. */
+.site-term-linha {
+  opacity: 0;
+  animation: site-term-entra 0.35s ease forwards;
+}
+@keyframes site-term-entra {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.site-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  vertical-align: -2px;
+  background: var(--color-site-acc);
+  animation: site-cursor-pisca 1.05s steps(1) infinite;
+}
+@keyframes site-cursor-pisca {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .site-spot {
+    display: none;
+  }
+  .site-term-linha {
+    opacity: 1;
+    animation: none;
+  }
+  .site-cursor {
+    animation: none;
+  }
 }
 
 /* Estilo do conteudo renderizado a partir de markdown (publico + preview admin).
