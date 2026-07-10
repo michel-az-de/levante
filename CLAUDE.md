@@ -392,6 +392,7 @@ Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 - Profundidade do modelo científico (template vs DOI/ORCID): fora da Fatia 0.
 - WhatsApp Cloud API: por ora só click-to-chat (`wa.me`).
 - Domínio do site (GAP-A): pendente; bloqueia a fatia de lançamento. Não assumir URL base definitiva (sempre via `SITE_URL`/env).
+- Contas GitHub (GAP-K): `felipeazevedoit` (perfil pessoal dos mockups) e `michel-az-de` (`GH_ACCOUNT`, dono real do repo) são a mesma pessoa com handles diferentes ou contas distintas? Owners reais de `oracle-pack`/`easystock`/`hiram`? Fica configurável via env (`GITHUB_PROFILE_ACCOUNT`, `GITHUB_ORG_ACCOUNT`, `GITHUB_SHOWCASE_REPOS`) até confirmação — ver `docs/adr/0006-integracao-github-e3.md`.
 
 Decididos (não são mais GAPs): idioma = chrome bilíngue PT/EN, conteúdo de artigo continua PT-only, sem hreflang
 (GAP-H reaberto, ver `docs/adr/0005-idioma-chrome-bilingue.md`); **hospedagem = VM conjunta com o Hiram via Docker Compose
