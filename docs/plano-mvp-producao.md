@@ -131,4 +131,4 @@ Semântica de disponibilidade: **`/health/ready` afirma Mongo, não Hiram** — 
 
 ## Fora de escopo do MVP
 
-Analytics first-party + banner de consentimento · dashboard admin · `/tag/[slug]` · Documents (bloqueado por GAP-B/GAP-C) · i18n (GAP-H = PT-only) · MFA TOTP. Tudo isso é evolução contínua pós-MVP, sem compromisso de escopo.
+Analytics first-party + banner de consentimento · dashboard admin · `/tag/[slug]` · Documents (bloqueado por GAP-B/GAP-C) · tradução do corpo de artigo (i18n de conteúdo — distinto do chrome bilíngue PT/EN, já reaberto via GAP-H/ADR 0005) · MFA TOTP. Tudo isso é evolução contínua pós-MVP, sem compromisso de escopo.
