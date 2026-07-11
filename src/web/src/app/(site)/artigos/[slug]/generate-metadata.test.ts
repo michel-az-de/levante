@@ -5,7 +5,7 @@ vi.mock("@/lib/api", () => ({
   artigoApi: { GET: vi.fn() },
 }));
 
-import { generateMetadata } from "@/app/artigos/[slug]/page";
+import { generateMetadata } from "@/app/(site)/artigos/[slug]/page";
 import { artigoApi } from "@/lib/api";
 
 const artigoGet = vi.mocked(artigoApi.GET);

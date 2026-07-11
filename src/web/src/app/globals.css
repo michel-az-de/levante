@@ -289,3 +289,45 @@ html:has([data-surface="produto"]) {
 .markdown td {
   @apply border border-neutral-300 px-3 py-1.5 dark:border-neutral-700;
 }
+
+/* Markdown re-tematizado dentro do site (marca pessoal). O admin, sem
+   data-surface, mantem o markdown neutro acima. */
+[data-surface="site"] .markdown {
+  @apply text-[17.5px] leading-[1.72] text-site-fg;
+}
+[data-surface="site"] .markdown p {
+  @apply text-site-fg2;
+}
+[data-surface="site"] .markdown h2 {
+  @apply mt-[46px] mb-3.5 text-[clamp(22px,3vw,30px)] font-bold tracking-tight text-site-fg;
+  scroll-margin-top: 90px;
+}
+[data-surface="site"] .markdown h3 {
+  @apply mt-[30px] mb-2.5 text-[19px] font-semibold text-site-fg;
+}
+[data-surface="site"] .markdown strong,
+[data-surface="site"] .markdown b {
+  @apply font-semibold text-site-fg;
+}
+[data-surface="site"] .markdown a {
+  @apply text-site-acc underline-offset-2;
+}
+[data-surface="site"] .markdown li {
+  @apply text-site-fg2;
+}
+[data-surface="site"] .markdown li::marker {
+  color: var(--color-site-acc);
+}
+[data-surface="site"] .markdown blockquote {
+  @apply border-l-2 border-site-acc pl-5 text-[19px] text-site-fg not-italic;
+}
+[data-surface="site"] .markdown :not(pre) > code {
+  @apply border border-site-line bg-site-bg2 text-site-fg;
+}
+[data-surface="site"] .markdown pre {
+  @apply border border-site-line2 bg-site-bg1;
+}
+[data-surface="site"] .markdown th,
+[data-surface="site"] .markdown td {
+  @apply border-site-line;
+}
