@@ -31,7 +31,8 @@ public sealed class AutenticarCommandHandler(
             return Result.Falha<TokenDeAcessoResponse>(CredenciaisInvalidas);
         }
 
-        if (administrador.EstaBloqueado(DateTime.UtcNow))
+        var agora = DateTime.UtcNow;
+        if (administrador.EstaBloqueado(agora))
         {
             return Result.Falha<TokenDeAcessoResponse>(
                 new Error("conta_bloqueada", "Conta temporariamente bloqueada. Tente novamente mais tarde."));
@@ -39,7 +40,7 @@ public sealed class AutenticarCommandHandler(
 
         if (!hashDeSenha.Verificar(administrador.SenhaHash, comando.Senha))
         {
-            administrador.RegistrarFalhaDeLogin();
+            administrador.RegistrarFalhaDeLogin(agora);
             await repositorio.UpdateAsync(administrador, ct);
             return Result.Falha<TokenDeAcessoResponse>(CredenciaisInvalidas);
         }
