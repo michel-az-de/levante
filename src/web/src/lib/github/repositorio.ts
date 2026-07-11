@@ -45,9 +45,9 @@ type IssueBruta = {
   user: { login: string } | null;
   created_at: string;
   html_url: string;
-  // O endpoint /issues devolve PRs tambem; PRs carregam este campo.
-  pull_request?: unknown;
 };
+
+type RespostaBuscaIssues = { items: IssueBruta[] };
 
 export async function buscarIssuesAbertasGithub(
   repo: string,
@@ -55,23 +55,23 @@ export async function buscarIssuesAbertasGithub(
 ): Promise<IssueGithub[]> {
   const { token } = lerConfigGithub();
   try {
-    // Pede a mais porque parte do retorno pode ser PR (filtrado abaixo).
-    const brutas = await githubRest<IssueBruta[]>(
-      `/repos/${repo}/issues?state=open&per_page=${limite + 5}`,
+    // Search API com `type:issue`: exclui PRs no servidor, sem over-fetch. O
+    // /repos/{repo}/issues mistura PRs e podia esconder issues reais (ex.: dependabot
+    // abrindo varios PRs no topo da lista). Resultado vem em `items`.
+    const consulta = `repo:${repo} type:issue state:open`;
+    const busca = await githubRest<RespostaBuscaIssues>(
+      `/search/issues?q=${encodeURIComponent(consulta)}&sort=created&order=desc&per_page=${limite}`,
       TTL,
       token,
     );
-    return brutas
-      .filter((issue) => issue.pull_request === undefined)
-      .slice(0, limite)
-      .map((issue) => ({
-        numero: issue.number,
-        titulo: issue.title,
-        labels: issue.labels.map((label) => (typeof label === "string" ? label : label.name)),
-        autor: issue.user?.login ?? null,
-        criadoEm: issue.created_at,
-        url: issue.html_url,
-      }));
+    return busca.items.map((issue) => ({
+      numero: issue.number,
+      titulo: issue.title,
+      labels: issue.labels.map((label) => (typeof label === "string" ? label : label.name)),
+      autor: issue.user?.login ?? null,
+      criadoEm: issue.created_at,
+      url: issue.html_url,
+    }));
   } catch {
     return [];
   }

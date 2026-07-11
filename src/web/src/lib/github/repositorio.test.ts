@@ -36,33 +36,40 @@ describe("repositorio GitHub (REST)", () => {
     expect(await buscarRepositorioGithub("x/y")).toBeNull();
   });
 
-  it("filtra pull requests da lista de issues e respeita o limite", async () => {
-    const brutas = [
-      {
-        number: 1,
-        title: "issue de verdade",
-        labels: [{ name: "bug" }],
-        user: { login: "a" },
-        created_at: "2026-01-01T00:00:00Z",
-        html_url: "u1",
-      },
-      {
-        number: 2,
-        title: "isto e um PR",
-        labels: [],
-        user: { login: "a" },
-        created_at: "2026-01-02T00:00:00Z",
-        html_url: "u2",
-        pull_request: { url: "..." },
-      },
-    ];
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(brutas), { status: 200 })));
+  it("mapeia as issues da Search API (campo items) preservando o contrato", async () => {
+    const resposta = {
+      items: [
+        {
+          number: 1,
+          title: "issue de verdade",
+          labels: [{ name: "bug" }],
+          user: { login: "a" },
+          created_at: "2026-01-01T00:00:00Z",
+          html_url: "u1",
+        },
+      ],
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(resposta), { status: 200 })));
 
     const issues = await buscarIssuesAbertasGithub("x/y", 5);
 
     expect(issues).toHaveLength(1);
     expect(issues[0].numero).toBe(1);
     expect(issues[0].labels).toEqual(["bug"]);
+  });
+
+  it("consulta a Search API com type:issue (PRs excluídos no servidor, sem over-fetch)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [] }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await buscarIssuesAbertasGithub("michel-az-de/levante", 5);
+
+    const url = String(fetchMock.mock.calls[0][0]);
+    expect(url).toContain("/search/issues");
+    expect(decodeURIComponent(url)).toContain("repo:michel-az-de/levante type:issue state:open");
+    expect(url).toContain("per_page=5");
+    // Sem a heurística antiga de pedir a mais (limite + 5).
+    expect(url).not.toContain("per_page=10");
   });
 
   it("encurta o sha e pega so a primeira linha da mensagem do commit", async () => {
