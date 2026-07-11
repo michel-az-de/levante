@@ -96,10 +96,13 @@ body {
   @apply bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
 }
 
-/* Pinta o fundo atras do overscroll nas superficies do site (marca pessoal) sem
-   afetar o admin, que segue no tema neutro. */
+/* Pinta o fundo atras do overscroll por superficie, sem afetar o admin (tema
+   neutro). Cada marca tem o proprio fundo. */
 html:has([data-surface="site"]) {
   background-color: var(--color-site-bg);
+}
+html:has([data-surface="produto"]) {
+  background-color: var(--color-produto-bg);
 }
 
 /* ==========================================================================
