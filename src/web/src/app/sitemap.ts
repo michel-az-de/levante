@@ -29,7 +29,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: `${site.url}/`, changeFrequency: "weekly", priority: 1 },
+    { url: `${site.url}/levante`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${site.url}/artigos`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${site.url}/politica-privacidade`, changeFrequency: "yearly", priority: 0.3 },
     ...categorias.map((categoria) => ({
       url: `${site.url}/categoria/${categoria.slug}`,
       changeFrequency: "weekly" as const,
