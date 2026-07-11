@@ -27,7 +27,7 @@ public sealed class AdministradorTests
 
         for (var i = 0; i < Administrador.MaxTentativasDeLoginFalhas; i++)
         {
-            admin.RegistrarFalhaDeLogin();
+            admin.RegistrarFalhaDeLogin(DateTime.UtcNow);
         }
 
         admin.TentativasDeLoginFalhas.ShouldBe(Administrador.MaxTentativasDeLoginFalhas);
@@ -39,8 +39,23 @@ public sealed class AdministradorTests
     {
         var admin = Novo();
 
-        admin.RegistrarFalhaDeLogin();
+        admin.RegistrarFalhaDeLogin(DateTime.UtcNow);
 
+        admin.EstaBloqueado(DateTime.UtcNow).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RegistrarFalha_reiniciaContagemAposBloqueioExpirar()
+    {
+        // 5 falhas anteriores com o bloqueio ja vencido (janela expirou 1 min atras).
+        var admin = Administrador.Reconstituir(
+            Guid.NewGuid(), new Email("x@y.com"), "h",
+            Administrador.MaxTentativasDeLoginFalhas, DateTime.UtcNow.AddMinutes(-1), true, DateTime.UtcNow);
+
+        admin.RegistrarFalhaDeLogin(DateTime.UtcNow);
+
+        // Conta como a 1a falha de uma janela nova — nao re-bloqueia na hora.
+        admin.TentativasDeLoginFalhas.ShouldBe(1);
         admin.EstaBloqueado(DateTime.UtcNow).ShouldBeFalse();
     }
 
@@ -50,7 +65,7 @@ public sealed class AdministradorTests
         var admin = Novo();
         for (var i = 0; i < Administrador.MaxTentativasDeLoginFalhas + 1; i++)
         {
-            admin.RegistrarFalhaDeLogin();
+            admin.RegistrarFalhaDeLogin(DateTime.UtcNow);
         }
 
         admin.ResetarFalhas();

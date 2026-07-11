@@ -63,13 +63,24 @@ public sealed class Administrador
 
     public bool EstaBloqueado(DateTime agora) => BloqueadoAte.HasValue && BloqueadoAte.Value > agora;
 
-    /// <summary>Registra uma tentativa de login falha; bloqueia apos o limite.</summary>
-    public void RegistrarFalhaDeLogin()
+    /// <summary>
+    /// Registra uma tentativa de login falha; bloqueia apos o limite. Se o bloqueio
+    /// anterior ja expirou (janela de <see cref="MinutosDeBloqueio"/> min vencida),
+    /// reinicia a contagem — a politica e "N falhas dentro da janela", nao acumular
+    /// indefinidamente (senao a 1a falha pos-bloqueio re-bloquearia na hora).
+    /// </summary>
+    public void RegistrarFalhaDeLogin(DateTime agora)
     {
+        if (BloqueadoAte.HasValue && BloqueadoAte.Value <= agora)
+        {
+            TentativasDeLoginFalhas = 0;
+            BloqueadoAte = null;
+        }
+
         TentativasDeLoginFalhas++;
         if (TentativasDeLoginFalhas >= MaxTentativasDeLoginFalhas)
         {
-            BloqueadoAte = DateTime.UtcNow.AddMinutes(MinutosDeBloqueio);
+            BloqueadoAte = agora.AddMinutes(MinutosDeBloqueio);
         }
     }
 

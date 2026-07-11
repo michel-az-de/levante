@@ -2,24 +2,23 @@ namespace Levante.Api.Seguranca;
 
 /// <summary>
 /// Extrai origem do cliente numa escrita publica. Como o browser passa pelo BFF
-/// do Next (nunca fala com a API direto, desde a Fatia 2a/A5), o IP real vem no
-/// header <c>X-Forwarded-For</c> e o id de visitante em <c>X-Visitante</c>.
+/// do Next (nunca fala com a API direto, desde a Fatia 2a/A5), o IP real chega via
+/// <c>X-Forwarded-For</c> e e resolvido pelo framework (<c>UseForwardedHeaders</c>);
+/// o id de visitante vem em <c>X-Visitante</c>.
 /// </summary>
 internal static class OrigemDoCliente
 {
     public const string HeaderVisitante = "X-Visitante";
 
-    /// <summary>IP do cliente: 1o valor de X-Forwarded-For (posto pelo BFF) ou o IP da conexao.</summary>
+    /// <summary>
+    /// IP do cliente: o <c>RemoteIpAddress</c> resolvido pelo framework. Em producao,
+    /// <c>UseForwardedHeaders</c> (ForwardLimit=1) ja desfaz UM hop de proxy confiavel e
+    /// popula esse IP a partir do X-Forwarded-For. Ler o header cru aqui confiaria no valor
+    /// mais a esquerda — controlado pelo cliente e spoofavel —, furando o rate limit publico
+    /// e envenenando o hash de origem (anti-abuso).
+    /// </summary>
     public static string Ip(HttpContext contexto)
-    {
-        var encaminhado = contexto.Request.Headers["X-Forwarded-For"].ToString();
-        if (!string.IsNullOrWhiteSpace(encaminhado))
-        {
-            return encaminhado.Split(',')[0].Trim();
-        }
-
-        return contexto.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
-    }
+        => contexto.Connection.RemoteIpAddress?.ToString() ?? "desconhecido";
 
     public static string UserAgent(HttpContext contexto) => contexto.Request.Headers.UserAgent.ToString();
 
