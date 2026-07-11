@@ -1,7 +1,8 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArtigoList } from "@/components/ArtigoList";
+import { Idioma } from "@/components/Idioma";
+import { ListaArtigos } from "@/components/site/artigo/ListaArtigos";
 import { JsonLd } from "@/components/JsonLd";
 import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
@@ -79,16 +80,21 @@ export default async function CategoriaPage({
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-16">
+    <div className="mx-auto max-w-[1180px] px-[clamp(18px,4vw,40px)] py-[clamp(48px,8vw,92px)]">
       <JsonLd data={collection} />
-      <header className="flex flex-col gap-2">
-        <p className="text-sm uppercase tracking-wide text-neutral-500">Categoria</p>
-        <h1 className="text-3xl font-bold tracking-tight">{dados.categoria.nome}</h1>
-        {dados.categoria.descricao ? (
-          <p className="text-lg text-neutral-600 dark:text-neutral-400">{dados.categoria.descricao}</p>
-        ) : null}
-      </header>
-      <ArtigoList artigos={dados.artigos} categorias={[dados.categoria]} />
-    </main>
+      <div className="site-label mb-3.5">
+        <b className="font-medium text-site-acc">
+          <Idioma pt="categoria" en="category" />
+        </b>{" "}
+        · Levante
+      </div>
+      <h1 className="mb-4 text-[clamp(36px,6vw,66px)] leading-none font-bold tracking-[-0.03em] text-site-fg">
+        {dados.categoria.nome}
+      </h1>
+      {dados.categoria.descricao ? (
+        <p className="mb-8 max-w-[54ch] text-base text-site-fg2">{dados.categoria.descricao}</p>
+      ) : null}
+      <ListaArtigos artigos={dados.artigos} />
+    </div>
   );
 }
