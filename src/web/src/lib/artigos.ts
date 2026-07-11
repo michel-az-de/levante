@@ -31,13 +31,26 @@ export function slugificar(texto: string): string {
 
 export type TituloArtigo = { id: string; texto: string };
 
+/**
+ * Reduz a sintaxe inline de markdown de um titulo ao texto puro que o react-markdown
+ * renderiza — assim o id da ancora do TOC bate com o id da heading (ver Markdown.tsx,
+ * que usa slugificar(textoDe(children))). Converte `[rotulo](url)` / `![alt](url)` no
+ * rotulo/alt e remove marcadores de enfase/codigo.
+ */
+export function textoDeHeading(bruto: string): string {
+  return bruto
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#*`]/g, "")
+    .trim();
+}
+
 /** Extrai os titulos de nivel 2 (## ) do markdown, para o TOC lateral. */
 export function extrairTitulos(markdown: string): TituloArtigo[] {
   const titulos: TituloArtigo[] = [];
   for (const linha of markdown.split("\n")) {
     const encontrado = /^##\s+(.+?)\s*$/.exec(linha);
     if (encontrado) {
-      const texto = encontrado[1].replace(/[#*`]/g, "").trim();
+      const texto = textoDeHeading(encontrado[1]);
       titulos.push({ id: slugificar(texto), texto });
     }
   }
