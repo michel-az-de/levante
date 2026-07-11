@@ -1,5 +1,4 @@
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace Levante.Api.Seguranca;
 
@@ -31,20 +30,30 @@ public static class RateLimiting
                         QueueLimit = 0,
                     }));
 
-            options.AddFixedWindowLimiter(PolicyReady, limiter =>
-            {
-                limiter.PermitLimit = 10;
-                limiter.Window = TimeSpan.FromMinutes(1);
-                limiter.QueueLimit = 0;
-            });
+            // Readiness: por IP tambem — um cliente ruidoso nao deve esgotar o balde
+            // para os demais. (AddFixedWindowLimiter cria um limiter global, nao particionado.)
+            options.AddPolicy(PolicyReady, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    OrigemDoCliente.Ip(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                    }));
 
-            // Login: estrita, para frear brute-force (complementa o lockout por conta).
-            options.AddFixedWindowLimiter(PolicyAuth, limiter =>
-            {
-                limiter.PermitLimit = 5;
-                limiter.Window = TimeSpan.FromMinutes(1);
-                limiter.QueueLimit = 0;
-            });
+            // Login: estrita e POR IP, para frear brute-force. Um balde nao-particionado
+            // (AddFixedWindowLimiter) seria global: 5 req/min de qualquer IP trancariam o
+            // admin legitimo. Particionar por IP isola cada cliente (como o PolicyPublico).
+            options.AddPolicy(PolicyAuth, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    OrigemDoCliente.Ip(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                    }));
 
             // Escrita publica (reacoes/comentarios): por IP do cliente (X-Forwarded-For
             // posto pelo BFF), para frear spam sem afetar outros visitantes.
