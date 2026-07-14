@@ -2,7 +2,8 @@ import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
 import type { Artigo } from "@/types/domain";
 
-export const revalidate = 3600;
+// force-dynamic: le SITE_URL em runtime (cutover = restart, nao rebuild).
+export const dynamic = "force-dynamic";
 
 function escaparXml(texto: string): string {
   return texto
