@@ -19,6 +19,7 @@ const ITENS: readonly ItemNav[] = [
   { secao: "github", pt: "Código", en: "Code" },
   { rota: "/artigos", pt: "Artigos", en: "Writing" },
   { secao: "experiencia", pt: "Experiência", en: "Experience" },
+  { rota: "/sobre", pt: "Sobre", en: "About" },
 ];
 
 const BASE_LINK =
