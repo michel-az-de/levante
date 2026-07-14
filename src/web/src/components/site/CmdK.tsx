@@ -34,6 +34,7 @@ export function CmdK() {
       { id: "github", pt: "Código", en: "Code", icone: "§", acao: () => irParaSecao("github") },
       { id: "artigos", pt: "Artigos", en: "Articles", icone: "§", acao: () => router.push("/artigos") },
       { id: "experiencia", pt: "Experiência", en: "Experience", icone: "§", acao: () => irParaSecao("experiencia") },
+      { id: "sobre", pt: "Sobre", en: "About", icone: "§", acao: () => router.push("/sobre") },
       { id: "contato", pt: "Contato", en: "Contact", icone: "@", acao: () => irParaSecao("contato") },
       { id: "newsletter", pt: "Assinar a newsletter", en: "Subscribe", icone: "→", acao: () => router.push("/newsletter") },
       { id: "tema", pt: "Alternar tema", en: "Toggle theme", icone: "◐", acao: alternarTema },

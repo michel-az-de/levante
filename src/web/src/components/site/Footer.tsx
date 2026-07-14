@@ -10,6 +10,9 @@ export function Footer() {
           Felipe Azevedo
         </Link>
         <div className="flex items-center gap-[18px]">
+          <Link href="/sobre" className="transition-colors hover:text-site-acc">
+            <Idioma pt="Sobre" en="About" />
+          </Link>
           <Link href="/politica-privacidade" className="transition-colors hover:text-site-acc">
             <Idioma pt="Privacidade" en="Privacy" />
           </Link>
