@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
 import { artigoApi } from "@/lib/api";
+import { siteIndexavel } from "@/lib/flags";
 import { site } from "@/lib/site";
 import type { Artigo, Categoria } from "@/types/domain";
 
-export const revalidate = 3600;
+// force-dynamic: le SITE_URL/flag em runtime (cutover = restart, nao rebuild).
+export const dynamic = "force-dynamic";
 
 async function listarArtigos(): Promise<Artigo[]> {
   try {
@@ -25,6 +27,11 @@ async function listarCategorias(): Promise<Categoria[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!siteIndexavel()) {
+    // Host provisorio / pre-cutover: sitemap vazio (nao poluir o indice com URLs interinas).
+    return [];
+  }
+
   const [artigos, categorias] = await Promise.all([listarArtigos(), listarCategorias()]);
 
   return [
