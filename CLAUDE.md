@@ -391,20 +391,24 @@ Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 - Nível de assinatura de documentos (1 a 4): fora da Fatia 0.
 - Profundidade do modelo científico (template vs DOI/ORCID): fora da Fatia 0.
 - WhatsApp Cloud API: por ora só click-to-chat (`wa.me`).
-- Domínio do site (GAP-A): **pendente** — decidido no marco D0, dentro do cutover (não bloqueia construir; bloqueia virar a chave). Interino via `sslip.io`; nada hardcoded, sempre via `SITE_URL`/env. Indexação e form de newsletter só ligam no D0 pelos flags `SITE_INDEXABLE`/`NEWSLETTER_ENABLED` (default off; ver `src/web/src/lib/flags.ts`).
 - Contas GitHub (GAP-K): `felipeazevedoit` (perfil pessoal dos mockups) e `michel-az-de` (`GH_ACCOUNT`, dono real do repo) são a mesma pessoa com handles diferentes ou contas distintas? Owners reais de `oracle-pack`/`easystock`/`hiram`? Fica configurável via env (`GITHUB_PROFILE_ACCOUNT`, `GITHUB_ORG_ACCOUNT`, `GITHUB_SHOWCASE_REPOS`) até confirmação — ver `docs/adr/0006-integracao-github-e3.md`.
 
 Decididos (não são mais GAPs): idioma = chrome bilíngue PT/EN, conteúdo de artigo continua PT-only, sem hreflang
 (GAP-H reaberto, ver `docs/adr/0005-idioma-chrome-bilingue.md`); **hospedagem = VM conjunta com o Hiram via Docker Compose
 (GAP-J, ver `docs/adr/0003-hospedagem-vm-conjunta-hiram.md`)**; e **contrato de eventos com o Hiram (GAP-I) = HTTP
 `POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**; e **e-mail de produção = Resend**
-(o provider do dispatcher do Hiram é parametrizável via env — `HIRAM_EMAIL_PROVIDER=resend`; default `smtp`→Mailpit em dev/interino).
+(o provider do dispatcher do Hiram é parametrizável via env — `HIRAM_EMAIL_PROVIDER=resend`; default `smtp`→Mailpit em dev/interino);
+e **domínio = `felipemichel.com`** (apex canônico, `www`→301; GAP-A, ver `docs/adr/0007-dominio-felipemichel-com.md`) — nada hardcoded,
+sempre via `SITE_URL`/env; indexação e form de newsletter só ligam no cutover D0 pelos flags `SITE_INDEXABLE`/`NEWSLETTER_ENABLED`
+(default off; ver `src/web/src/lib/flags.ts`).
 
 O roadmap de fatias vigente está em `docs/roadmap.md`.
 
 **Estado do lançamento:** o produto está **code-complete** — publicar artigos (backend + admin UI markdown), engajamento, newsletter (código)
-e admin já funcionam, CI verde na `main`. Falta só o **cutover de produção (Fase D)**, que é infra/operação, não feature. O passo-a-passo
-operador-facing está em **`docs/lancamento-runbook.md`** (portão duro **D0.5**: backup+restore do keyring do Hiram testado antes do go-live).
+e admin já funcionam, CI verde na `main`. Falta só o **cutover de produção (Fase D)**, que é infra/operação, não feature. O domínio foi decidido —
+**`felipemichel.com`** (apex; [ADR 0007](docs/adr/0007-dominio-felipemichel-com.md)). O passo-a-passo operador-facing está em
+**`docs/lancamento-runbook.md`** (fluxo canônico) e em **`docs/cutover-felipemichel-com.md`** (valores concretos deste domínio:
+DNS, `.env`, CD, sequência D0), com o portão duro **D0.5**: backup+restore do keyring do Hiram testado antes do go-live.
 
 Nota: alguns pontos da convenção (verbo de Command em PT, métodos de Repository em EN, contexto em PT) seguem o default
 acordado. Se o Felipe pedir para inverter algum, este arquivo é a fonte a atualizar.

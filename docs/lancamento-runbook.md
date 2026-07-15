@@ -15,7 +15,7 @@ referencia-se — não se duplica.
 
 | Decisão | Estado | Efeito no runbook |
 |---------|--------|-------------------|
-| **Domínio (GAP-A)** | **Indefinido** | Portão **D0**, dentro do cutover. Interino via `sslip.io`. Tudo lê `SITE_URL`/env; nada hardcoded. |
+| **Domínio (GAP-A)** | **`felipemichel.com`** (apex; [ADR 0007](adr/0007-dominio-felipemichel-com.md)) | Cutover **D0**, `www`→301. Tudo via `SITE_URL`/env; nada hardcoded. Valores concretos (DNS/`.env`/CD) em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). |
 | **E-mail em produção** | **Resend** (HTTP) | `ResendEmailProvider` já existe no Hiram. Ligar = preencher `.env` do dispatcher (ver PR de parametrização da stack) + conta Resend com **domínio de envio verificado** (SPF/DKIM). |
 
 ## Pré-requisitos (uma vez)
@@ -60,7 +60,7 @@ Fonte: `hiram/deploy/stack/.env.example` (todos `CHANGE_ME`). Gerar com `openssl
 | `LEVANTE_ADMIN_EMAIL` / `LEVANTE_ADMIN_SENHA` | Seed do 1º admin (opt-in de seed em prod já embutido). |
 | `LEVANTE_ADMIN_NOTIFICACOES_EMAIL` | Destino do aviso de comentário pendente. |
 | `MONGO_CONNECTION_STRING` | Atlas srv URI, usuário de privilégio mínimo. |
-| `SITE_HOST` / `SITE_URL` / `ACME_EMAIL` | Host público + TLS (Caddy/Let's Encrypt). Interino `sslip.io` até o GAP-A. |
+| `SITE_HOST` / `SITE_URL` / `ACME_EMAIL` | Host público + TLS (Caddy/Let's Encrypt). `felipemichel.com` (valores na [folha de cutover](cutover-felipemichel-com.md)). |
 | `MAIL_FROM` | Remetente exibido; com Resend, do domínio verificado. |
 | **Campos do Resend** | Provider + secret + `from` do dispatcher (ver PR de parametrização da stack). |
 | `HIRAM_LEVANTE_API_KEY` | **Preenchido só após o passo 3** (provision). |
@@ -95,10 +95,12 @@ Não são itens opcionais de checklist:
 
 ## Cutover D0 — domínio
 
-A decisão do domínio (GAP-A) acontece **durante** o cutover, sem bloquear o técnico (tudo via `SITE_URL`):
+Domínio **decidido**: `felipemichel.com` (apex canônico, `www`→301; [ADR 0007](adr/0007-dominio-felipemichel-com.md)). Os
+**valores concretos** deste domínio (registros DNS, `.env` da stack, secrets do CD, e os dois ajustes pré-requisito no repo
+Hiram) estão em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). Sequência (tudo via `SITE_URL`, sem hardcode):
 
-1. Decidir/comprar o domínio.
-2. DNS + TLS (apontar `SITE_HOST`; o Caddy emite Let's Encrypt).
+1. Domínio comprado (`felipemichel.com`).
+2. DNS + TLS (apontar `SITE_HOST=felipemichel.com`; o Caddy emite Let's Encrypt para apex e `www`).
 3. Atualizar `SITE_URL`/`SITE_HOST` no `.env` → **restart + `revalidate` completo** do web (OG, JSON-LD, RSS, sitemap "assam" a URL).
 4. **Habilitar indexação** — setar `SITE_INDEXABLE=true` (`robots.txt` libera, `sitemap` sai, `X-Robots-Tag: noindex` some). Antes disso o host provisório fica fora do índice — flag explícito, não inferência por host (o `SITE_URL` interino é o próprio host provisório).
 5. **Ativar a newsletter** (flag `NEWSLETTER_ENABLED`) — só agora, com o domínio de envio Resend verificado (senão o `confirmUrlBase` aponta para o host provisório e/ou queima a reputação do domínio novo).

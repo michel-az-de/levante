@@ -70,8 +70,8 @@ dotnet run --project src/api/host/Levante.Api      # /health, /artigos, /auth/*,
 dotnet run --project src/api/host/Levante.Api -- --emit-openapi "$PWD/src/web/openapi/levante.json"
 cd src/web && npm ci && npm run gen:api && npm run dev   # http://localhost:3000/artigos
 
-# SEO: URL base do site (canonical, sitemap, RSS, OG) via env (GAP-A: domínio em aberto)
-SITE_URL=https://seu-dominio npm run build
+# SEO: URL base do site (canonical, sitemap, RSS, OG) via env (prod: felipemichel.com — ADR 0007)
+SITE_URL=https://felipemichel.com npm run build
 # Rotas de SEO: /sitemap.xml  /robots.txt  /feed.xml  e /artigos/[slug] (SSR + JSON-LD)
 
 # Hooks de pré-commit (format + gitleaks)
