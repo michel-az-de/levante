@@ -200,7 +200,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | D | Frontend | **Resolvido → React/Next.js** |
 | H | Idiomas | **Reaberto → chrome bilíngue PT/EN, conteúdo de artigo continua PT-only, sem hreflang** (ver `docs/adr/0005-idioma-chrome-bilingue.md`) |
 | J | Host | **Resolvido → VM conjunta com o Hiram (ADR 0003)** |
-| A | Domínio (.dev) do site | **decisão do Felipe pendente — bloqueia a fatia de lançamento** (afeta SEO/schema/canonical/`SITE_URL`) |
+| A | Domínio do site | **Resolvido → `felipemichel.com`** (apex canônico, `www`→301; ver `docs/adr/0007-dominio-felipemichel-com.md`) |
 | B | Nível de assinatura de documentos | MVP 1-2; jurídico só se necessário |
 | C | Profundidade do modelo científico | template + DOI via Zenodo |
 | E | MongoDB Atlas vs self-host | Atlas (replica set) |
@@ -219,4 +219,4 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 
 ---
 
-Estado geral: 10 GAPs no total, 3 resolvidos (D frontend → React/Next.js, H idioma → chrome bilíngue PT/EN com conteúdo PT-only, J host → VM conjunta com o Hiram) e 7 abertos — sendo GAP-A (domínio) o único que bloqueia o lançamento, e GAP-F/GAP-I agendados para o spike da fatia do Outbox. 4 armadilhas de licença mapeadas com saída. O núcleo arquitetural (Clean Arch, DDD, contextos, outbox → Hiram, React/Next.js + .NET) está travado; o que falta é decisão pontual de ferramenta e escopo. O sequenciamento das fatias está em `docs/roadmap.md`.
+Estado geral: 10 GAPs no total, 4 resolvidos (D frontend → React/Next.js, H idioma → chrome bilíngue PT/EN com conteúdo PT-only, J host → VM conjunta com o Hiram, A domínio → `felipemichel.com`) e 6 abertos — GAP-F/GAP-I agendados para o spike da fatia do Outbox. 4 armadilhas de licença mapeadas com saída. O núcleo arquitetural (Clean Arch, DDD, contextos, outbox → Hiram, React/Next.js + .NET) está travado; o que falta é decisão pontual de ferramenta e escopo. O sequenciamento das fatias está em `docs/roadmap.md`.
