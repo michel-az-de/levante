@@ -1,5 +1,5 @@
 // Configuracao do site para SEO (canonical, sitemap, RSS, OG, JSON-LD).
-// SITE_URL via env (GAP-A: dominio ainda em aberto).
+// SITE_URL via env (prod: felipemichel.com, ADR 0007; sem hardcode no runtime).
 // O fail-fast de SITE_URL em producao vive em src/web/src/instrumentation.ts (boot do
 // servidor, nao build); aqui so aplicamos o fallback localhost para dev/build.
 
