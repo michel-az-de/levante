@@ -4,6 +4,11 @@
     "title": "Levante.Api | v1",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:57350"
+    }
+  ],
   "paths": {
     "/admin/artigos": {
       "get": {
@@ -24,6 +29,79 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/midias/{id}": {
+      "get": {
+        "tags": [
+          "Midias"
+        ],
+        "operationId": "ObterMidia",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/admin/midias": {
+      "post": {
+        "tags": [
+          "Midias (admin)"
+        ],
+        "operationId": "EnviarMidia",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/IFormFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MidiaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large"
           }
         }
       }
@@ -1198,6 +1276,36 @@
         },
         "description": "Corpo de edicao de categoria (Id vem da rota; slug imutavel)."
       },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "MidiaResponse": {
+        "required": [
+          "id",
+          "url",
+          "contentType",
+          "tamanho"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "tamanho": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int64"
+          }
+        },
+        "description": "Resposta de upload de midia. string MidiaResponse.Url e relativa (mesma origem no publico e no admin)."
+      },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -1304,6 +1412,12 @@
   "tags": [
     {
       "name": "Artigos (admin)"
+    },
+    {
+      "name": "Midias"
+    },
+    {
+      "name": "Midias (admin)"
     },
     {
       "name": "Artigos"
