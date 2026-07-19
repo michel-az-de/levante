@@ -17,6 +17,8 @@ using Levante.Conteudo.Application.Artigos.PublicarArtigo;
 using Levante.Conteudo.Application.Categorias.CriarCategoria;
 using Levante.Conteudo.Application.Categorias.EditarCategoria;
 using Levante.Conteudo.Application.Categorias.ListarCategorias;
+using Levante.Conteudo.Application.Midias.EnviarMidia;
+using Levante.Conteudo.Application.Midias.ObterMidia;
 using Levante.Conteudo.Infrastructure;
 using Levante.Engajamento.Application.Comentarios.AprovarComentario;
 using Levante.Engajamento.Application.Comentarios.CriarComentario;
@@ -76,6 +78,8 @@ builder.Services.AddScoped<ListarArtigosPublicadosPorCategoriaQueryHandler>();
 builder.Services.AddScoped<ListarCategoriasQueryHandler>();
 builder.Services.AddScoped<CriarCategoriaCommandHandler>();
 builder.Services.AddScoped<EditarCategoriaCommandHandler>();
+builder.Services.AddScoped<EnviarMidiaCommandHandler>();
+builder.Services.AddScoped<ObterMidiaQueryHandler>();
 builder.Services.AddScoped<AutenticarCommandHandler>();
 
 // Handlers do contexto Engajamento (reacoes).
@@ -183,6 +187,8 @@ app.MapHealthEndpoints();
 app.MapArtigoEndpoints();
 app.MapArtigoAdminEndpoints();
 app.MapCategoriaEndpoints();
+app.MapMidiaEndpoints();
+app.MapMidiaAdminEndpoints();
 app.MapReacaoEndpoints();
 app.MapComentarioEndpoints();
 app.MapNewsletterEndpoints();
