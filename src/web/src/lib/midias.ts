@@ -8,18 +8,17 @@ export type MidiaEnviada = components["schemas"]["MidiaResponse"];
  * `url` e relativa (`/midias/{id}`), pronta para uso no markdown do artigo.
  *
  * O schema do OpenAPI para este endpoint (IFormFile) nao modela multipart de
- * verdade — limitacao conhecida do openapi-typescript. O bodySerializer monta
- * o FormData de fato; o campo "arquivo" tem que casar com
- * MidiaAdminEndpoints.CampoArquivo no backend.
+ * verdade — o openapi-typescript tipa o corpo como string, dai o `as never`.
+ * O serializer fecha sobre o File original em vez de recuperá-lo do corpo
+ * tipado errado, entao nao precisa de cast nenhum. O campo "arquivo" tem que
+ * casar com MidiaAdminEndpoints.CampoArquivo no backend.
  */
 export async function enviarMidia(arquivo: File): Promise<MidiaEnviada> {
   const { data, error, response } = await apiAdmin.POST("/admin/midias", {
     body: { arquivo } as never,
-    bodySerializer(body) {
+    bodySerializer() {
       const formulario = new FormData();
-      for (const [nome, valor] of Object.entries(body as unknown as Record<string, Blob>)) {
-        formulario.append(nome, valor);
-      }
+      formulario.append("arquivo", arquivo);
       return formulario;
     },
   });
@@ -29,4 +28,15 @@ export async function enviarMidia(arquivo: File): Promise<MidiaEnviada> {
   }
 
   return data;
+}
+
+/** Remove uma midia enviada. Copias ja cacheadas pelo browser nao sao recolhidas. */
+export async function removerMidia(id: string): Promise<void> {
+  const { error, response } = await apiAdmin.DELETE("/admin/midias/{id}", {
+    params: { path: { id } },
+  });
+
+  if (error) {
+    throw new Error(`Falha ao remover midia (HTTP ${response.status}).`);
+  }
 }

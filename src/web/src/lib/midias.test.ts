@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { enviarMidia } from "@/lib/midias";
+import { enviarMidia, removerMidia } from "@/lib/midias";
 
 // apiAdmin e um singleton criado na importacao de @/lib/auth (openapi-fetch
 // captura o fetch global naquele momento, cedo demais para vi.stubGlobal
@@ -7,12 +7,18 @@ import { enviarMidia } from "@/lib/midias";
 // (que quebra fora do browser - o erro real visto no CI era o fetch nativo
 // do Node rejeitando "/api/admin/proxy/admin/midias" por nao ter origem).
 // vi.hoisted: a fabrica do vi.mock roda hoisted para o topo do arquivo (antes
-// de qualquer const), entao postMock so pode ser referenciado ali se tambem
-// for hoisted.
-const { postMock } = vi.hoisted(() => ({ postMock: vi.fn() }));
+// de qualquer const), entao os mocks so podem ser referenciados ali se tambem
+// forem hoisted.
+const { postMock, deleteMock } = vi.hoisted(() => ({
+  postMock: vi.fn(),
+  deleteMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
-  apiAdmin: { POST: (...args: unknown[]) => postMock(...args) },
+  apiAdmin: {
+    POST: (...args: unknown[]) => postMock(...args),
+    DELETE: (...args: unknown[]) => deleteMock(...args),
+  },
 }));
 
 describe("enviarMidia", () => {
@@ -35,9 +41,13 @@ describe("enviarMidia", () => {
     expect(midia).toEqual(respostaFalsa);
     expect(postMock).toHaveBeenCalledTimes(1);
 
-    const [caminho, opcoes] = postMock.mock.calls[0] as [string, { body: unknown; bodySerializer: (b: unknown) => FormData }];
+    const [caminho, opcoes] = postMock.mock.calls[0] as [
+      string,
+      { body: unknown; bodySerializer: (b: unknown) => FormData },
+    ];
     expect(caminho).toBe("/admin/midias");
 
+    // O nome do campo precisa casar com MidiaAdminEndpoints.CampoArquivo no backend.
     const formulario = opcoes.bodySerializer(opcoes.body);
     expect(formulario).toBeInstanceOf(FormData);
     expect(formulario.get("arquivo")).toBe(arquivo);
@@ -53,5 +63,31 @@ describe("enviarMidia", () => {
     const arquivo = new File([new Uint8Array([1])], "ruim.pdf", { type: "application/pdf" });
 
     await expect(enviarMidia(arquivo)).rejects.toThrow(/400/);
+  });
+});
+
+describe("removerMidia", () => {
+  beforeEach(() => {
+    deleteMock.mockReset();
+  });
+
+  it("chama DELETE /admin/midias/{id} com o id na rota", async () => {
+    deleteMock.mockResolvedValue({ error: undefined, response: { status: 204 } });
+
+    await removerMidia("11111111-1111-1111-1111-111111111111");
+
+    expect(deleteMock).toHaveBeenCalledTimes(1);
+    const [caminho, opcoes] = deleteMock.mock.calls[0] as [
+      string,
+      { params: { path: { id: string } } },
+    ];
+    expect(caminho).toBe("/admin/midias/{id}");
+    expect(opcoes.params.path.id).toBe("11111111-1111-1111-1111-111111111111");
+  });
+
+  it("lanca erro quando a midia nao existe", async () => {
+    deleteMock.mockResolvedValue({ error: {}, response: { status: 404 } });
+
+    await expect(removerMidia("11111111-1111-1111-1111-111111111111")).rejects.toThrow(/404/);
   });
 });
