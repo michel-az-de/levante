@@ -58,49 +58,6 @@
         }
       }
     },
-    "/admin/midias": {
-      "post": {
-        "tags": [
-          "Midias (admin)"
-        ],
-        "operationId": "EnviarMidia",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/IFormFile"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MidiaResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "413": {
-            "description": "Payload Too Large"
-          }
-        }
-      }
-    },
     "/artigos": {
       "get": {
         "tags": [
@@ -501,6 +458,81 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/admin/midias": {
+      "post": {
+        "tags": [
+          "Midias (admin)"
+        ],
+        "operationId": "EnviarMidia",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "arquivo": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MidiaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large"
+          }
+        }
+      }
+    },
+    "/admin/midias/{id}": {
+      "delete": {
+        "tags": [
+          "Midias (admin)"
+        ],
+        "operationId": "RemoverMidia",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           },
           "404": {
             "description": "Not Found"
@@ -1295,11 +1327,11 @@
             "type": "string"
           },
           "tamanho": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int64"
           }
         },
-        "description": "Resposta de upload de midia. string MidiaResponse.Url e relativa (mesma origem no publico e no admin)."
+        "description": "Resposta de upload de midia. A Url e relativa (mesma origem no publico e no\nadmin), pronta para entrar no markdown do artigo."
       },
       "ProblemDetails": {
         "type": "object",
@@ -1313,7 +1345,7 @@
             "nullable": true
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int32",
             "nullable": true
           },
@@ -1337,15 +1369,15 @@
         "type": "object",
         "properties": {
           "curtir": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int32"
           },
           "amei": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int32"
           },
           "relevante": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int32"
           },
           "minhas": {
@@ -1396,7 +1428,7 @@
             "type": "string"
           },
           "expiraEmSegundos": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": "integer",
             "format": "int32"
           }
         },
@@ -1412,13 +1444,13 @@
       "name": "Midias"
     },
     {
-      "name": "Midias (admin)"
-    },
-    {
       "name": "Artigos"
     },
     {
       "name": "Categorias"
+    },
+    {
+      "name": "Midias (admin)"
     },
     {
       "name": "Reacoes"

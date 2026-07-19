@@ -36,22 +36,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/midias": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["EnviarMidia"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/artigos": {
         parameters: {
             query?: never;
@@ -175,6 +159,38 @@ export interface paths {
         put: operations["EditarCategoria"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/midias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnviarMidia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/midias/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["RemoverMidia"];
         options?: never;
         head?: never;
         patch?: never;
@@ -465,20 +481,23 @@ export interface components {
         };
         /** Format: binary */
         IFormFile: string;
-        /** @description Resposta de upload de midia. string MidiaResponse.Url e relativa (mesma origem no publico e no admin). */
+        /**
+         * @description Resposta de upload de midia. A Url e relativa (mesma origem no publico e no
+         *     admin), pronta para entrar no markdown do artigo.
+         */
         MidiaResponse: {
             /** Format: uuid */
             id: string;
             url: string;
             contentType: string;
             /** Format: int64 */
-            tamanho: unknown;
+            tamanho: number;
         };
         ProblemDetails: {
             type?: string | null;
             title?: string | null;
             /** Format: int32 */
-            status?: unknown;
+            status?: number | null;
             detail?: string | null;
             instance?: string | null;
         };
@@ -488,11 +507,11 @@ export interface components {
          */
         ReacoesResponse: {
             /** Format: int32 */
-            curtir: unknown;
+            curtir: number;
             /** Format: int32 */
-            amei: unknown;
+            amei: number;
             /** Format: int32 */
-            relevante: unknown;
+            relevante: number;
             minhas: string[];
         };
         /** @description Corpo do POST de reacao (nome do tipo, ex. "Curtir"; o id do artigo vem da rota). */
@@ -508,7 +527,7 @@ export interface components {
         TokenDeAcessoResponse: {
             accessToken: string;
             /** Format: int32 */
-            expiraEmSegundos: unknown;
+            expiraEmSegundos: number;
         };
     };
     responses: never;
@@ -566,46 +585,6 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnviarMidia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["IFormFile"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MidiaResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetails"];
-                };
-            };
-            /** @description Payload Too Large */
-            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -945,6 +924,75 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnviarMidia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    arquivo?: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MidiaResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoverMidia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Not Found */
             404: {

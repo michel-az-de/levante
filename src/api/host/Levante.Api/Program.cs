@@ -19,6 +19,7 @@ using Levante.Conteudo.Application.Categorias.EditarCategoria;
 using Levante.Conteudo.Application.Categorias.ListarCategorias;
 using Levante.Conteudo.Application.Midias.EnviarMidia;
 using Levante.Conteudo.Application.Midias.ObterMidia;
+using Levante.Conteudo.Application.Midias.RemoverMidia;
 using Levante.Conteudo.Infrastructure;
 using Levante.Engajamento.Application.Comentarios.AprovarComentario;
 using Levante.Engajamento.Application.Comentarios.CriarComentario;
@@ -39,6 +40,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +82,7 @@ builder.Services.AddScoped<CriarCategoriaCommandHandler>();
 builder.Services.AddScoped<EditarCategoriaCommandHandler>();
 builder.Services.AddScoped<EnviarMidiaCommandHandler>();
 builder.Services.AddScoped<ObterMidiaQueryHandler>();
+builder.Services.AddScoped<RemoverMidiaCommandHandler>();
 builder.Services.AddScoped<AutenticarCommandHandler>();
 
 // Handlers do contexto Engajamento (reacoes).
@@ -105,7 +108,35 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegistrarReacaoCommandValid
 builder.Services.AddValidatorsFromAssemblyContaining<SolicitarAssinaturaCommandValidator>();
 
 // Contrato OpenAPI (consumido pelo Next.js via tipos gerados).
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(opcoes =>
+{
+    // O gerador marca numero como uniao "Integer|String" (tolera valor serializado
+    // como string) e acrescenta um pattern. O OpenAPI 3.0 nao expressa uniao de
+    // tipos, entao o writer omite "type" DE VEZ — e sem type o openapi-typescript
+    // gera `unknown`, deixando todo campo numerico do contrato inutilizavel no front
+    // (tamanho de midia, contadores de reacao, expiracao do token). A API serializa
+    // numero como numero (System.Text.Json), entao estreitamos para o tipo numerico.
+    opcoes.AddSchemaTransformer((schema, _, _) =>
+    {
+        if (schema.Type is not { } tipo || !tipo.HasFlag(JsonSchemaType.String))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (tipo.HasFlag(JsonSchemaType.Integer) || tipo.HasFlag(JsonSchemaType.Number))
+        {
+            var numerico = tipo.HasFlag(JsonSchemaType.Integer)
+                ? JsonSchemaType.Integer
+                : JsonSchemaType.Number;
+
+            // Preserva a nulidade; o pattern so fazia sentido para a forma string.
+            schema.Type = tipo.HasFlag(JsonSchemaType.Null) ? numerico | JsonSchemaType.Null : numerico;
+            schema.Pattern = null;
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 // Autenticacao JWT bearer: da um esquema real a FallbackPolicy (deny-by-default).
 // A chave/issuer/audience vem de JwtOptions resolvido LAZY (config final). Isso e
