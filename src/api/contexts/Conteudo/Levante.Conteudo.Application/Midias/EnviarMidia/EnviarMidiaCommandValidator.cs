@@ -7,13 +7,11 @@ public sealed class EnviarMidiaCommandValidator : AbstractValidator<EnviarMidiaC
     /// <summary>Tamanho maximo aceito pelo dominio (defesa em profundidade: o endpoint tambem limita via Kestrel).</summary>
     public const long TamanhoMaximoBytes = 5 * 1024 * 1024;
 
-    private static readonly string[] TiposPermitidos = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-
     public EnviarMidiaCommandValidator()
     {
         RuleFor(x => x.ContentType)
-            .Must(tipo => TiposPermitidos.Contains(tipo))
-            .WithMessage("Tipo de midia nao suportado. Use PNG, JPEG, WEBP ou GIF.");
+            .Must(tipo => TipoDeMidia.Resolver(tipo) is not null)
+            .WithMessage($"Tipo de midia nao suportado. Aceitos: {TipoDeMidia.ContentTypesSuportados}.");
 
         RuleFor(x => x.Tamanho)
             .GreaterThan(0)
@@ -26,6 +24,6 @@ public sealed class EnviarMidiaCommandValidator : AbstractValidator<EnviarMidiaC
             .WithMessage("O conteudo do arquivo nao corresponde ao tipo declarado.")
             // So confere a assinatura se o tipo declarado ja e um dos permitidos:
             // evita duas mensagens de erro redundantes para o mesmo motivo.
-            .When(x => TiposPermitidos.Contains(x.ContentType));
+            .When(x => TipoDeMidia.Resolver(x.ContentType) is not null);
     }
 }

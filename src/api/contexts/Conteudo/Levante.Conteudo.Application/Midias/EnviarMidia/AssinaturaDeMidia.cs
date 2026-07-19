@@ -7,13 +7,17 @@ namespace Levante.Conteudo.Application.Midias.EnviarMidia;
 /// </summary>
 internal static class AssinaturaDeMidia
 {
-    private const int TamanhoCabecalho = 12;
-
+    /// <summary>
+    /// Le o cabecalho e compara com a assinatura do tipo. Devolve o cursor para onde
+    /// o recebeu (nao rebobina para o inicio) — quem entrega o stream ao armazenamento
+    /// e responsavel por posiciona-lo, ver <see cref="EnviarMidiaCommandHandler"/>.
+    /// </summary>
     public static async Task<bool> ConfereAsync(Stream conteudo, string contentType, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(conteudo);
 
-        if (!conteudo.CanSeek)
+        var tipo = TipoDeMidia.Resolver(contentType);
+        if (tipo is null || !conteudo.CanSeek)
         {
             return false;
         }
@@ -22,27 +26,19 @@ internal static class AssinaturaDeMidia
         conteudo.Position = 0;
         try
         {
-            var cabecalho = new byte[TamanhoCabecalho];
-            var lidos = await conteudo.ReadAsync(cabecalho.AsMemory(0, TamanhoCabecalho), ct);
-            return Bate(contentType, cabecalho, lidos);
+            var cabecalho = new byte[TipoDeMidia.TamanhoCabecalho];
+
+            // ReadAtLeastAsync, e nao ReadAsync: o contrato de Stream permite devolver
+            // MENOS bytes que o pedido, e um WEBP valido (offset 8) seria rejeitado por
+            // acaso quando o buffering fragmentasse a primeira leitura.
+            var lidos = await conteudo.ReadAtLeastAsync(
+                cabecalho, cabecalho.Length, throwOnEndOfStream: false, ct);
+
+            return tipo.AssinaturaConfere(cabecalho.AsSpan(0, lidos));
         }
         finally
         {
             conteudo.Position = posicaoOriginal;
         }
     }
-
-    private static bool Bate(string contentType, byte[] cabecalho, int lidos) => contentType switch
-    {
-        "image/png" => lidos >= 8
-            && cabecalho[0] == 0x89 && cabecalho[1] == 0x50 && cabecalho[2] == 0x4E && cabecalho[3] == 0x47
-            && cabecalho[4] == 0x0D && cabecalho[5] == 0x0A && cabecalho[6] == 0x1A && cabecalho[7] == 0x0A,
-        "image/jpeg" => lidos >= 3 && cabecalho[0] == 0xFF && cabecalho[1] == 0xD8 && cabecalho[2] == 0xFF,
-        "image/gif" => lidos >= 6
-            && cabecalho[0] == (byte)'G' && cabecalho[1] == (byte)'I' && cabecalho[2] == (byte)'F',
-        "image/webp" => lidos >= TamanhoCabecalho
-            && cabecalho[0] == (byte)'R' && cabecalho[1] == (byte)'I' && cabecalho[2] == (byte)'F' && cabecalho[3] == (byte)'F'
-            && cabecalho[8] == (byte)'W' && cabecalho[9] == (byte)'E' && cabecalho[10] == (byte)'B' && cabecalho[11] == (byte)'P',
-        _ => false,
-    };
 }
