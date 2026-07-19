@@ -19,6 +19,14 @@ export async function GET(request: Request, contexto: Contexto): Promise<Respons
   if (seNaoCoincide) {
     cabecalhos.set("If-None-Match", seNaoCoincide);
   }
+  // Sem isto o rate limit global da API (particionado por RemoteIpAddress) ve o IP
+  // do container do Next em TODA requisicao de imagem: um artigo com 10 imagens
+  // esgota o balde de 100 req/min compartilhado por todos os visitantes. Mesmo
+  // repasse que o BFF publico ja faz (ver api/publico/[...caminho]/route.ts).
+  const encaminhado = request.headers.get("x-forwarded-for");
+  if (encaminhado) {
+    cabecalhos.set("X-Forwarded-For", encaminhado);
+  }
 
   const resposta = await fetch(destino, { headers: cabecalhos, cache: "no-store" });
 
