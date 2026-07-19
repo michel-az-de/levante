@@ -158,13 +158,32 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
     private async Task<string> ObterTokenAsync()
     {
         var client = fixture.CreateClient();
-        var login = await client.PostAsJsonAsync(
-            "/auth/login",
-            new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
-            CancellationToken.None);
-        var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-        token.ShouldNotBeNull();
 
-        return token.AccessToken;
+        // Retry com backoff: mesmo com 1 login por classe, a suite inteira
+        // (outras classes, cada uma com seu proprio fixture/limiter) pode
+        // saturar PolicyAuth (5 req/min por IP) na janela de execucao do CI.
+        // EnsureSuccessStatusCode reporta o motivo real em vez de um JSON vazio
+        // estourando na desserializacao.
+        const int maxTentativas = 3;
+        for (var tentativa = 1; tentativa <= maxTentativas; tentativa++)
+        {
+            var login = await client.PostAsJsonAsync(
+                "/auth/login",
+                new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
+                CancellationToken.None);
+
+            if (login.StatusCode == HttpStatusCode.TooManyRequests && tentativa < maxTentativas)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(tentativa * 5), CancellationToken.None);
+                continue;
+            }
+
+            login.EnsureSuccessStatusCode();
+            var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
+            token.ShouldNotBeNull();
+            return token.AccessToken;
+        }
+
+        throw new InvalidOperationException($"Nao foi possivel autenticar apos {maxTentativas} tentativas.");
     }
 }
