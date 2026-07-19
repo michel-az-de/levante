@@ -1,9 +1,7 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Levante.Api.Endpoints;
 using Levante.Api.IntegrationTests.Fixtures;
-using Levante.Identity.Application.Autenticacao;
 using Shouldly;
 using Xunit;
 
@@ -34,7 +32,7 @@ public sealed class ComentarioEndpointTests(ApiAppFixture fixture) : IClassFixtu
         publicoAntes.ShouldBeEmpty();
 
         // Admin ve na fila, pega o id e aprova.
-        var adminClient = await ClienteAutenticadoAsync();
+        var adminClient = await fixture.CriarClienteAutenticadoAsync();
         var pendentes = await ListarPendentesAsync(adminClient);
         var meu = pendentes.ShouldHaveSingleItem();
         meu.Autor.ShouldBe("Ana");
@@ -65,7 +63,7 @@ public sealed class ComentarioEndpointTests(ApiAppFixture fixture) : IClassFixtu
         resposta.StatusCode.ShouldBe(HttpStatusCode.Accepted); // aceito em silencio
 
         // Nada entrou na fila de moderacao por causa desse artigo.
-        var adminClient = await ClienteAutenticadoAsync();
+        var adminClient = await fixture.CriarClienteAutenticadoAsync();
         var pendentes = await ListarPendentesAsync(adminClient);
         pendentes.ShouldNotContain(c => c.ArtigoId == artigoId);
     }
@@ -106,17 +104,4 @@ public sealed class ComentarioEndpointTests(ApiAppFixture fixture) : IClassFixtu
         return lista ?? [];
     }
 
-    private async Task<HttpClient> ClienteAutenticadoAsync()
-    {
-        var client = fixture.CreateClient();
-        var login = await client.PostAsJsonAsync(
-            "/auth/login",
-            new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
-            CancellationToken.None);
-        var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-        token.ShouldNotBeNull();
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        return client;
-    }
 }

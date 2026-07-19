@@ -1,11 +1,9 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Levante.Api.Endpoints;
 using Levante.Api.IntegrationTests.Fixtures;
 using Levante.Conteudo.Application.Artigos;
 using Levante.Conteudo.Application.Categorias;
-using Levante.Identity.Application.Autenticacao;
 using Shouldly;
 using Xunit;
 
@@ -28,7 +26,7 @@ public sealed class CategoriaEndpointTests(ApiAppFixture fixture) : IClassFixtur
     [Fact]
     public async Task Criar_eListar()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
         const string slug = "fatia-2c-ii-categoria";
 
         var criacao = await client.PostAsJsonAsync(
@@ -43,7 +41,7 @@ public sealed class CategoriaEndpointTests(ApiAppFixture fixture) : IClassFixtur
     [Fact]
     public async Task Criar_comSlugDuplicado_retorna409()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
 
         // "arquitetura" e semeada em Development.
         var resposta = await client.PostAsJsonAsync(
@@ -55,7 +53,7 @@ public sealed class CategoriaEndpointTests(ApiAppFixture fixture) : IClassFixtur
     [Fact]
     public async Task Artigo_comCategoriaETags_roundtripEbrowse()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
 
         var categorias = await client.GetFromJsonAsync<List<CategoriaResponse>>("/categorias", CancellationToken.None);
         var arquitetura = categorias!.First(c => c.Slug == "arquitetura");
@@ -87,7 +85,7 @@ public sealed class CategoriaEndpointTests(ApiAppFixture fixture) : IClassFixtur
     [Fact]
     public async Task Criar_artigo_comCategoriaInexistente_retorna400()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
 
         var resposta = await client.PostAsJsonAsync(
             "/artigos",
@@ -108,17 +106,4 @@ public sealed class CategoriaEndpointTests(ApiAppFixture fixture) : IClassFixtur
         resposta.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    private async Task<HttpClient> ClienteAutenticadoAsync()
-    {
-        var client = fixture.CreateClient();
-        var login = await client.PostAsJsonAsync(
-            "/auth/login",
-            new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
-            CancellationToken.None);
-        var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-        token.ShouldNotBeNull();
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        return client;
-    }
 }

@@ -1,10 +1,8 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Levante.Api.Endpoints;
 using Levante.Api.IntegrationTests.Fixtures;
 using Levante.Conteudo.Application.Artigos;
-using Levante.Identity.Application.Autenticacao;
 using Shouldly;
 using Xunit;
 
@@ -29,7 +27,7 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     [Fact]
     public async Task FluxoCompleto_criarPublicarEditarArquivar()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
         const string slug = "fatia-2b-fluxo-completo";
 
         // Cria (rascunho) -> 201
@@ -81,7 +79,7 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     [Fact]
     public async Task Criar_comMetaSeo_persisteERetornaNoPublico()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
         const string slug = "fatia-2c-meta-seo";
 
         var criacao = await client.PostAsJsonAsync(
@@ -108,7 +106,7 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     [Fact]
     public async Task Criar_semMetaSeo_retornaCamposNulos()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
         const string slug = "fatia-2c-sem-meta";
 
         var criacao = await client.PostAsJsonAsync(
@@ -127,7 +125,7 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     [Fact]
     public async Task Criar_comSlugDuplicado_retorna409()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
 
         // "clean-architecture-na-pratica" e semeado em Development.
         var resposta = await client.PostAsJsonAsync(
@@ -141,7 +139,7 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
     [Fact]
     public async Task Publicar_inexistente_retorna404()
     {
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
 
         var resposta = await client.PostAsync(
             $"/artigos/{Guid.NewGuid()}/publicar", content: null, CancellationToken.None);
@@ -149,17 +147,4 @@ public sealed class ArtigoAdminEndpointTests(ApiAppFixture fixture) : IClassFixt
         resposta.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    private async Task<HttpClient> ClienteAutenticadoAsync()
-    {
-        var client = fixture.CreateClient();
-        var login = await client.PostAsJsonAsync(
-            "/auth/login",
-            new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
-            CancellationToken.None);
-        var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-        token.ShouldNotBeNull();
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        return client;
-    }
 }
