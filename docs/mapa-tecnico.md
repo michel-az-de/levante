@@ -95,7 +95,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 ### Bounded contexts (domínio)
 | Item | Status | Nota |
 |------|--------|------|
-| Conteudo | Trav. | artigos, notícias, publicações |
+| Conteudo | Trav. | artigos, notícias, publicações, mídia de artigo |
 | Engajamento | Trav. | curtir, comentar, compartilhar |
 | Audiencia | Trav. | leads, assinantes, consentimentos |
 | Analytics | Trav. | telemetria |
@@ -110,6 +110,7 @@ Cross-cutting que incide sobre Next.js + API e não aparecem como nó para não 
 | MongoDB Atlas | Rec. | GAP-E (vs self-host) |
 | Replica set | Trav. | necessário p/ transações + Change Streams |
 | Driver nativo + Repository | Rec. | repo por agregado |
+| GridFS (bucket `midias`) | Trav. | imagem de artigo no próprio banco ([ADR 0008](adr/0008-midia-gridfs.md)); entra no dump |
 | Collection time-series | Rec. | analytics |
 | Atlas Search | Rec. | full-text |
 
