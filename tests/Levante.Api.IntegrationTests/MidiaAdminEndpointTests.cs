@@ -4,7 +4,9 @@ using System.Net.Http.Json;
 using Levante.Api.Endpoints;
 using Levante.Api.IntegrationTests.Fixtures;
 using Levante.Conteudo.Application.Midias;
-using Levante.Identity.Application.Autenticacao;
+using Levante.Identity.Application.Ports;
+using Levante.Identity.Domain.Administradores;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -142,9 +144,11 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
         };
     }
 
-    // Cacheado por classe: PolicyAuth limita /auth/login a 5 req/min por IP, e
-    // esta classe tem mais de 5 testes autenticados - logar a cada teste
-    // estourava o limite (429) de forma intermitente. Um token so, reusado.
+    // Gera o token direto do container de DI (IGeradorDeToken), sem passar por
+    // POST /auth/login: esta classe nao testa o fluxo de login, so precisa de
+    // um Bearer valido, e /auth/login tem PolicyAuth (5 req/min por IP) - com
+    // varios testes autenticados nesta classe, logar a cada teste esbarrava no
+    // limite de forma intermitente no CI (429). Cacheado por classe.
     private string? _tokenCache;
 
     private async Task<HttpClient> ClienteAutenticadoAsync()
@@ -157,33 +161,14 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
 
     private async Task<string> ObterTokenAsync()
     {
-        var client = fixture.CreateClient();
+        _ = fixture.CreateClient(); // materializa o host antes de resolver servicos
+        using var escopo = fixture.Services.CreateScope();
 
-        // Retry com backoff: mesmo com 1 login por classe, a suite inteira
-        // (outras classes, cada uma com seu proprio fixture/limiter) pode
-        // saturar PolicyAuth (5 req/min por IP) na janela de execucao do CI.
-        // EnsureSuccessStatusCode reporta o motivo real em vez de um JSON vazio
-        // estourando na desserializacao.
-        const int maxTentativas = 3;
-        for (var tentativa = 1; tentativa <= maxTentativas; tentativa++)
-        {
-            var login = await client.PostAsJsonAsync(
-                "/auth/login",
-                new AutenticarRequest(ApiAppFixture.EmailAdmin, ApiAppFixture.SenhaAdmin),
-                CancellationToken.None);
+        var administradores = escopo.ServiceProvider.GetRequiredService<IAdministradorRepository>();
+        var admin = await administradores.GetByEmailAsync(ApiAppFixture.EmailAdmin, CancellationToken.None);
+        admin.ShouldNotBeNull();
 
-            if (login.StatusCode == HttpStatusCode.TooManyRequests && tentativa < maxTentativas)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(tentativa * 5), CancellationToken.None);
-                continue;
-            }
-
-            login.EnsureSuccessStatusCode();
-            var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-            token.ShouldNotBeNull();
-            return token.AccessToken;
-        }
-
-        throw new InvalidOperationException($"Nao foi possivel autenticar apos {maxTentativas} tentativas.");
+        var geradorDeToken = escopo.ServiceProvider.GetRequiredService<IGeradorDeToken>();
+        return geradorDeToken.Gerar(admin).AccessToken;
     }
 }
