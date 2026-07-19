@@ -3,6 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Levante.SharedKernel.Infrastructure;
@@ -29,6 +32,14 @@ public static class MongoDependencyInjection
         {
             return services;
         }
+
+        // Guid global: o driver 3.x removeu o default implicito de representacao
+        // (exigia decidir Standard/CSharpLegacy explicitamente). Documentos com
+        // [BsonGuidRepresentation] por propriedade nao precisam disso, mas o
+        // GridFSBucket<Guid> (id de midia) nao tem um Document proprio para
+        // anotar — sem este registro global, toda serializacao de Guid crua falha
+        // no boot. TryRegisterSerializer e idempotente (nao lanca se ja registrado).
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
         var opcoes = services.AddOptions<MongoOptions>()
             .Bind(configuration.GetSection(MongoOptions.SecaoConfig))
