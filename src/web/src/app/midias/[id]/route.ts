@@ -6,7 +6,21 @@ import { apiBaseUrl } from "@/lib/sessao-admin";
  * (o browser nunca fala com a API direto) sem reimplementar streaming: o
  * corpo passa cru (Response.body).
  */
-const CABECALHOS_REPASSADOS = ["content-type", "cache-control", "etag", "content-length"];
+
+// nosniff entra aqui porque a resposta e conteudo enviado por usuario: sem ele,
+// um arquivo polyglot (GIF valido que tambem e HTML valido) poderia ser
+// interpretado como documento pelo browser. A API ja emite o header; se ele nao
+// estivesse nesta lista, morreria no repasse.
+const CABECALHOS_REPASSADOS = [
+  "content-type",
+  "cache-control",
+  "etag",
+  "content-length",
+  "x-content-type-options",
+];
+
+/** A API e vizinha na mesma VM; se nao responder rapido, e porque nao vai responder. */
+const TIMEOUT_MS = 10_000;
 
 type Contexto = { params: Promise<{ id: string }> };
 
@@ -28,7 +42,19 @@ export async function GET(request: Request, contexto: Contexto): Promise<Respons
     cabecalhos.set("X-Forwarded-For", encaminhado);
   }
 
-  const resposta = await fetch(destino, { headers: cabecalhos, cache: "no-store" });
+  let resposta: Response;
+  try {
+    resposta = await fetch(destino, {
+      headers: cabecalhos,
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch {
+    // API fora do ar ou lenta demais. Sem este catch o route handler estoura e o
+    // Next devolve a pagina de erro HTML dentro de uma tag <img> — 500 com corpo
+    // enganoso. 502 vazio deixa o browser mostrar imagem quebrada, que e honesto.
+    return new Response(null, { status: 502 });
+  }
 
   const saida = new Headers();
   for (const nome of CABECALHOS_REPASSADOS) {
