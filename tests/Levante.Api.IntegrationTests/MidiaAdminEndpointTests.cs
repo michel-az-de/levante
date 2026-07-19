@@ -142,7 +142,20 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
         };
     }
 
+    // Cacheado por classe: PolicyAuth limita /auth/login a 5 req/min por IP, e
+    // esta classe tem mais de 5 testes autenticados - logar a cada teste
+    // estourava o limite (429) de forma intermitente. Um token so, reusado.
+    private string? _tokenCache;
+
     private async Task<HttpClient> ClienteAutenticadoAsync()
+    {
+        var client = fixture.CreateClient();
+        _tokenCache ??= await ObterTokenAsync();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenCache);
+        return client;
+    }
+
+    private async Task<string> ObterTokenAsync()
     {
         var client = fixture.CreateClient();
         var login = await client.PostAsJsonAsync(
@@ -152,7 +165,6 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
         var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
         token.ShouldNotBeNull();
 
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        return client;
+        return token.AccessToken;
     }
 }

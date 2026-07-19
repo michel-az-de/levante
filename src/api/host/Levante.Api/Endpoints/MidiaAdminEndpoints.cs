@@ -57,6 +57,13 @@ public static class MidiaAdminEndpoints
         {
             return Results.StatusCode(ex.StatusCode);
         }
+        catch (InvalidDataException)
+        {
+            // Multipart malformado (ex.: corpo sem nenhuma parte) - o
+            // MultipartReader lanca InvalidDataException, nao BadHttpRequestException.
+            // Entrada de cliente invalida e sempre 400, nunca 500.
+            return Results.BadRequest();
+        }
 
         var arquivo = formulario.Files.GetFile(CampoArquivo);
         if (arquivo is null || arquivo.Length == 0)
