@@ -29,6 +29,45 @@ public sealed class EnviarMidiaCommandHandlerTests
         storage.Salvas.ShouldBe(1);
     }
 
+    /// <summary>
+    /// Regressao do cenario que a fatia 3 (importacao de HTML/URL) ia disparar: baixar
+    /// a imagem para um MemoryStream via CopyToAsync deixa o cursor no fim. Sem o
+    /// rebobinar do handler, o GridFS gravava 0 byte e ainda assim respondia 201 com o
+    /// tamanho cheio — imagem quebrada em producao, sem erro em log nenhum.
+    /// </summary>
+    [Fact]
+    public async Task Handle_streamPosicionadoNoFim_gravaOArquivoInteiro()
+    {
+        var storage = new MidiaStorageEmMemoria();
+        var handler = Criar(storage);
+        using var stream = new MemoryStream(BytesPng);
+        stream.Position = stream.Length; // como ficaria apos um CopyToAsync
+
+        var resultado = await handler.Handle(
+            new EnviarMidiaCommand(stream, "image/png", "foto.png", BytesPng.Length), CancellationToken.None);
+
+        resultado.Sucesso.ShouldBeTrue();
+        storage.UltimoConteudo.ShouldBe(BytesPng);
+        resultado.Valor!.Tamanho.ShouldBe(BytesPng.Length);
+    }
+
+    /// <summary>O que e servido depois precisa ser o content-type canonico, nao o header cru.</summary>
+    [Fact]
+    public async Task Handle_contentTypeComCaixaEParametros_normalizaAoSalvar()
+    {
+        var storage = new MidiaStorageEmMemoria();
+        var handler = Criar(storage);
+        using var stream = new MemoryStream(BytesPng);
+
+        var resultado = await handler.Handle(
+            new EnviarMidiaCommand(stream, "IMAGE/PNG; charset=binary", "foto.png", BytesPng.Length),
+            CancellationToken.None);
+
+        resultado.Sucesso.ShouldBeTrue();
+        resultado.Valor!.ContentType.ShouldBe("image/png");
+        storage.UltimoContentType.ShouldBe("image/png");
+    }
+
     [Fact]
     public async Task Handle_tipoNaoPermitido_falhaSemSalvar()
     {
