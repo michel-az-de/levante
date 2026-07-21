@@ -13,6 +13,9 @@ namespace Levante.Api.IntegrationTests;
 public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixture<ApiAppFixture>
 {
     private static readonly byte[] BytesPng = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0];
+    private static readonly byte[] BytesJpeg = [0xFF, 0xD8, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    private static readonly byte[] BytesGif = [0x47, 0x49, 0x46, 0x38, 0, 0, 0, 0, 0, 0, 0, 0]; // "GIF8"
+    private static readonly byte[] BytesWebp = [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]; // "RIFF"...."WEBP"
 
     [Fact]
     public async Task Enviar_semToken_retorna401()
@@ -198,6 +201,43 @@ public sealed class MidiaAdminEndpointTests(ApiAppFixture fixture) : IClassFixtu
         var corpo = await resposta.Content.ReadAsStringAsync(CancellationToken.None);
         corpo.ShouldNotContain("/midias/");
     }
+
+    /// <summary>
+    /// Anti-regressao: cada tipo suportado (nao so PNG) sobe, e servido com o content-type
+    /// canonico e os bytes integros, e leva o nosniff DA ORIGEM (a API). Antes so o BFF do
+    /// front asseria o nosniff, e so PNG era exercitado ponta-a-ponta; o WEBP guarda o fix do
+    /// preenchimento do buffer (assinatura "RIFF...WEBP" ate o offset 12).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TiposDeImagemSuportados))]
+    public async Task Enviar_tipoSuportado_serveComBytesIntegrosEnosniffNaOrigem(string contentType, byte[] bytes)
+    {
+        var client = await fixture.CriarClienteAutenticadoAsync();
+        using var formulario = FormularioComArquivo(bytes, contentType, "arquivo");
+
+        var envio = await client.PostAsync("/admin/midias", formulario, CancellationToken.None);
+
+        envio.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var midia = await envio.Content.ReadFromJsonAsync<MidiaResponse>(CancellationToken.None);
+        midia.ShouldNotBeNull();
+        midia.ContentType.ShouldBe(contentType);
+
+        var download = await fixture.CreateClient().GetAsync(midia.Url, CancellationToken.None);
+
+        download.StatusCode.ShouldBe(HttpStatusCode.OK);
+        download.Content.Headers.ContentType!.MediaType.ShouldBe(contentType);
+        (await download.Content.ReadAsByteArrayAsync(CancellationToken.None)).ShouldBe(bytes); // integridade dos bytes
+        download.Headers.TryGetValues("X-Content-Type-Options", out var nosniff).ShouldBeTrue();
+        nosniff!.ShouldContain("nosniff");
+    }
+
+    public static IEnumerable<object[]> TiposDeImagemSuportados() =>
+    [
+        ["image/png", BytesPng],
+        ["image/jpeg", BytesJpeg],
+        ["image/gif", BytesGif],
+        ["image/webp", BytesWebp],
+    ];
 
     private async Task<MidiaResponse> EnviarPngAsync()
     {
