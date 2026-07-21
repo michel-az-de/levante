@@ -115,6 +115,15 @@ public sealed class ArtigoTests
     }
 
     [Fact]
+    public void Criar_rejeitaConteudoAlemDoLimite()
+    {
+        var conteudoLongo = new string('a', Artigo.TamanhoMaximoConteudo + 1);
+
+        Should.Throw<ArgumentException>(
+            () => Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", conteudoLongo));
+    }
+
+    [Fact]
     public void Arquivar_mudaStatusParaArquivado()
     {
         var artigo = Artigo.Criar("Titulo", new Slug("titulo"), "Resumo.", "Conteudo.");
