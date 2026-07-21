@@ -79,17 +79,19 @@ describe("ArtigoEditor", () => {
   });
 
   it("exibe a mensagem de erro devolvida pelo onSubmit", async () => {
-    renderizar(vi.fn().mockResolvedValue("Slug ja existe."));
+    const { container } = renderizar(vi.fn().mockResolvedValue("Slug ja existe."));
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar" }));
+    // submit direto (nao clique): jsdom bloquearia o clique com os campos required vazios,
+    // e aqui o alvo e o handler de submit, nao a validacao HTML5.
+    fireEvent.submit(container.querySelector("form")!);
 
     expect(await screen.findByText("Slug ja existe.")).toBeTruthy();
   });
 
   it("exibe 'Falha de conexao' quando o onSubmit rejeita (rede)", async () => {
-    renderizar(vi.fn().mockRejectedValue(new Error("network")));
+    const { container } = renderizar(vi.fn().mockRejectedValue(new Error("network")));
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar" }));
+    fireEvent.submit(container.querySelector("form")!);
 
     expect(await screen.findByText(/Falha de conexao/)).toBeTruthy();
   });
@@ -102,10 +104,10 @@ describe("ArtigoEditor", () => {
           resolver = r;
         }),
     );
-    renderizar(onSubmit);
+    const { container } = renderizar(onSubmit);
 
     const botao = screen.getByRole("button", { name: "Criar" }) as HTMLButtonElement;
-    fireEvent.click(botao);
+    fireEvent.submit(container.querySelector("form")!);
 
     await waitFor(() => expect(botao.disabled).toBe(true));
     expect(botao.textContent).toBe("Salvando...");
