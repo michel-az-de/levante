@@ -57,18 +57,7 @@ public static class ArtigoAdminEndpoints
         CriarArtigoCommandHandler handler,
         CancellationToken ct)
     {
-        var resultado = await handler.Handle(
-            new CriarArtigoCommand(
-                requisicao.Titulo,
-                requisicao.Slug,
-                requisicao.Resumo,
-                requisicao.Conteudo,
-                requisicao.MetaTitulo,
-                requisicao.MetaDescricao,
-                requisicao.ImagemOgUrl,
-                requisicao.CategoriaId,
-                requisicao.Tags),
-            ct);
+        var resultado = await handler.Handle(requisicao.ParaCriarCommand(), ct);
 
         return resultado.Sucesso
             ? Results.Created($"/artigos/{resultado.Valor!.Slug}", resultado.Valor)
@@ -81,19 +70,7 @@ public static class ArtigoAdminEndpoints
         EditarArtigoCommandHandler handler,
         CancellationToken ct)
     {
-        var resultado = await handler.Handle(
-            new EditarArtigoCommand(
-                id,
-                requisicao.Titulo,
-                requisicao.Slug,
-                requisicao.Resumo,
-                requisicao.Conteudo,
-                requisicao.MetaTitulo,
-                requisicao.MetaDescricao,
-                requisicao.ImagemOgUrl,
-                requisicao.CategoriaId,
-                requisicao.Tags),
-            ct);
+        var resultado = await handler.Handle(requisicao.ParaEditarCommand(id), ct);
 
         return resultado.Sucesso ? Results.Ok(resultado.Valor) : ResultadoHttp.Falha(resultado.Erro);
     }
@@ -139,7 +116,7 @@ public sealed record CriarArtigoRequest(
     string? MetaDescricao = null,
     string? ImagemOgUrl = null,
     Guid? CategoriaId = null,
-    IReadOnlyList<string>? Tags = null);
+    IReadOnlyList<string>? Tags = null) : IDadosDeArtigo;
 
 /// <summary>Corpo de edicao de artigo (Id vem da rota). Meta SEO, categoria e tags opcionais.</summary>
 public sealed record EditarArtigoRequest(
@@ -151,4 +128,34 @@ public sealed record EditarArtigoRequest(
     string? MetaDescricao = null,
     string? ImagemOgUrl = null,
     Guid? CategoriaId = null,
-    IReadOnlyList<string>? Tags = null);
+    IReadOnlyList<string>? Tags = null) : IDadosDeArtigo;
+
+/// <summary>
+/// Campos comuns de criacao e edicao de artigo. Existe para deduplicar o mapeamento
+/// request->command num lugar so, SEM unificar os dois records: a convencao de nomes
+/// pede DTO com verbo (Criar/Editar...Request), entao eles seguem separados no contrato.
+/// </summary>
+internal interface IDadosDeArtigo
+{
+    string Titulo { get; }
+    string Slug { get; }
+    string Resumo { get; }
+    string Conteudo { get; }
+    string? MetaTitulo { get; }
+    string? MetaDescricao { get; }
+    string? ImagemOgUrl { get; }
+    Guid? CategoriaId { get; }
+    IReadOnlyList<string>? Tags { get; }
+}
+
+/// <summary>Mapeia os dados comuns do request para o command correspondente (elimina a copia campo a campo).</summary>
+internal static class MapeamentoDeArtigo
+{
+    public static CriarArtigoCommand ParaCriarCommand(this IDadosDeArtigo dados) =>
+        new(dados.Titulo, dados.Slug, dados.Resumo, dados.Conteudo,
+            dados.MetaTitulo, dados.MetaDescricao, dados.ImagemOgUrl, dados.CategoriaId, dados.Tags);
+
+    public static EditarArtigoCommand ParaEditarCommand(this IDadosDeArtigo dados, Guid id) =>
+        new(id, dados.Titulo, dados.Slug, dados.Resumo, dados.Conteudo,
+            dados.MetaTitulo, dados.MetaDescricao, dados.ImagemOgUrl, dados.CategoriaId, dados.Tags);
+}
