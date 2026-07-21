@@ -64,6 +64,20 @@ describe("enviarMidia", () => {
 
     await expect(enviarMidia(arquivo)).rejects.toThrow(/400/);
   });
+
+  it("propaga o status 413 (payload grande demais) na mensagem de erro", async () => {
+    postMock.mockResolvedValue({
+      data: undefined,
+      error: { title: "Payload Too Large" },
+      response: { status: 413 },
+    });
+
+    const arquivo = new File([new Uint8Array(10)], "grande.png", { type: "image/png" });
+
+    // Comportamento atual: 413 sai como o erro generico com o status embutido — nao ha
+    // tratamento distinto/UX dedicada para "arquivo grande demais" (ver issue).
+    await expect(enviarMidia(arquivo)).rejects.toThrow(/413/);
+  });
 });
 
 describe("removerMidia", () => {
