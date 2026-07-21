@@ -1,6 +1,7 @@
 using Levante.SharedKernel.Infrastructure;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace Levante.Conteudo.Infrastructure.Persistence;
 
@@ -15,6 +16,11 @@ internal sealed class ConteudoMongoContext
         Database = client.GetDatabase(options.Value.DatabaseName);
         Artigos = Database.GetCollection<ArtigoDocument>("artigos");
         Categorias = Database.GetCollection<CategoriaDocument>("categorias");
+        // Bucket com id proprio (Guid, nao ObjectId) para casar com a rota publica
+        // /midias/{id:guid}. Exige o GuidSerializer registrado globalmente (ver
+        // MongoDependencyInjection.AddLevanteMongo) — o bucket nao tem um Document
+        // com [BsonGuidRepresentation] proprio como Artigo/Categoria.
+        Midias = new GridFSBucket<Guid>(Database, new GridFSBucketOptions { BucketName = "midias" });
     }
 
     public IMongoDatabase Database { get; }
@@ -22,6 +28,8 @@ internal sealed class ConteudoMongoContext
     public IMongoCollection<ArtigoDocument> Artigos { get; }
 
     public IMongoCollection<CategoriaDocument> Categorias { get; }
+
+    public GridFSBucket<Guid> Midias { get; }
 
     /// <summary>Cria os indices unicos de slug (idempotente; seguro sob scale-out).</summary>
     public async Task EnsureIndexesAsync(CancellationToken ct)

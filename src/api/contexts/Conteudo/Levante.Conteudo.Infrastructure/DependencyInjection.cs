@@ -1,5 +1,6 @@
 using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Domain.Categorias;
+using Levante.Conteudo.Domain.Midias;
 using Levante.Conteudo.Infrastructure.HealthChecks;
 using Levante.Conteudo.Infrastructure.Persistence;
 using Levante.Conteudo.Infrastructure.Seguranca;
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddSingleton<ConteudoMongoContext>();
         services.AddScoped<IArtigoRepository, ArtigoRepository>();
         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+        services.AddScoped<IMidiaStorage, MidiaGridFsStorage>();
 
         services.AddHealthChecks()
             .AddCheck<MongoHealthCheck>("mongo", tags: ["ready"]);

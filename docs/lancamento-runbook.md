@@ -90,6 +90,19 @@ Não são itens opcionais de checklist:
   `deploy/levante/.provision-state` + dumps (Postgres), com **restore validado em cluster/scratch**.
   O Mongo é Atlas (backup/PITR gerenciado no tier M10+; se optar por M0/M2, agende um `mongodump`
   como script, não como intenção). **Nunca `docker compose down -v` em produção.**
+
+  > **Mídia de artigo mora no Mongo (GridFS).** Desde a fatia de autoria rica, imagem de artigo é
+  > gravada no bucket `midias` do próprio banco ([ADR 0008](adr/0008-midia-gridfs.md)), e não em
+  > storage à parte. Duas consequências para este portão:
+  > **(1)** o dump passa a arrastar os binários — refaça a medição da janela de backup/restore
+  > contando com eles, não com o tamanho de quando era só texto;
+  > **(2)** perder o banco agora perde também as imagens dos artigos, que não são recuperáveis do
+  > markdown (o corpo guarda só `/midias/{id}`).
+  > Se a produção estiver com **Mongo self-hosted** na VM (e não Atlas), o `mongodump` agendado é
+  > obrigatório, não opcional — e vale **monitorar o disco**: a VM é compartilhada com o Hiram, então
+  > disco cheio derruba os dois produtos. O volume cresce por design nas próximas fatias (o editor
+  > sobe uma imagem a cada colagem, inclusive de rascunho descartado) e ainda **não há coleta de
+  > mídia órfã**.
 - **Smoke automatizado** como gate do pipeline (`/api/health` + `/` + — TODO(infra) — 1 GET dinâmico web→API pela rota pública de reações).
 - **Verificação visual** — rodar `npm run dev` (Node 20+) e conferir `/`, `/levante`, `/artigos`, tema/idioma/⌘K, ou verificar contra a URL pós-deploy. (Nunca foi feita: o Node local do dev é 18, abaixo do mínimo do Next 16.)
 

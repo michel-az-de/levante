@@ -9,4 +9,9 @@
     <PackageReference Include="FluentValidation" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Teste direto de assinatura binaria (AssinaturaDeMidia) sem tornar o helper publico. -->
+    <InternalsVisibleTo Include="Levante.Conteudo.UnitTests" />
+  </ItemGroup>
+
 </Project>

@@ -1,11 +1,9 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Levante.Api.Endpoints;
 using Levante.Api.IntegrationTests.Fixtures;
 using Levante.Conteudo.Application.Artigos;
-using Levante.Identity.Application.Autenticacao;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Shouldly;
@@ -108,7 +106,7 @@ public sealed class OutboxRelayEndpointTests(OutboxRelayFixture fixture) : IClas
     public async Task ArtigoPublicado_semMapeador_marcaIgnorada_semPostAoHiram()
     {
         fixture.StubAceito();
-        var client = await ClienteAutenticadoAsync();
+        var client = await fixture.CriarClienteAutenticadoAsync();
         var slug = "artigo-" + Guid.NewGuid().ToString("N")[..8];
 
         var criacao = await client.PostAsJsonAsync(
@@ -153,17 +151,4 @@ public sealed class OutboxRelayEndpointTests(OutboxRelayFixture fixture) : IClas
         return null;
     }
 
-    private async Task<HttpClient> ClienteAutenticadoAsync()
-    {
-        var client = fixture.CreateClient();
-        var login = await client.PostAsJsonAsync(
-            "/auth/login",
-            new AutenticarRequest("admin@levante.dev", "Senha-de-teste-Forte-123"),
-            CancellationToken.None);
-        var token = await login.Content.ReadFromJsonAsync<TokenDeAcessoResponse>(CancellationToken.None);
-        token.ShouldNotBeNull();
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        return client;
-    }
 }
