@@ -81,22 +81,37 @@ public sealed class ArtigoFormatosTests
     }
 
     /// <summary>
-    /// GAP de integridade FIXADO como comportamento atual: o Conteudo nao tem MaximumLength no
-    /// validator nem teto no dominio, entao um corpo gigante e aceito. (O Titulo, por contraste,
-    /// e limitado a 200 pelo validator.) Se um teto for adotado (ver issue), este teste muda junto.
+    /// Teto do Conteudo (issue #101): ate 200k chars e aceito; acima disso a validacao barra.
+    /// Defende o documento Mongo (16MB) sem atrapalhar artigos longos.
     /// </summary>
     [Fact]
-    public async Task Criar_conteudoGigante_eAceito_documentaAusenciaDeTeto()
+    public async Task Criar_conteudoNoLimiteDe200k_eAceito()
     {
         var repo = new ArtigoRepositorioEmMemoria();
         var handler = Handler(repo);
-        var gigante = new string('a', 500_000);
+        var noLimite = new string('a', Artigo.TamanhoMaximoConteudo);
 
         var resultado = await handler.Handle(
-            new CriarArtigoCommand("Titulo", "conteudo-gigante", "Resumo.", gigante),
+            new CriarArtigoCommand("Titulo", "conteudo-no-limite", "Resumo.", noLimite),
             CancellationToken.None);
 
         resultado.Sucesso.ShouldBeTrue();
-        resultado.Valor!.Conteudo.Length.ShouldBe(500_000);
+        resultado.Valor!.Conteudo.Length.ShouldBe(Artigo.TamanhoMaximoConteudo);
+    }
+
+    [Fact]
+    public async Task Criar_conteudoAcimaDoLimite_falhaComValidacao()
+    {
+        var repo = new ArtigoRepositorioEmMemoria();
+        var handler = Handler(repo);
+        var acima = new string('a', Artigo.TamanhoMaximoConteudo + 1);
+
+        var resultado = await handler.Handle(
+            new CriarArtigoCommand("Titulo", "conteudo-grande-demais", "Resumo.", acima),
+            CancellationToken.None);
+
+        resultado.Falhou.ShouldBeTrue();
+        resultado.Erro.Codigo.ShouldBe("validacao");
+        repo.Adicionados.ShouldBe(0);
     }
 }
