@@ -27,6 +27,13 @@ async function repassar(request: Request, caminho: string[]): Promise<Response> 
   if (contentType) {
     cabecalhos.set("Content-Type", contentType);
   }
+  // IP real do cliente, para o limiter global da API particionar por visitante em vez de
+  // jogar todo o trafego do admin no balde do container do Next. Mesmo repasse dos outros
+  // BFFs (ver api/publico/[...caminho]/route.ts e midias/[id]/route.ts).
+  const encaminhado = request.headers.get("x-forwarded-for");
+  if (encaminhado) {
+    cabecalhos.set("X-Forwarded-For", encaminhado);
+  }
 
   const resposta = await fetch(destino, {
     method: request.method,
