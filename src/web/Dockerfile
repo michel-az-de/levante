@@ -18,8 +18,13 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
+# --chown obrigatorio: sem ele o COPY entra como root e o servidor, ja como nextjs,
+# nao consegue criar /app/.next/cache (EACCES a cada request que grava cache de
+# ISR/fetch). O mkdir explicito garante o diretorio mesmo quando nada em .next/static
+# o tenha criado antes.
+COPY --chown=nextjs:nodejs --from=build /app/.next/standalone ./
+COPY --chown=nextjs:nodejs --from=build /app/.next/static ./.next/static
+RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
