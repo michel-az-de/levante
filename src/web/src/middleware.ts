@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // CSP em Report-Only no MVP: nao bloqueia, so coleta violacoes em /api/csp-report
 // para servir de evidencia antes do enforcement. Nonce/hash matam o cache ISR do
@@ -18,7 +18,7 @@ const CSP_REPORT_ONLY = [
   "report-uri /api/csp-report",
 ].join("; ");
 
-export function middleware(): NextResponse {
+export function middleware(request: NextRequest): NextResponse {
   const response = NextResponse.next();
   response.headers.set("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY);
 
@@ -27,6 +27,21 @@ export function middleware(): NextResponse {
   // robots Disallow + sitemap vazio (X-Robots-Tag pega o bot que ignora o robots).
   if (process.env.SITE_INDEXABLE !== "true") {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  // Cache-Control para paginas ISR: permite CDN (Caddy) servir stale
+  // por 60s enquanto revalida em background. BFFs e assets nao sao afetados.
+  const { pathname } = request.nextUrl;
+  if (
+    pathname === "/" ||
+    pathname === "/artigos" ||
+    pathname.startsWith("/artigos/") ||
+    pathname.startsWith("/categoria/")
+  ) {
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=600",
+    );
   }
 
   return response;

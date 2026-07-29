@@ -4,8 +4,9 @@ import { ListaArtigos } from "@/components/site/artigo/ListaArtigos";
 import { artigoApi } from "@/lib/api";
 import type { Artigo } from "@/types/domain";
 
-// SSR a cada request (lista sempre fresca; nao exige a API no next build do CI).
-export const dynamic = "force-dynamic";
+// ISR: lista revalidada a cada 60s. Apos a janela, a proxima requisicao
+// gera um novo cache em background (stale-while-revalidate do Next.js).
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Artigos",

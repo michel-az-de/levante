@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Idioma } from "@/components/Idioma";
 import { LinhaArtigo } from "@/components/site/LinhaArtigo";
@@ -8,14 +9,20 @@ import { Botao } from "./Botao";
 import { Marca } from "./Marca";
 import { CabecalhoSecao, Secao } from "./Secao";
 
-async function listar(): Promise<Artigo[]> {
-  try {
-    const { data } = await artigoApi.GET("/artigos");
-    return data ?? [];
-  } catch {
-    return [];
-  }
-}
+// Cacheia a chamada de artigos na home por 60s. A pagina home e force-dynamic
+// (precisa de site.url em runtime), mas os artigos nao mudam a cada request.
+const listarArtigos = unstable_cache(
+  async (): Promise<Artigo[]> => {
+    try {
+      const { data } = await artigoApi.GET("/artigos");
+      return data ?? [];
+    } catch {
+      return [];
+    }
+  },
+  ["home:artigos"],
+  { revalidate: 60, tags: ["artigos"] },
+);
 
 function ArtigoDestaque({ artigo }: { artigo: Artigo }) {
   const tag = artigo.tags[0];
@@ -50,7 +57,7 @@ function ArtigoDestaque({ artigo }: { artigo: Artigo }) {
 
 /** Secao 04 — artigos (destaque + lista), dados reais da Content API. */
 export async function SecaoArtigos() {
-  const artigos = await listar();
+  const artigos = await listarArtigos();
   const destaque = artigos[0];
   const resto = artigos.slice(1, 6);
 

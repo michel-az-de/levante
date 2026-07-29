@@ -8,7 +8,8 @@ import { artigoApi } from "@/lib/api";
 import { site } from "@/lib/site";
 import type { Artigo, Categoria } from "@/types/domain";
 
-export const dynamic = "force-dynamic";
+// ISR: categoria revalidada a cada 60s.
+export const revalidate = 60;
 
 // cache(): generateMetadata e o componente compartilham o mesmo fetch no request.
 const obterCategoria = cache(
