@@ -26,6 +26,14 @@ updates:
       # @types/node acompanha o major do runtime (Node 22 no CI), nao o latest.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # react-markdown e @vitejs/plugin-react: os majors #41 e #42 foram mergeados furando
+      # o gate humano de tier ALTO e revertidos pelo #107. Sem estas regras o dependabot
+      # reabre os mesmos PRs (foi o que aconteceu em #109/#111) e o revert nao se sustenta.
+      # Subir esses majors e tarefa deliberada (issue + PR proprios), nunca PR automatica.
+      - dependency-name: "react-markdown"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions usadas no CI.
   - package-ecosystem: github-actions
