@@ -1,5 +1,4 @@
 using FluentValidation;
-using Levante.Conteudo.Application.Artigos;
 using Levante.Conteudo.Domain.Artigos;
 using Levante.Conteudo.Domain.Categorias;
 using Levante.SharedKernel;
