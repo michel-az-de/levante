@@ -48,6 +48,18 @@ public sealed class ArtigoCommandValidatorsTests
     }
 
     [Fact]
+    public async Task Criar_rejeitaConteudoAlemDoLimite()
+    {
+        var validador = new CriarArtigoCommandValidator(new CategoriaRepositorioEmMemoria());
+        var conteudoLongo = new string('a', Artigo.TamanhoMaximoConteudo + 1);
+
+        var resultado = await validador.ValidateAsync(
+            new CriarArtigoCommand("Titulo", "meu-artigo", "Resumo.", conteudoLongo));
+
+        resultado.IsValid.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Criar_rejeitaMetaTituloAlemDe60()
     {
         var validador = new CriarArtigoCommandValidator(new CategoriaRepositorioEmMemoria());
