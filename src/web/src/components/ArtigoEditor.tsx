@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/Markdown";
 import { apiAdmin } from "@/lib/auth";
+import { enviarMidia, ErroDeMidia } from "@/lib/midias";
 import type { Categoria } from "@/types/domain";
 
 export interface ArtigoFormValores {
@@ -16,6 +17,10 @@ export interface ArtigoFormValores {
   categoriaId: string;
   tags: string[];
 }
+
+/** Tipos e tamanho aceitos no upload de imagem — espelham o backend (TipoDeMidia + limite de 5MB). */
+const TIPOS_MIDIA = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+const TAMANHO_MAX_MIDIA = 5 * 1024 * 1024;
 
 /**
  * Separa tags por vírgula e normaliza para kebab-case (mesma regra do VO Tag do
@@ -63,6 +68,9 @@ export function ArtigoEditor({
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const conteudoRef = useRef<HTMLTextAreaElement>(null);
+  const arquivoRef = useRef<HTMLInputElement>(null);
+  const [enviandoMidia, setEnviandoMidia] = useState(false);
+  const [erroMidia, setErroMidia] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -109,6 +117,57 @@ export function ArtigoEditor({
       const pos = inicio + prefixo.length;
       el.setSelectionRange(pos, pos);
     });
+  }
+
+  function inserirNoConteudo(texto: string) {
+    const el = conteudoRef.current;
+    if (!el) {
+      setConteudo(conteudo + texto);
+      return;
+    }
+    const inicio = el.selectionStart;
+    const fim = el.selectionEnd;
+    const novo = conteudo.slice(0, inicio) + texto + conteudo.slice(fim);
+    setConteudo(novo);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = inicio + texto.length;
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
+  async function aoEscolherArquivo(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0];
+    evento.target.value = ""; // permite reescolher o mesmo arquivo depois
+    if (!arquivo) {
+      return;
+    }
+    setErroMidia(null);
+
+    if (!TIPOS_MIDIA.includes(arquivo.type)) {
+      setErroMidia("Tipo nao suportado. Use PNG, JPEG, GIF ou WEBP.");
+      return;
+    }
+    if (arquivo.size > TAMANHO_MAX_MIDIA) {
+      setErroMidia("Imagem maior que o limite de 5 MB.");
+      return;
+    }
+
+    setEnviandoMidia(true);
+    try {
+      const midia = await enviarMidia(arquivo);
+      const alt = arquivo.name.replace(/\.[^.]+$/, "");
+      inserirNoConteudo(`![${alt}](${midia.url})`);
+    } catch (erroUpload) {
+      // 413 = corte por tamanho na API (defesa em profundidade do check client-side acima).
+      setErroMidia(
+        erroUpload instanceof ErroDeMidia && erroUpload.status === 413
+          ? "Imagem maior que o limite de 5 MB."
+          : "Falha ao enviar a imagem. Tente novamente.",
+      );
+    } finally {
+      setEnviandoMidia(false);
+    }
   }
 
   async function enviar(evento: React.FormEvent) {
@@ -239,7 +298,24 @@ export function ArtigoEditor({
           <button type="button" className={botaoToolbar} onClick={() => envolverSelecao("`", "`", "codigo")}>
             Codigo
           </button>
+          <button
+            type="button"
+            className={botaoToolbar}
+            disabled={enviandoMidia}
+            onClick={() => arquivoRef.current?.click()}
+          >
+            {enviandoMidia ? "Enviando..." : "Imagem"}
+          </button>
+          <input
+            ref={arquivoRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            aria-label="Enviar imagem"
+            className="hidden"
+            onChange={aoEscolherArquivo}
+          />
         </div>
+        {erroMidia ? <p className="text-sm text-red-600">{erroMidia}</p> : null}
         <div className="grid gap-4 md:grid-cols-2">
           <textarea
             ref={conteudoRef}
