@@ -25,9 +25,9 @@ public sealed class ListarArtigosPublicadosPorCategoriaQueryHandler(
                 Error.NaoEncontrado("categoria_nao_encontrada", $"Categoria '{query.Slug}' nao encontrada."));
         }
 
-        var publicados = await artigos.ListPublicadosAsync(ct);
+        IReadOnlyList<Artigo> publicados = await artigos.ListPublicadosPorCategoriaAsync(categoria.Id, ct);
         IReadOnlyList<ArtigoResponse> resposta =
-            [.. publicados.Where(a => a.CategoriaId == categoria.Id).Select(ArtigoResponse.DeArtigo)];
+            [.. publicados.Select(ArtigoResponse.DeArtigo)];
 
         return Result.Ok(resposta);
     }
