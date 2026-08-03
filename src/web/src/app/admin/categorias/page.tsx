@@ -36,6 +36,8 @@ export default function AdminCategoriasPage() {
           setCategorias([]);
           return;
         }
+        // Unica tela que nao limpava o erro no sucesso: o alerta "grudava".
+        setErro(null);
         setCategorias(data ?? []);
       })
       .catch(() => {
