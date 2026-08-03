@@ -1,5 +1,5 @@
 using FluentValidation;
-using Levante.Audiencia.Domain.Assinantes;
+using Levante.SharedKernel;
 
 namespace Levante.Audiencia.Application.Assinantes.SolicitarAssinatura;
 

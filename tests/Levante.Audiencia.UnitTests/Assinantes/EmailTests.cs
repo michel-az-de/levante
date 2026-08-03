@@ -1,4 +1,4 @@
-using Levante.Audiencia.Domain.Assinantes;
+using Levante.SharedKernel;
 using Shouldly;
 using Xunit;
 
