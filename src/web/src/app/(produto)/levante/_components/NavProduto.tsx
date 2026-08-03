@@ -63,12 +63,16 @@ export function NavProduto() {
             </span>{" "}
             GitHub
           </a>
-          <Link
-            href="/admin/login"
+          {/* CTA leva ao quickstart (README): a landing e publica; /admin/login
+              e o formulario privado do operador, nao um onboarding. */}
+          <a
+            href={produto.urlDocs}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-lg border border-produto-jade bg-produto-jade px-3 py-1.5 text-[13.5px] font-semibold text-produto-jadetx transition hover:brightness-110"
           >
             <Idioma pt="Começar" en="Get started" />
-          </Link>
+          </a>
         </div>
       </div>
     </nav>
