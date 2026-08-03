@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArtigoEditor, type ArtigoFormValores } from "@/components/ArtigoEditor";
-import { useGuardaAdmin, tratarNaoAutorizado } from "@/lib/admin-guard";
+import { useAdminAuth, tratarNaoAutorizado } from "@/lib/admin-auth-context";
 import { apiAdmin } from "@/lib/auth";
 
 export default function NovoArtigoPage() {
   const router = useRouter();
-  const autorizado = useGuardaAdmin();
+  const autorizado = useAdminAuth();
 
   async function criar(valores: ArtigoFormValores): Promise<string | null> {
     const { data, error, response } = await apiAdmin.POST("/artigos", {

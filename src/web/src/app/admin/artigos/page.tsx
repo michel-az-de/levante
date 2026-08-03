@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useGuardaAdmin, tratarNaoAutorizado } from "@/lib/admin-guard";
+import { useAdminAuth, tratarNaoAutorizado } from "@/lib/admin-auth-context";
 import { apiAdmin } from "@/lib/auth";
 import type { Artigo } from "@/types/domain";
 
@@ -15,7 +15,7 @@ const corDoStatus: Record<string, string> = {
 
 export default function AdminArtigosPage() {
   const router = useRouter();
-  const autorizado = useGuardaAdmin();
+  const autorizado = useAdminAuth();
   const [artigos, setArtigos] = useState<Artigo[] | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);

@@ -21,11 +21,22 @@ export function HeatmapContribuicoes({
       <div className="font-site-mono text-[11px] uppercase tracking-wider text-site-faint">
         <Idioma pt="contribuições · 12 meses" en="contributions · 12 months" />
       </div>
+      {/* As celulas sao aria-hidden (371 <i> com title seriam ruido de leitor de
+          tela); o resumo abaixo e a alternativa acessivel. */}
+      {calendario ? (
+        <p className="sr-only">
+          <Idioma
+            pt={`${calendario.total} contribuições nos últimos 12 meses`}
+            en={`${calendario.total} contributions in the last 12 months`}
+          />
+        </p>
+      ) : null}
       <div className="mt-auto grid grid-flow-col grid-rows-7 gap-[3px] pt-5">
         {montarCelulas(calendario).map((celula) => (
           <i
             key={celula.chave}
             title={celula.titulo ?? undefined}
+            aria-hidden="true"
             className={`aspect-square w-full ${celula.nivel === null ? "invisible" : CLASSE_NIVEL[celula.nivel]}`}
           />
         ))}

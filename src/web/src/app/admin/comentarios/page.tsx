@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useGuardaAdmin, tratarNaoAutorizado } from "@/lib/admin-guard";
+import { useAdminAuth, tratarNaoAutorizado } from "@/lib/admin-auth-context";
 import { apiAdmin } from "@/lib/auth";
 import type { Comentario } from "@/types/domain";
 
 /** Fila de moderacao: comentarios pendentes; aprovar/rejeitar via BFF do admin. */
 export default function AdminComentariosPage() {
   const router = useRouter();
-  const autorizado = useGuardaAdmin();
+  const autorizado = useAdminAuth();
   const [comentarios, setComentarios] = useState<Comentario[] | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
