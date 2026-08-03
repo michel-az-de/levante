@@ -9,7 +9,10 @@ import { SecaoContato } from "@/components/site/SecaoContato";
 import { SecaoExperiencia } from "@/components/site/SecaoExperiencia";
 import { site } from "@/lib/site";
 
-// A secao de artigos precisa estar fresca (novos artigos aparecem); os dados do
+// A secao de artigos precisa estar fresca (novos artigos aparecem) e o SITE_URL
+// e lido em runtime (docs/plano-mvp-producao.md): com ISR/revalidate a home seria
+// pre-renderizada no `next build` (sem env nem API) e serviria canonical/JSON-LD
+// de localhost e lista vazia ate a primeira revalidacao pos-deploy. Os dados do
 // GitHub tem cache proprio por fetch (revalidate), entao continuam cacheados
 // mesmo com a rota dinamica.
 export const dynamic = "force-dynamic";
