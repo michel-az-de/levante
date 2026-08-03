@@ -8,6 +8,8 @@ public interface IArtigoRepository
 {
     Task<IReadOnlyList<Artigo>> ListPublicadosAsync(CancellationToken ct);
 
+    Task<IReadOnlyList<Artigo>> ListPublicadosPorCategoriaAsync(Guid categoriaId, CancellationToken ct);
+
     Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct);
 
     Task<Artigo?> GetBySlugAsync(string slug, CancellationToken ct);

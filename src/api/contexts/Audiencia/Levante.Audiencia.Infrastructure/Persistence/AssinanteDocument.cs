@@ -1,4 +1,5 @@
 using Levante.Audiencia.Domain.Assinantes;
+using Levante.SharedKernel;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 

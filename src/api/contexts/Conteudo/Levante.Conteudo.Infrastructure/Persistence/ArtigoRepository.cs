@@ -21,6 +21,16 @@ internal sealed class ArtigoRepository(ConteudoMongoContext contexto, IGravadorD
         return [.. docs.Select(d => d.ParaDominio())];
     }
 
+    public async Task<IReadOnlyList<Artigo>> ListPublicadosPorCategoriaAsync(Guid categoriaId, CancellationToken ct)
+    {
+        var docs = await contexto.Artigos
+            .Find(d => d.Status == StatusArtigo.Publicado && d.CategoriaId == categoriaId)
+            .SortByDescending(d => d.DataPublicacao)
+            .ToListAsync(ct);
+
+        return [.. docs.Select(d => d.ParaDominio())];
+    }
+
     public async Task<Artigo?> GetBySlugAsync(string slug, CancellationToken ct)
     {
         var doc = await contexto.Artigos

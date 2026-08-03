@@ -31,18 +31,28 @@ internal sealed class ConteudoMongoContext
 
     public GridFSBucket<Guid> Midias { get; }
 
-    /// <summary>Cria os indices unicos de slug (idempotente; seguro sob scale-out).</summary>
+    /// <summary>Cria os indices do contexto (idempotente; seguro sob scale-out).</summary>
     public async Task EnsureIndexesAsync(CancellationToken ct)
     {
         var indiceArtigo = new CreateIndexModel<ArtigoDocument>(
             Builders<ArtigoDocument>.IndexKeys.Ascending(d => d.Slug),
             new CreateIndexOptions { Unique = true, Name = "ux_artigos_slug" });
 
+        // Cobre ListPublicadosPorCategoriaAsync: filtro por status+categoria com o
+        // sort por data de publicacao servido pelo indice (sem COLLSCAN nem sort em memoria).
+        var indiceArtigoPorCategoria = new CreateIndexModel<ArtigoDocument>(
+            Builders<ArtigoDocument>.IndexKeys
+                .Ascending(d => d.Status)
+                .Ascending(d => d.CategoriaId)
+                .Descending(d => d.DataPublicacao),
+            new CreateIndexOptions { Name = "ix_artigos_status_categoriaId_dataPublicacao" });
+
         var indiceCategoria = new CreateIndexModel<CategoriaDocument>(
             Builders<CategoriaDocument>.IndexKeys.Ascending(d => d.Slug),
             new CreateIndexOptions { Unique = true, Name = "ux_categorias_slug" });
 
         await Artigos.Indexes.CreateOneAsync(indiceArtigo, cancellationToken: ct);
+        await Artigos.Indexes.CreateOneAsync(indiceArtigoPorCategoria, cancellationToken: ct);
         await Categorias.Indexes.CreateOneAsync(indiceCategoria, cancellationToken: ct);
     }
 }

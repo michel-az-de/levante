@@ -1,4 +1,5 @@
 using Levante.Identity.Domain.Administradores;
+using Levante.SharedKernel;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 

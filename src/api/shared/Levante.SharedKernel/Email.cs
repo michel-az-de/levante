@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Levante.Identity.Domain.Administradores;
+namespace Levante.SharedKernel;
 
 /// <summary>Value Object de e-mail (normalizado em minusculas). Guard clause de formato.</summary>
 public sealed partial record Email

@@ -1,6 +1,7 @@
 using Levante.Identity.Application.Ports;
 using Levante.Identity.Domain.Administradores;
 using Levante.Identity.Infrastructure.Seguranca;
+using Levante.SharedKernel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

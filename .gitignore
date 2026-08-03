@@ -4,6 +4,7 @@
 
 # Configuracao local do agente / IDE
 .claude/
+.zcode/
 .vs/
 .vscode/*
 !.vscode/extensions.json
