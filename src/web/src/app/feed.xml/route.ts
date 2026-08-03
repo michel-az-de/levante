@@ -15,13 +15,14 @@ function escaparXml(texto: string): string {
     .replaceAll("'", "&apos;");
 }
 
+// Lanca em falha (sem catch aqui de proposito): o unstable_cache nao memoriza
+// rejeicao, entao um blip da API nao congela um feed vazio por 1h.
 async function listarArtigos(): Promise<Artigo[]> {
-  try {
-    const { data } = await artigoApi.GET("/artigos");
-    return data ?? [];
-  } catch {
-    return [];
+  const { data, response } = await artigoApi.GET("/artigos");
+  if (!response.ok) {
+    throw new Error(`Feed: /artigos respondeu HTTP ${response.status}`);
   }
+  return data ?? [];
 }
 
 // Dados cacheados (revalidate 1h): a rota fica force-dynamic para ler SITE_URL em runtime,
@@ -29,7 +30,15 @@ async function listarArtigos(): Promise<Artigo[]> {
 const artigosCacheados = unstable_cache(listarArtigos, ["feed:artigos"], { revalidate: 3600 });
 
 export async function GET(): Promise<Response> {
-  const artigos = await artigosCacheados();
+  let artigos: Artigo[];
+  let falhou = false;
+  try {
+    artigos = await artigosCacheados();
+  } catch {
+    // Degrada para o feed so com o canal; a falha nao entra em nenhum cache.
+    artigos = [];
+    falhou = true;
+  }
 
   const itens = artigos
     .map((artigo) => {
@@ -39,8 +48,8 @@ export async function GET(): Promise<Response> {
         : "";
       return `    <item>
       <title>${escaparXml(artigo.titulo)}</title>
-      <link>${link}</link>
-      <guid>${link}</guid>
+      <link>${escaparXml(link)}</link>
+      <guid>${escaparXml(link)}</guid>
       <description>${escaparXml(artigo.resumo)}</description>
       ${pubDate}
     </item>`;
@@ -63,7 +72,10 @@ ${itens}
       "Content-Type": "application/rss+xml; charset=utf-8",
       // Cache HTTP (issue #84): permite um cache downstream absorver hits repetidos de crawler
       // sem reintroduzir o prerender de build (que assaria SITE_URL do build).
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      // Feed degradado por falha nao pode ficar preso em cache downstream.
+      "Cache-Control": falhou
+        ? "no-store"
+        : "public, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

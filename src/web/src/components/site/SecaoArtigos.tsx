@@ -8,12 +8,19 @@ import { Botao } from "./Botao";
 import { Marca } from "./Marca";
 import { CabecalhoSecao, Secao } from "./Secao";
 
-async function listar(): Promise<Artigo[]> {
+type ResultadoArtigos = { artigos: Artigo[]; falhou: boolean };
+
+// Falha da API e distinguida de lista vazia: "Nada publicado ainda" com a API
+// fora seria mentira para o visitante e para o crawler.
+async function listar(): Promise<ResultadoArtigos> {
   try {
-    const { data } = await artigoApi.GET("/artigos");
-    return data ?? [];
+    const { data, response } = await artigoApi.GET("/artigos");
+    if (!response.ok) {
+      return { artigos: [], falhou: true };
+    }
+    return { artigos: data ?? [], falhou: false };
   } catch {
-    return [];
+    return { artigos: [], falhou: true };
   }
 }
 
@@ -50,7 +57,7 @@ function ArtigoDestaque({ artigo }: { artigo: Artigo }) {
 
 /** Secao 04 — artigos (destaque + lista), dados reais da Content API. */
 export async function SecaoArtigos() {
-  const artigos = await listar();
+  const { artigos, falhou } = await listar();
   const destaque = artigos[0];
   const resto = artigos.slice(1, 6);
 
@@ -75,7 +82,14 @@ export async function SecaoArtigos() {
         <ArtigoDestaque artigo={destaque} />
       ) : (
         <p className="py-6 text-site-faint">
-          <Idioma pt="Nada publicado ainda." en="Nothing published yet." />
+          {falhou ? (
+            <Idioma
+              pt="Não deu para carregar os artigos agora — tente de novo em instantes."
+              en="Couldn't load the articles right now — try again in a moment."
+            />
+          ) : (
+            <Idioma pt="Nada publicado ainda." en="Nothing published yet." />
+          )}
         </p>
       )}
 

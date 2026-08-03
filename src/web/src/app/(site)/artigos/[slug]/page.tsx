@@ -39,9 +39,15 @@ const obterArtigo = cache(async (slug: string): Promise<Artigo | null> => {
 });
 
 // Resolve a categoria do artigo para exibir nome/link (front compoe o read model).
+// Dado cosmetico (pill da categoria): falha degrada para [] em vez de derrubar a
+// pagina inteira com 500 — ao contrario do obterArtigo, que propaga de proposito.
 const obterCategorias = cache(async (): Promise<Categoria[]> => {
-  const { data } = await artigoApi.GET("/categorias");
-  return data ?? [];
+  try {
+    const { data } = await artigoApi.GET("/categorias");
+    return data ?? [];
+  } catch {
+    return [];
+  }
 });
 
 // Lista publicada para navegar anterior/proximo. Falha vira lista vazia (o
