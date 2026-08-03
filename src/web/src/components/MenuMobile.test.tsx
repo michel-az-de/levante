@@ -9,6 +9,9 @@ const ITENS: readonly ItemMenuMobile[] = [
   { href: "https://github.com/michel-az-de/levante", pt: "GitHub", en: "GitHub", externo: true },
 ];
 
+// <Idioma> renderiza os dois idiomas no DOM (o CSS esconde um), entao consultas
+// por texto so sao univocas quando pt e en diferem. "GitHub" (nome proprio,
+// igual nos dois) e alcancado pelo href — como na landing real.
 function renderizar() {
   return render(
     <IdiomaProvider>
@@ -30,7 +33,7 @@ describe("MenuMobile", () => {
   });
 
   it("comeca fechado e abre com todos os itens ao clicar no toggle", () => {
-    renderizar();
+    const { container } = renderizar();
 
     const toggle = screen.getByRole("button", { name: /abrir menu/i });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
@@ -44,7 +47,7 @@ describe("MenuMobile", () => {
     expect(screen.getByText("Recursos")).toBeTruthy();
     expect(screen.getByText("Artigos")).toBeTruthy();
 
-    const externo = screen.getByText("GitHub").closest("a");
+    const externo = container.querySelector('a[href^="https://github.com"]');
     expect(externo?.getAttribute("target")).toBe("_blank");
     expect(externo?.getAttribute("rel")).toContain("noopener");
   });
