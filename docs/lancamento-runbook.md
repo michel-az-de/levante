@@ -16,14 +16,14 @@ referencia-se — não se duplica.
 | Decisão | Estado | Efeito no runbook |
 |---------|--------|-------------------|
 | **Domínio (GAP-A)** | **`felipemichel.com`** (apex; [ADR 0007](adr/0007-dominio-felipemichel-com.md)) | Cutover **D0**, `www`→301. Tudo via `SITE_URL`/env; nada hardcoded. Valores concretos (DNS/`.env`/CD) em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). |
-| **E-mail em produção** | **Resend** (HTTP) | `ResendEmailProvider` já existe no Hiram. Ligar = preencher `.env` do dispatcher (ver PR de parametrização da stack) + conta Resend com **domínio de envio verificado** (SPF/DKIM). |
+| **E-mail em produção** | **Twilio Email API** ([ADR-028 do Hiram](https://github.com/michel-az-de/hiram/blob/main/docs/adr/ADR-028-integracao-twilio-multicanal.md), aceito 2026-08-06) | `TwilioEmailProvider` (`twilio-email`) já existe no Hiram. Ligar = `PUT /v1/providers/email` para o tenant do Levante, **não** variável de ambiente. Uma conta Twilio serve e-mail, SMS e WhatsApp, o que dispensa conta de SendGrid ou de Resend. Exige remetente com **domínio autenticado** no Twilio (DKIM/SPF). |
 
 ## Pré-requisitos (uma vez)
 
 1. **Imagens no GHCR** — `levante-api`, `levante-web`, `hiram-api`, `hiram-dispatcher`, publicadas pelos CIs (push na `main`). Escape hatch de build local existe (bloco `build:` no compose).
 2. **VM Linux** com Docker + Compose, e `hiram/deploy/stack/` (+ `deploy/levante/`) em **`/opt/levante-hiram/`** (caminho fixo no CD — ver `.github/workflows/ci.yml`).
 3. **MongoDB Atlas** de produção: cluster criado, **usuário de privilégio mínimo** (sem role administrativa — o boot do `levante-api` aborta em Produção se tiver), **IP público da VM no allowlist**. Tier: M10+ para backup/PITR gerenciado (ver [portão D0.5](#portões-que-bloqueiam-o-go-live)).
-4. **Conta Resend**: domínio de envio **verificado** (SPF/DKIM), API key gerada.
+4. **Credencial Twilio**: `AccountSid`, `API Key SID` (`SK…`) e o secret da API Key — a **mesma** conta que serve SMS e WhatsApp (ADR-028 do Hiram). Remetente com **domínio autenticado** no Twilio (DKIM/SPF). Não se cria conta de SendGrid nem de Resend.
 
 ## Sequência de go-live
 
@@ -61,8 +61,8 @@ Fonte: `hiram/deploy/stack/.env.example` (todos `CHANGE_ME`). Gerar com `openssl
 | `LEVANTE_ADMIN_NOTIFICACOES_EMAIL` | Destino do aviso de comentário pendente. |
 | `MONGO_CONNECTION_STRING` | Atlas srv URI, usuário de privilégio mínimo. |
 | `SITE_HOST` / `SITE_URL` / `ACME_EMAIL` | Host público + TLS (Caddy/Let's Encrypt). `felipemichel.com` (valores na [folha de cutover](cutover-felipemichel-com.md)). |
-| `MAIL_FROM` | Remetente exibido; com Resend, do domínio verificado. |
-| **Campos do Resend** | Provider + secret + `from` do dispatcher (ver PR de parametrização da stack). |
+| `MAIL_FROM` | Remetente exibido; com Twilio, do domínio autenticado. |
+| **Credencial Twilio** | **Não vai no `.env`.** O provider do tenant é gravado por `PUT /v1/providers/email` (`{provider, settings:{from, api_key_sid}, secret}`), e o secret fica cifrado por Data Protection no Hiram. O payload viaja por **stdin**, porque o argv de um processo é legível por outros processos do host. |
 | `HIRAM_LEVANTE_API_KEY` | **Preenchido só após o passo 3** (provision). |
 | `HIRAM_IMAGE_TAG` / `LEVANTE_IMAGE_TAG` | Fixar em SHAs revisados no go-live (nunca `latest` em prod). |
 
@@ -116,7 +116,7 @@ Hiram) estão em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). Seq
 2. DNS + TLS (apontar `SITE_HOST=felipemichel.com`; o Caddy emite Let's Encrypt para apex e `www`).
 3. Atualizar `SITE_URL`/`SITE_HOST` no `.env` → **restart + `revalidate` completo** do web (OG, JSON-LD, RSS, sitemap "assam" a URL).
 4. **Habilitar indexação** — setar `SITE_INDEXABLE=true` (`robots.txt` libera, `sitemap` sai, `X-Robots-Tag: noindex` some). Antes disso o host provisório fica fora do índice — flag explícito, não inferência por host (o `SITE_URL` interino é o próprio host provisório).
-5. **Ativar a newsletter** (flag `NEWSLETTER_ENABLED`) — só agora, com o domínio de envio Resend verificado (senão o `confirmUrlBase` aponta para o host provisório e/ou queima a reputação do domínio novo).
+5. **Ativar a newsletter** (flag `NEWSLETTER_ENABLED`) — só agora, com o provider `twilio-email` provisionado para o tenant e o domínio de envio autenticado no Twilio (senão o `confirmUrlBase` aponta para o host provisório e/ou queima a reputação do domínio novo, e a inscrição é coletada sem nunca receber confirmação).
 6. Registrar no Google Search Console + Bing Webmaster.
 
 ## Código: pronto vs. pendente
@@ -131,7 +131,7 @@ Hiram) estão em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). Seq
 | Dockerfiles (api/web) + CI `raise` (imagens no GHCR) + job `deploy` (inerte) | **Pronto** |
 | `/sobre`, `error.tsx` global, `LINKEDIN_URL` no JSON-LD, conteúdo da política | Fecha na PR de D2 |
 | CSP `Report-Only` + endpoint de report, supressão de indexação no host provisório, auditoria `SITE_URL` runtime, flag `NEWSLETTER_ENABLED` | Fecha na PR de D3 |
-| Provider de e-mail do Hiram Mailpit→Resend (parametrização + `.env`) | Fecha na PR da stack (repo Hiram) + conta Resend |
+| Provider de e-mail do tenant Mailpit→`twilio-email` | **Operação**: `PUT /v1/providers/email` no Hiram, com credencial Twilio existente. Não depende de PR. |
 | Retenção do Loki, alerta `emissoes_falhadas` | **D1 na VM** (Grafana) — operação |
 | VM, Atlas, DNS/TLS, secrets, provision, backups | **Operação** (você) |
 

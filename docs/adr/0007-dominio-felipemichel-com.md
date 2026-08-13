@@ -2,6 +2,13 @@
 
 Status: **Aceito** · jul/2026 · Fecha o **GAP-A** (domínio), registrado como "pendente/indefinido" em `docs/mapa-tecnico.md`, `docs/roadmap.md`, `docs/plano-mvp-producao.md`, `docs/lancamento-runbook.md`, `README.md` e `CLAUDE.md`.
 
+> **Nota de atualização (2026-08-13).** O corpo deste ADR está preservado como foi aceito, porque ADR é
+> registro de uma decisão datada. Duas menções incidentais a **Resend** (itens 5 das Decisões e das
+> Consequências) deixaram de valer: o **ADR-028 do repo Hiram**, aceito em 2026-08-06, adota a **Twilio Email
+> API** como provider de e-mail, com a mesma credencial que serve SMS e WhatsApp. Onde se lê "domínio de envio
+> Resend verificado", leia-se "domínio de envio autenticado no Twilio". **A decisão deste ADR — o domínio
+> `felipemichel.com` como apex canônico — não muda**, e o provider de e-mail nunca foi objeto dele.
+
 ## Contexto
 
 O GAP-A (qual domínio serviria o site) ficou deliberadamente em aberto durante toda a construção: o código nasceu *domain-agnostic* (canonical, `sitemap`, RSS, OG, JSON-LD e `robots` leem `SITE_URL`/`SITE_HOST` via env; nada hardcoded — ver `src/web/src/lib/site.ts`, `sitemap.ts`, `feed.xml/route.ts`, `robots.ts`, `middleware.ts`). A decisão foi carimbada como um marco **dentro** do cutover (D0), não como pré-requisito da fase de lançamento.
