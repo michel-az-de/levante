@@ -81,7 +81,7 @@ Stack Compose na VM do Hiram ([ADR 0003](adr/0003-hospedagem-vm-conjunta-hiram.m
 
 #### Marco D0 — domínio (dentro de D3)
 
-O domínio (GAP-A) está **decidido**: `felipemichel.com` (apex canônico, `www`→301; [ADR 0007](adr/0007-dominio-felipemichel-com.md)). O cutover acontece **durante** D3 e não bloqueia o trabalho anterior (tudo via `SITE_URL` env). Sequência: DNS/TLS → restart + **revalidate completo** do web (OG, JSON-LD, RSS, sitemap assam a URL) → remover o noindex provisório (`SITE_INDEXABLE=true`) → ativar o form da newsletter (`NEWSLETTER_ENABLED=true`, com Resend verificado) → registrar no Search Console/Bing. Valores concretos em [cutover-felipemichel-com.md](cutover-felipemichel-com.md).
+O domínio (GAP-A) está **decidido**: `felipemichel.com` (apex canônico, `www`→301; [ADR 0007](adr/0007-dominio-felipemichel-com.md)). O cutover acontece **durante** D3 e não bloqueia o trabalho anterior (tudo via `SITE_URL` env). Sequência: DNS/TLS → restart + **revalidate completo** do web (OG, JSON-LD, RSS, sitemap assam a URL) → remover o noindex provisório (`SITE_INDEXABLE=true`) → ativar o form da newsletter (`NEWSLETTER_ENABLED=true`, com o provider `twilio-email` provisionado para o tenant e domínio autenticado no Twilio — ADR-028 do Hiram) → registrar no Search Console/Bing. Valores concretos em [cutover-felipemichel-com.md](cutover-felipemichel-com.md).
 
 ### E1 — Leads
 

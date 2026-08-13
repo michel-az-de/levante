@@ -14,7 +14,7 @@ export function siteIndexavel(): boolean {
 
 /**
  * Form publico de inscricao na newsletter. Off por default: ativar so apos o marco D0
- * e o provedor de e-mail (Resend) com dominio de envio verificado — senao o
+ * e o provedor de e-mail (Twilio Email API, ADR-028 do Hiram) com dominio de envio autenticado — senao o
  * confirmUrlBase apontaria para o host provisorio e/ou queimaria a reputacao do
  * dominio novo. As paginas de confirmar/cancelar seguem valendo (tokens existentes).
  */

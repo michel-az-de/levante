@@ -411,8 +411,11 @@ Itens em aberto. Mantenha o mais simples e marque com `TODO`:
 Decididos (não são mais GAPs): idioma = chrome bilíngue PT/EN, conteúdo de artigo continua PT-only, sem hreflang
 (GAP-H reaberto, ver `docs/adr/0005-idioma-chrome-bilingue.md`); **hospedagem = VM conjunta com o Hiram via Docker Compose
 (GAP-J, ver `docs/adr/0003-hospedagem-vm-conjunta-hiram.md`)**; e **contrato de eventos com o Hiram (GAP-I) = HTTP
-`POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**; e **e-mail de produção = Resend**
-(o provider do dispatcher do Hiram é parametrizável via env — `HIRAM_EMAIL_PROVIDER=resend`; default `smtp`→Mailpit em dev/interino);
+`POST /v1/events`, o Levante como tenant do Hiram (ver `docs/adr/0002-emissao-hiram-http.md`)**; e **e-mail de produção = Twilio
+Email API** (ADR-028 do repo Hiram, aceito em 2026-08-06: uma conta Twilio serve e-mail, SMS e WhatsApp, o que dispensa conta
+de SendGrid ou de Resend). O provider **não** é escolhido por variável de ambiente: é `twilio-email` gravado **por tenant** em
+`tenant_provider_configs` do Hiram, via `PUT /v1/providers/email`, com o segredo protegido por Data Protection. O default de
+plataforma segue `smtp`→Mailpit em dev/interino, que captura e não entrega;
 e **domínio = `felipemichel.com`** (apex canônico, `www`→301; GAP-A, ver `docs/adr/0007-dominio-felipemichel-com.md`) — nada hardcoded,
 sempre via `SITE_URL`/env; indexação e form de newsletter só ligam no cutover D0 pelos flags `SITE_INDEXABLE`/`NEWSLETTER_ENABLED`
 (default off; ver `src/web/src/lib/flags.ts`).
