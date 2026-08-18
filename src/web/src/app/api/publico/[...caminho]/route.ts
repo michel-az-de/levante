@@ -14,7 +14,29 @@ import {
  * Nao exige auth — os endpoints da API sao publicos e rate-limited.
  */
 
+// Superficie publica INTENCIONAL do BFF (comentarios, reacoes, newsletter).
+// Sem esta allowlist, qualquer rota nao autenticada da API .NET — atual ou
+// futura — ficaria exposta na internet por tabela. Fora da lista: 404.
+const ROTAS_PUBLICAS: readonly { metodo: "GET" | "POST" | "DELETE"; padrao: RegExp }[] = [
+  { metodo: "GET", padrao: /^artigos\/[^/]+\/comentarios$/ },
+  { metodo: "POST", padrao: /^artigos\/[^/]+\/comentarios$/ },
+  { metodo: "GET", padrao: /^artigos\/[^/]+\/reacoes$/ },
+  { metodo: "POST", padrao: /^artigos\/[^/]+\/reacoes$/ },
+  { metodo: "DELETE", padrao: /^artigos\/[^/]+\/reacoes\/[^/]+$/ },
+  { metodo: "POST", padrao: /^newsletter$/ },
+  { metodo: "POST", padrao: /^newsletter\/(confirmar|cancelar)$/ },
+];
+
+function rotaPermitida(metodo: string, caminho: string[]): boolean {
+  const alvo = caminho.join("/");
+  return ROTAS_PUBLICAS.some((rota) => rota.metodo === metodo && rota.padrao.test(alvo));
+}
+
 async function repassar(request: Request, caminho: string[]): Promise<NextResponse> {
+  if (!rotaPermitida(request.method, caminho)) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   const cookieStore = await cookies();
 
   let visitante = cookieStore.get(COOKIE_VISITANTE)?.value;
