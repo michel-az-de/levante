@@ -78,3 +78,27 @@ Esse é o único fator que inverte a recomendação.
   Container-Apps-Job saem); o que continua válido permanece (CSP Report-Only, `ForwardedHeaders`,
   noindex provisório, `SITE_URL` em runtime, web em 1 réplica, smoke, rollback em par API/web,
   imagem imutável por SHA).
+
+## Revisão, 2026-08-12 — supersedido em parte pelo [ADR 0009](0009-hospedagem-vps-stacks-separadas.md)
+
+A tese central deste documento continua de pé: Levante e Hiram na mesma máquina, por custo, com o
+Caddy como única superfície pública, o Hiram sem porta publicada e alcançado in-network. O gatilho de
+reversão também continua valendo integralmente.
+
+Três pontos foram supersedidos, e por medição, não por preferência:
+
+1. **O veículo.** A decisão 1 aponta para o Compose conjunto de `hiram/deploy/stack/`. O
+   `ADR-027: Hiram Core como infraestrutura interna enxuta`, aceito em 2026-07-29 no repositório do
+   Hiram, lista o **deploy conjunto com Levante** entre os itens que saem do produto, e a migração dele
+   retirou os artefatos: medido em 2026-08-12, `deploy/stack/` versiona apenas `.env.example` e
+   `.gitignore`. A premissa de que "já existe uma stack conjunta pronta e revisada" deixou de ser
+   verdadeira. O ADR 0009 troca o veículo por duas stacks Compose separadas na mesma máquina,
+   preservando tudo o mais.
+
+2. **O MongoDB.** A decisão 2 fixa Atlas externo. O ADR 0009 passa a self-hosted, pelo mesmo motivo de
+   custo que motivou a consolidação, e este documento já registrava que co-hospedar "não elimina o
+   custo de banco gerenciado". A regra de privilégio mínimo do usuário de runtime não é afetada.
+
+3. **A observabilidade.** O coletor `otel-lgtm` acoplado ao deploy sai junto, porque o ADR-027 tirou a
+   stack LGTM da fronteira do Hiram. O aplicativo continua OTLP-native, então religar um coletor
+   depois não exige mudança de código.
