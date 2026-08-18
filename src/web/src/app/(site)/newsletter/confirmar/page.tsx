@@ -14,9 +14,9 @@ export default async function ConfirmarNewsletterPage({
   const { token } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-4 px-6 py-16">
+    <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center gap-4 px-6 py-16">
       <h1 className="text-2xl font-bold tracking-tight">Confirmacao da newsletter</h1>
       <AcaoNewsletter token={token ?? ""} acao="confirmar" />
-    </main>
+    </div>
   );
 }

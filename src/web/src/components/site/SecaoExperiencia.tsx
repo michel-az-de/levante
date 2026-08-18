@@ -1,6 +1,5 @@
 import { Idioma } from "@/components/Idioma";
 import { fatos, pilhaTecnica } from "@/lib/site-conteudo";
-import { Botao } from "./Botao";
 import { CabecalhoSecao, Secao } from "./Secao";
 import { Timeline } from "./Timeline";
 
@@ -8,15 +7,12 @@ import { Timeline } from "./Timeline";
 export function SecaoExperiencia() {
   return (
     <Secao id="experiencia">
+      {/* TODO(#135): restaurar o botao "Baixar CV" (acao do cabecalho) quando o
+          PDF real existir em public/ — o link antigo apontava para um 404. */}
       <CabecalhoSecao
         numero="05"
         kicker={{ pt: "experiência", en: "experience" }}
         titulo={{ pt: "Quinze anos de estrada.", en: "Fifteen years on the road." }}
-        acao={
-          <Botao href="/Felipe-Azevedo-CV.pdf" tamanho="sm" download>
-            <Idioma pt="Baixar CV" en="Download CV" /> <span aria-hidden="true">↓</span>
-          </Botao>
-        }
       />
 
       <div className="mb-[46px] grid grid-cols-1 items-start gap-[50px] md:grid-cols-[1.1fr_0.9fr]">
