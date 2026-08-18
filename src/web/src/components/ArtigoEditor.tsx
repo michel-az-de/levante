@@ -60,17 +60,31 @@ export function ArtigoEditor({
   const [categoriaId, setCategoriaId] = useState(inicial.categoriaId);
   const [tagsTexto, setTagsTexto] = useState(inicial.tags.join(", "));
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [erroCategorias, setErroCategorias] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const conteudoRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     let ativo = true;
-    apiAdmin.GET("/categorias").then(({ data }) => {
-      if (ativo && data) {
-        setCategorias(data);
-      }
-    });
+    apiAdmin
+      .GET("/categorias")
+      .then(({ data, response }) => {
+        if (!ativo) {
+          return;
+        }
+        if (!response.ok) {
+          setErroCategorias(true);
+          return;
+        }
+        setCategorias(data ?? []);
+      })
+      .catch(() => {
+        // Sem isso a promise rejeitava sem handler e o select esvaziava em silencio.
+        if (ativo) {
+          setErroCategorias(true);
+        }
+      });
     return () => {
       ativo = false;
     };
@@ -193,6 +207,11 @@ export function ArtigoEditor({
             </option>
           ))}
         </select>
+        {erroCategorias ? (
+          <span className="text-xs text-red-600 dark:text-red-400" role="alert">
+            Falha ao carregar as categorias — recarregue a página para escolher uma.
+          </span>
+        ) : null}
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
