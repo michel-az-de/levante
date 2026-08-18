@@ -41,6 +41,10 @@ public sealed class ListarArtigosPublicadosQueryHandlerTests
         public Task<IReadOnlyList<Artigo>> ListPublicadosAsync(CancellationToken ct) =>
             Task.FromResult(artigos);
 
+        public Task<IReadOnlyList<Artigo>> ListPublicadosPorCategoriaAsync(Guid categoriaId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Artigo>>(
+                [.. artigos.Where(a => a.Status == StatusArtigo.Publicado && a.CategoriaId == categoriaId)]);
+
         public Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct) =>
             Task.FromResult(artigos);
 

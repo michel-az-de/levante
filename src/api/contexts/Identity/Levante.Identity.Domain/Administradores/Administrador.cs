@@ -1,3 +1,5 @@
+using Levante.SharedKernel;
+
 namespace Levante.Identity.Domain.Administradores;
 
 /// <summary>

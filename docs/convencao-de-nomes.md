@@ -29,7 +29,7 @@ Princípio: dentro do modelo de domínio (entidade, value object, evento, compor
 | DTO / Request / Response | PT + EN | `ArtigoDto`, `CriarArtigoRequest`, `ArtigoResponse` |
 | Validator | PT + `Validator` | `PublicarArtigoCommandValidator` |
 | Endpoints (Minimal API) | noun PT + `Endpoints` | `ArtigoEndpoints` |
-| Domain Exception | frase PT + `Exception` | `ArtigoNaoEncontradoException` |
+| Domain Exception | frase PT + `Exception` | `AssinanteJaExisteException` |
 | Specification | PT + `Specification` | `ArtigoPublicadoSpecification` |
 | Namespace de contexto | domínio PT | `Levante.Conteudo` |
 | Namespace de camada | técnico EN | `.Domain`, `.Application`, `.Infrastructure` |
@@ -94,7 +94,6 @@ contexts/Conteudo/
 │  │  ├─ Slug.cs                         # value object
 │  │  ├─ StatusArtigo.cs                 # enum
 │  │  ├─ ArtigoPublicado.cs              # domain event
-│  │  ├─ ArtigoNaoEncontradoException.cs
 │  │  └─ IArtigoRepository.cs            # contrato (métodos EN)
 ├─ Levante.Conteudo.Application/
 │  ├─ Artigos/
@@ -149,9 +148,6 @@ public sealed class Artigo
 }
 
 public sealed record ArtigoPublicado(Guid ArtigoId, Slug Slug, DateTime DataPublicacao);
-
-public sealed class ArtigoNaoEncontradoException(string slug)
-    : Exception($"Artigo com slug '{slug}' nao encontrado.");
 
 public interface IArtigoRepository
 {

@@ -1,6 +1,7 @@
 using Levante.Identity.Application.Autenticacao;
 using Levante.Identity.Application.Ports;
 using Levante.Identity.Domain.Administradores;
+using Levante.SharedKernel;
 using Shouldly;
 using Xunit;
 

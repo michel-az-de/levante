@@ -1,4 +1,4 @@
-using Levante.Identity.Domain.Administradores;
+using Levante.SharedKernel;
 using Shouldly;
 using Xunit;
 

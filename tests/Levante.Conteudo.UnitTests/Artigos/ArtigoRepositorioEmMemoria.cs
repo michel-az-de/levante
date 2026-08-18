@@ -23,6 +23,10 @@ internal sealed class ArtigoRepositorioEmMemoria : IArtigoRepository
         Task.FromResult<IReadOnlyList<Artigo>>(
             [.. _artigos.Where(a => a.Status == StatusArtigo.Publicado)]);
 
+    public Task<IReadOnlyList<Artigo>> ListPublicadosPorCategoriaAsync(Guid categoriaId, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<Artigo>>(
+            [.. _artigos.Where(a => a.Status == StatusArtigo.Publicado && a.CategoriaId == categoriaId)]);
+
     public Task<IReadOnlyList<Artigo>> ListTodosAsync(CancellationToken ct) =>
         Task.FromResult<IReadOnlyList<Artigo>>([.. _artigos]);
 
