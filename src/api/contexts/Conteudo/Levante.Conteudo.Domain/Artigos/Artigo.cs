@@ -13,6 +13,12 @@ public sealed class Artigo
     /// <summary>Tamanho maximo do resumo (alinhado a meta description de SEO).</summary>
     public const int TamanhoMaximoResumo = 280;
 
+    /// <summary>
+    /// Tamanho maximo do conteudo (corpo markdown). Teto generoso: defende o documento
+    /// Mongo (limite de 16MB) sem atrapalhar artigos longos. Decidido na issue #101.
+    /// </summary>
+    public const int TamanhoMaximoConteudo = 200_000;
+
     private Artigo(
         Guid id,
         string titulo,
@@ -167,6 +173,12 @@ public sealed class Artigo
         {
             throw new ArgumentException(
                 $"Resumo excede {TamanhoMaximoResumo} caracteres.", nameof(resumo));
+        }
+
+        if (conteudo.Length > TamanhoMaximoConteudo)
+        {
+            throw new ArgumentException(
+                $"Conteudo excede {TamanhoMaximoConteudo} caracteres.", nameof(conteudo));
         }
     }
 }

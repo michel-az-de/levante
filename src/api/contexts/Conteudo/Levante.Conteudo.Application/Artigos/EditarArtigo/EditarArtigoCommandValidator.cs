@@ -20,7 +20,7 @@ public sealed class EditarArtigoCommandValidator : AbstractValidator<EditarArtig
 
         RuleFor(x => x.Resumo).NotEmpty().MaximumLength(Artigo.TamanhoMaximoResumo);
 
-        RuleFor(x => x.Conteudo).NotEmpty();
+        RuleFor(x => x.Conteudo).NotEmpty().MaximumLength(Artigo.TamanhoMaximoConteudo);
 
         RuleFor(x => x.MetaTitulo).MaximumLength(MetaSeo.TamanhoMaximoTitulo);
         RuleFor(x => x.MetaDescricao).MaximumLength(MetaSeo.TamanhoMaximoDescricao);
