@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ArtigoEditor, type ArtigoFormValores } from "@/components/ArtigoEditor";
+import { ErroDeMidia } from "@/lib/midias";
 
 // Categorias carregam via apiAdmin.GET no mount; mockar evita fetch real (URL relativa fora do browser).
 vi.mock("@/lib/auth", () => ({
@@ -10,6 +11,21 @@ vi.mock("@/lib/auth", () => ({
 // O preview usa <Markdown> (react-markdown); passthrough mantem o teste focado no editor.
 vi.mock("@/components/Markdown", () => ({
   Markdown: ({ children }: { children: string }) => children,
+}));
+
+// Upload de imagem: enviarMidia controlavel + ErroDeMidia real (para o instanceof do componente).
+const { enviarMidiaMock } = vi.hoisted(() => ({ enviarMidiaMock: vi.fn() }));
+vi.mock("@/lib/midias", () => ({
+  enviarMidia: enviarMidiaMock,
+  ErroDeMidia: class ErroDeMidia extends Error {
+    constructor(
+      mensagem: string,
+      readonly status: number,
+    ) {
+      super(mensagem);
+      this.name = "ErroDeMidia";
+    }
+  },
 }));
 
 const VAZIO: ArtigoFormValores = {
@@ -33,6 +49,7 @@ function renderizar(
 
 describe("ArtigoEditor", () => {
   afterEach(cleanup);
+  beforeEach(() => enviarMidiaMock.mockReset());
 
   it("mostra os chips de tag normalizados (kebab-case, sem vazias nem duplicadas)", () => {
     renderizar(vi.fn().mockResolvedValue(null));
@@ -114,5 +131,52 @@ describe("ArtigoEditor", () => {
 
     resolver(null);
     await waitFor(() => expect(botao.disabled).toBe(false));
+  });
+
+  it("faz upload de imagem valida e insere ![alt](url) no conteudo", async () => {
+    enviarMidiaMock.mockResolvedValue({ id: "abc", url: "/midias/abc", contentType: "image/png", tamanho: 3 });
+    const { container } = renderizar(vi.fn().mockResolvedValue(null));
+    const input = container.querySelector<HTMLInputElement>("input[type='file']")!;
+
+    fireEvent.change(input, {
+      target: { files: [new File([new Uint8Array([1, 2, 3])], "foto.png", { type: "image/png" })] },
+    });
+
+    expect(await screen.findByDisplayValue("![foto](/midias/abc)")).toBeTruthy();
+    expect(enviarMidiaMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejeita tipo nao suportado sem chamar a API", async () => {
+    const { container } = renderizar(vi.fn().mockResolvedValue(null));
+    const input = container.querySelector<HTMLInputElement>("input[type='file']")!;
+
+    fireEvent.change(input, { target: { files: [new File(["x"], "doc.pdf", { type: "application/pdf" })] } });
+
+    expect(await screen.findByText(/Tipo nao suportado/)).toBeTruthy();
+    expect(enviarMidiaMock).not.toHaveBeenCalled();
+  });
+
+  it("rejeita imagem acima de 5 MB sem chamar a API", async () => {
+    const { container } = renderizar(vi.fn().mockResolvedValue(null));
+    const input = container.querySelector<HTMLInputElement>("input[type='file']")!;
+    const grande = new File(["x"], "grande.png", { type: "image/png" });
+    Object.defineProperty(grande, "size", { value: 6 * 1024 * 1024 });
+
+    fireEvent.change(input, { target: { files: [grande] } });
+
+    expect(await screen.findByText("Imagem maior que o limite de 5 MB.")).toBeTruthy();
+    expect(enviarMidiaMock).not.toHaveBeenCalled();
+  });
+
+  it("mostra mensagem dedicada quando a API responde 413", async () => {
+    enviarMidiaMock.mockRejectedValue(new ErroDeMidia("Falha ao enviar midia (HTTP 413).", 413));
+    const { container } = renderizar(vi.fn().mockResolvedValue(null));
+    const input = container.querySelector<HTMLInputElement>("input[type='file']")!;
+
+    fireEvent.change(input, {
+      target: { files: [new File([new Uint8Array([1])], "foto.png", { type: "image/png" })] },
+    });
+
+    expect(await screen.findByText("Imagem maior que o limite de 5 MB.")).toBeTruthy();
   });
 });
