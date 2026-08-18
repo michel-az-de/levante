@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Idioma } from "@/components/Idioma";
 import { IdiomaToggle } from "@/components/IdiomaToggle";
+import { MenuMobile, type ItemMenuMobile } from "@/components/MenuMobile";
 import { produto } from "@/lib/produto";
 
 type ItemLink = { href: string; pt: string; en: string; externo?: boolean };
@@ -13,6 +14,13 @@ const LINKS: readonly ItemLink[] = [
   { href: "#repo", pt: "Código", en: "Code" },
   { href: "#autor", pt: "Autor", en: "Author" },
   { href: produto.urlDocs, pt: "Docs", en: "Docs", externo: true },
+];
+
+// Abaixo de 720px o nav horizontal some (e o link do GitHub ja era hidden <sm):
+// o painel do MenuMobile mantem tudo alcancavel.
+const ITENS_MOBILE: readonly ItemMenuMobile[] = [
+  ...LINKS,
+  { href: produto.urlRepo, pt: "GitHub", en: "GitHub", externo: true },
 ];
 
 const ITEM = "text-[13.5px] font-medium text-produto-dim transition-colors hover:text-produto-fg";
@@ -52,6 +60,14 @@ export function NavProduto() {
 
         <div className="ml-auto flex items-center gap-2.5">
           <IdiomaToggle className="rounded-lg border border-produto-line2 px-2.5 py-1.5 font-produto-mono text-xs text-produto-dim transition-colors hover:border-produto-brass hover:text-produto-fg" />
+          <MenuMobile
+            id="menu-mobile-produto"
+            itens={ITENS_MOBILE}
+            classeContainer="min-[720px]:hidden"
+            classeBotao="rounded-lg border border-produto-line2 px-2.5 py-1.5 font-produto-mono text-xs text-produto-dim transition-colors hover:border-produto-brass hover:text-produto-fg"
+            classePainel="absolute inset-x-0 top-full flex flex-col border-b border-produto-line bg-produto-bg/95 px-[clamp(16px,4vw,32px)] py-2 backdrop-blur-[10px]"
+            classeItem="border-b border-produto-line py-3 text-[13.5px] font-medium text-produto-dim transition-colors last:border-b-0 hover:text-produto-fg"
+          />
           <a
             href={produto.urlRepo}
             target="_blank"

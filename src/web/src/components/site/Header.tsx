@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Idioma } from "@/components/Idioma";
 import { IdiomaToggle } from "@/components/IdiomaToggle";
+import { MenuMobile, type ItemMenuMobile } from "@/components/MenuMobile";
 import { TemaToggle } from "@/components/TemaToggle";
 import { useScrollSpy } from "@/lib/hooks/useScrollSpy";
 import { Botao } from "./Botao";
@@ -20,6 +21,17 @@ const ITENS: readonly ItemNav[] = [
   { rota: "/artigos", pt: "Artigos", en: "Writing" },
   { secao: "experiencia", pt: "Experiência", en: "Experience" },
   { rota: "/sobre", pt: "Sobre", en: "About" },
+];
+
+// Abaixo de 860px o nav horizontal some: os mesmos itens (+ o CTA de contato)
+// ficam alcancaveis pelo painel do MenuMobile.
+const ITENS_MOBILE: readonly ItemMenuMobile[] = [
+  ...ITENS.map((item) => ({
+    href: "rota" in item ? item.rota : `#${item.secao}`,
+    pt: item.pt,
+    en: item.en,
+  })),
+  { href: "#contato", pt: "Falar comigo", en: "Get in touch" },
 ];
 
 const BASE_LINK =
@@ -74,6 +86,14 @@ export function Header() {
           </button>
           <IdiomaToggle className={ICOBTN} />
           <TemaToggle className={ICOBTN} />
+          <MenuMobile
+            id="menu-mobile-site"
+            itens={ITENS_MOBILE}
+            classeContainer="min-[860px]:hidden"
+            classeBotao={ICOBTN}
+            classePainel="absolute inset-x-0 top-full flex flex-col border-b border-site-line bg-site-bg/95 px-[clamp(18px,4vw,40px)] py-2 backdrop-blur-[12px]"
+            classeItem="border-b border-site-line py-3 text-sm text-site-fg2 transition-colors last:border-b-0 hover:text-site-fg"
+          />
           <span className="hidden sm:inline-flex">
             <Botao href="#contato" variante="acc" tamanho="sm" magnetico>
               <Idioma pt="Falar comigo" en="Get in touch" />
