@@ -2,10 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DELETE, POST } from "@/app/api/admin/sessao/route";
 import { COOKIE_SESSAO_ADMIN } from "@/lib/sessao-admin";
 
-function requisicaoLogin(origin?: string) {
+function requisicaoLogin(origin?: string, encaminhado?: string) {
   return new Request("http://localhost:3000/api/admin/sessao", {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...(origin ? { origin } : {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(origin ? { origin } : {}),
+      ...(encaminhado ? { "x-forwarded-for": encaminhado } : {}),
+    },
     body: JSON.stringify({ email: "admin@levante.dev", senha: "senha" }),
   });
 }
@@ -43,6 +47,20 @@ describe("BFF /api/admin/sessao", () => {
 
     expect(resposta.status).toBe(401);
     expect(resposta.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("propaga X-Forwarded-For para o rate limit do /auth/login", async () => {
+    // Sem isto os 5 req/min do PolicyAuth viram um balde unico (o IP do container do Next):
+    // qualquer um queima as tentativas e tranca o admin legitimo (ver issue #93).
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 401 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await POST(requisicaoLogin(undefined, "203.0.113.7"));
+
+    const [destino, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(destino.endsWith("/auth/login")).toBe(true);
+    expect(new Headers(init.headers).get("x-forwarded-for")).toBe("203.0.113.7");
+    expect(new Headers(init.headers).get("content-type")).toBe("application/json");
   });
 
   it("origem cruzada no login vira 403 (anti-CSRF)", async () => {

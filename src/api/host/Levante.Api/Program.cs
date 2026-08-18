@@ -37,7 +37,6 @@ using Levante.SharedKernel.Infrastructure.Outbox;
 using Levante.SharedKernel.Infrastructure.Telemetry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -184,23 +183,14 @@ var corsOrigens = builder.Configuration.GetSection("Cors:Origens").Get<string[]>
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(corsOrigens).AllowAnyHeader().AllowAnyMethod()));
 
-// ForwardedHeaders: em producao a app fica atras de um proxy (Caddy/ingress) cujo IP nao e
-// estatico, entao limpamos KnownNetworks/KnownProxies e confiamos so no ultimo hop (ForwardLimit=1)
-// para recuperar IP e scheme reais. Sem isso, o rate limit por IP colapsa no IP do proxy.
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.ForwardLimit = 1;
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-});
+// ForwardedHeaders: recupera IP e scheme reais atras do proxy da borda. Ver ForwardedHeadersConfig
+// — o rate limit depende do header que esse middleware grava para separar cliente de trafego interno.
+builder.Services.AddLevanteForwardedHeaders();
 
 var app = builder.Build();
 
 // Primeiro middleware do pipeline, e so fora de Development: honrar X-Forwarded-For sem um
 // proxy confiavel na frente permitiria spoof de IP em dev/testes (onde a chamada e direta).
-// TODO(infra): rate limit por-cliente real exige o BFF do web propagar o X-Forwarded-For do
-// cliente (browser->Caddy->levante-web(BFF)->levante-api); ver publico/route.ts.
 if (!app.Environment.IsDevelopment())
 {
     app.UseForwardedHeaders();
