@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useGuardaAdmin, tratarNaoAutorizado } from "@/lib/admin-guard";
+import { useAdminAuth, tratarNaoAutorizado } from "@/lib/admin-auth-context";
 import { apiAdmin } from "@/lib/auth";
 import type { Categoria } from "@/types/domain";
 
@@ -18,7 +18,7 @@ const FORM_VAZIO: FormularioCategoria = { id: null, nome: "", slug: "", descrica
 
 export default function AdminCategoriasPage() {
   const router = useRouter();
-  const autorizado = useGuardaAdmin();
+  const autorizado = useAdminAuth();
   const [categorias, setCategorias] = useState<Categoria[] | null>(null);
   const [form, setForm] = useState<FormularioCategoria>(FORM_VAZIO);
   const [erro, setErro] = useState<string | null>(null);

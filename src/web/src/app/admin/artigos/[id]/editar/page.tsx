@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArtigoEditor, type ArtigoFormValores } from "@/components/ArtigoEditor";
-import { useGuardaAdmin, tratarNaoAutorizado } from "@/lib/admin-guard";
+import { useAdminAuth, tratarNaoAutorizado } from "@/lib/admin-auth-context";
 import { apiAdmin } from "@/lib/auth";
 
 export default function EditarArtigoPage() {
   const router = useRouter();
   const params = useParams();
   const id = String(params.id);
-  const autorizado = useGuardaAdmin();
+  const autorizado = useAdminAuth();
   const [inicial, setInicial] = useState<ArtigoFormValores | null>(null);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [erroCarregar, setErroCarregar] = useState(false);

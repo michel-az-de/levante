@@ -235,7 +235,9 @@ export default async function ArtigoPage({
         </div>
 
         <div className="mt-10">
-          <Comentarios artigoId={artigo.id} artigoSlug={artigo.slug} />
+          {/* key: remonta comentarios e formulario ao navegar entre artigos
+              (estado de fetch e de envio nao vazam de um artigo para outro). */}
+          <Comentarios key={artigo.id} artigoId={artigo.id} artigoSlug={artigo.slug} />
         </div>
       </article>
     </div>

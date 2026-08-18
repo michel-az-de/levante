@@ -1,47 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { apiAdmin, sairDoAdmin } from "@/lib/auth";
+import { useAdminAuth, useSessaoAdmin } from "@/lib/admin-auth-context";
+import { sairDoAdmin } from "@/lib/auth";
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState<string | null>(null);
-  const [carregando, setCarregando] = useState(true);
-
-  useEffect(() => {
-    let ativo = true;
-    apiAdmin
-      .GET("/auth/eu")
-      .then(({ data, error }) => {
-        if (!ativo) {
-          return;
-        }
-        if (error || !data) {
-          router.replace("/admin/login");
-          return;
-        }
-        setEmail(data.email);
-        setCarregando(false);
-      })
-      .catch(() => {
-        if (ativo) {
-          router.replace("/admin/login");
-        }
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [router]);
+  const autorizado = useAdminAuth();
+  const sessao = useSessaoAdmin();
 
   async function sair() {
     await sairDoAdmin();
-    router.replace("/admin/login");
+    // Navegacao completa (nao SPA): descarta a sessao em memoria do
+    // AdminAuthProvider — voltar pelo historico nao reexibe o shell logado.
+    window.location.replace("/admin/login");
   }
 
-  if (carregando) {
+  if (!autorizado) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6">
         <p className="text-neutral-500">Carregando...</p>
@@ -62,7 +36,7 @@ export default function AdminDashboardPage() {
         </button>
       </div>
       <p className="text-neutral-600 dark:text-neutral-400">
-        Logado como <span className="font-medium">{email}</span>.
+        Logado como <span className="font-medium">{sessao?.email}</span>.
       </p>
       <nav className="flex flex-col gap-2">
         <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Comentario } from "@/types/domain";
 import { FormComentario } from "@/components/FormComentario";
 
@@ -11,25 +11,49 @@ import { FormComentario } from "@/components/FormComentario";
  */
 export function Comentarios({ artigoId, artigoSlug }: { artigoId: string; artigoSlug: string }) {
   const [comentarios, setComentarios] = useState<Comentario[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    let ativo = true;
-    fetch(`/api/publico/artigos/${artigoId}/comentarios`, { cache: "no-store" })
+  const carregarComentarios = useCallback(() => {
+    // Aborta a requisicao anterior (retry/StrictMode/remount): so a mais recente
+    // escreve estado — sem isso uma resposta lenta antiga apagaria a lista boa.
+    abortRef.current?.abort();
+    const controlador = new AbortController();
+    abortRef.current = controlador;
+
+    fetch(`/api/publico/artigos/${artigoId}/comentarios`, {
+      cache: "no-store",
+      signal: controlador.signal,
+    })
       .then(async (resposta) => {
-        if (ativo) {
-          setComentarios(resposta.ok ? ((await resposta.json()) as Comentario[]) : []);
+        const dados = resposta.ok ? ((await resposta.json()) as Comentario[]) : null;
+        if (controlador.signal.aborted) {
+          return;
+        }
+        if (dados) {
+          setComentarios(dados);
+          setErro(null);
+        } else {
+          // Falha nao destroi lista ja carregada; so exibe o alerta.
+          setErro("Nao foi possivel carregar os comentarios.");
         }
       })
       .catch(() => {
-        if (ativo) {
-          setComentarios([]);
+        if (!controlador.signal.aborted) {
+          setErro("Erro de conexao. Tente novamente.");
         }
       });
-
-    return () => {
-      ativo = false;
-    };
   }, [artigoId]);
+
+  function tentarNovamente() {
+    setErro(null);
+    carregarComentarios();
+  }
+
+  useEffect(() => {
+    carregarComentarios();
+    return () => abortRef.current?.abort();
+  }, [carregarComentarios]);
 
   return (
     <section
@@ -52,9 +76,22 @@ export function Comentarios({ artigoId, artigoSlug }: { artigoId: string; artigo
             </li>
           ))}
         </ul>
-      ) : comentarios ? (
+      ) : comentarios && !erro ? (
         <p className="text-sm text-neutral-500">Seja o primeiro a comentar.</p>
       ) : null}
+
+      {erro && (
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          {erro}{" "}
+          <button
+            type="button"
+            className="underline"
+            onClick={tentarNovamente}
+          >
+            Tentar novamente
+          </button>
+        </p>
+      )}
 
       <FormComentario artigoId={artigoId} artigoSlug={artigoSlug} />
     </section>
