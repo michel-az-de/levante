@@ -70,6 +70,11 @@
          GHSA-q6rr-fm2g-g5x8, corrigido em 7.2.1). 7.2.5 e a ultima do ramo 7.2.x.
          Remover quando WireMock.Net referenciar >= 7.2.1. -->
     <PackageVersion Include="Scriban.Signed" Version="7.2.5" />
+    <!-- Pin transitivo (CentralPackageTransitivePinningEnabled): o Microsoft.AspNetCore.WebUtilities 2.3.0
+         trazido pelo WireMock.Net 2.11.0 (via Microsoft.AspNetCore 2.3.9) tem NU1902 moderado
+         (GHSA-6527-9fp8-r4x6), corrigido em 2.3.14.
+         Remover quando WireMock.Net referenciar >= 2.3.14. -->
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
   </ItemGroup>
 
   <!--
