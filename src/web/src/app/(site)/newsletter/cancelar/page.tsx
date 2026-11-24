@@ -14,9 +14,9 @@ export default async function CancelarNewsletterPage({
   const { token } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-4 px-6 py-16">
+    <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col justify-center gap-4 px-6 py-16">
       <h1 className="text-2xl font-bold tracking-tight">Cancelamento da newsletter</h1>
       <AcaoNewsletter token={token ?? ""} acao="cancelar" />
-    </main>
+    </div>
   );
 }

@@ -7,6 +7,8 @@ import { Timeline } from "./Timeline";
 export function SecaoExperiencia({ numero = "05" }: { numero?: string }) {
   return (
     <Secao id="experiencia">
+      {/* TODO(#135): restaurar o botao "Baixar CV" (acao do cabecalho) quando o
+          PDF real existir em public/ — o link antigo apontava para um 404. */}
       <CabecalhoSecao
         numero={numero}
         kicker={{ pt: "experiência", en: "experience" }}
