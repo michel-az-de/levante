@@ -1,22 +1,16 @@
 import { Idioma } from "@/components/Idioma";
 import { fatos, pilhaTecnica } from "@/lib/site-conteudo";
-import { Botao } from "./Botao";
 import { CabecalhoSecao, Secao } from "./Secao";
 import { Timeline } from "./Timeline";
 
-/** Secao 05 — experiencia (sobre + fatos + linha do tempo). */
-export function SecaoExperiencia() {
+/** Secao de experiencia (05, ou 04 quando a home esconde os artigos): sobre + fatos + linha do tempo. */
+export function SecaoExperiencia({ numero = "05" }: { numero?: string }) {
   return (
     <Secao id="experiencia">
       <CabecalhoSecao
-        numero="05"
+        numero={numero}
         kicker={{ pt: "experiência", en: "experience" }}
         titulo={{ pt: "Quinze anos de estrada.", en: "Fifteen years on the road." }}
-        acao={
-          <Botao href="/Felipe-Azevedo-CV.pdf" tamanho="sm" download>
-            <Idioma pt="Baixar CV" en="Download CV" /> <span aria-hidden="true">↓</span>
-          </Botao>
-        }
       />
 
       <div className="mb-[46px] grid grid-cols-1 items-start gap-[50px] md:grid-cols-[1.1fr_0.9fr]">
