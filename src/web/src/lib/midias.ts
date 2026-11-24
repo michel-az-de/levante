@@ -4,6 +4,20 @@ import type { components } from "@/types/api";
 export type MidiaEnviada = components["schemas"]["MidiaResponse"];
 
 /**
+ * Erro de upload/remocao de midia que carrega o status HTTP, para a UI distinguir
+ * casos (ex.: 413 = arquivo maior que o limite) sem depender do texto da mensagem.
+ */
+export class ErroDeMidia extends Error {
+  constructor(
+    mensagem: string,
+    readonly status: number,
+  ) {
+    super(mensagem);
+    this.name = "ErroDeMidia";
+  }
+}
+
+/**
  * Envia uma imagem para o admin (multipart) e retorna `{ id, url, ... }` —
  * `url` e relativa (`/midias/{id}`), pronta para uso no markdown do artigo.
  *
@@ -24,7 +38,7 @@ export async function enviarMidia(arquivo: File): Promise<MidiaEnviada> {
   });
 
   if (error || !data) {
-    throw new Error(`Falha ao enviar midia (HTTP ${response.status}).`);
+    throw new ErroDeMidia(`Falha ao enviar midia (HTTP ${response.status}).`, response.status);
   }
 
   return data;
@@ -37,6 +51,6 @@ export async function removerMidia(id: string): Promise<void> {
   });
 
   if (error) {
-    throw new Error(`Falha ao remover midia (HTTP ${response.status}).`);
+    throw new ErroDeMidia(`Falha ao remover midia (HTTP ${response.status}).`, response.status);
   }
 }
