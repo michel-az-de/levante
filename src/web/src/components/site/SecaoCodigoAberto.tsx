@@ -37,8 +37,9 @@ export async function SecaoCodigoAberto() {
         }
       />
 
-      <RevealOnScroll className="grid grid-cols-1 gap-px border border-site-line bg-site-line sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr]">
-        <div className="flex min-h-[150px] flex-col bg-site-bg p-6 sm:col-span-2 lg:col-span-1 lg:row-span-2">
+      {/* Grade para 1 card ao lado do mapa. Ao acrescentar card, reajuste as colunas. */}
+      <RevealOnScroll className="grid grid-cols-1 gap-px border border-site-line bg-site-line lg:grid-cols-[1.35fr_1fr]">
+        <div className="flex min-h-[150px] flex-col bg-site-bg p-6">
           <HeatmapContribuicoes calendario={calendario} />
         </div>
         {reposVitrine.map((repo, i) => (

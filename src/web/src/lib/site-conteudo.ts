@@ -189,7 +189,8 @@ export type RepoVitrine = {
 
 // Descricoes CURADAS (melhores que a do GitHub cru). Metadados ao vivo (estrelas,
 // linguagem, licenca) enriquecem via lib/github quando ha token; sem token,
-// caem nestes valores. TODO(GAP-K): confirmar os owners reais.
+// caem nestes valores. So entra repositorio PUBLICO: oracle-pack, easystock e
+// hiram sairam em 24/11/2026 porque respondiam 404 sem login (GAP-K).
 export const reposVitrine: readonly RepoVitrine[] = [
   {
     chave: "michel-az-de/levante",
@@ -200,32 +201,5 @@ export const reposVitrine: readonly RepoVitrine[] = [
     },
     linguagem: "C#",
     licenca: "Apache-2.0",
-  },
-  {
-    chave: "felipeazevedoit/oracle-pack",
-    nome: "oracle-pack",
-    descricao: {
-      pt: "Análise estática em Roslyn: risco, código morto e contexto para LLMs.",
-      en: "Roslyn static analysis: risk, dead code and context for LLMs.",
-    },
-    linguagem: "C#",
-  },
-  {
-    chave: "felipeazevedoit/easystock",
-    nome: "easystock",
-    descricao: {
-      pt: "SaaS multi-tenant de estoque e produção. Construído com o loop da seção 01.",
-      en: "Multi-tenant inventory and production SaaS. Built with the loop from section 01.",
-    },
-    linguagem: "C#",
-  },
-  {
-    chave: "felipeazevedoit/hiram",
-    nome: "hiram",
-    descricao: {
-      pt: "Notificações com outbox, RabbitMQ e dead letter.",
-      en: "Notifications with outbox, RabbitMQ and dead letter.",
-    },
-    linguagem: "C#",
   },
 ];
