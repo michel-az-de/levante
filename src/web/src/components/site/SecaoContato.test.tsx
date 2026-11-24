@@ -15,7 +15,7 @@ describe("SecaoContato", () => {
 
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) => a.getAttribute("href"));
     expect(hrefs).toContain(site.linkedin);
-    expect(hrefs.some((h) => h?.includes("05493357"))).toBe(false);
+    expect(hrefs.filter((h) => h?.includes("linkedin.com"))).toEqual([site.linkedin]);
   });
 
   it("aceita o numero da secao vindo da home", () => {
