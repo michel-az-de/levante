@@ -100,7 +100,7 @@ export type Experiencia = {
 export const experiencias: readonly Experiencia[] = [
   {
     empresa: "Avanade",
-    periodo: { pt: "desde 2025", en: "since 2025" },
+    periodo: { pt: "2025 a 2026", en: "2025 to 2026" },
     papel: {
       pt: "Consultor Sênior / Tech Lead · billing global, Durable Functions, Azure",
       en: "Senior Consultant / Tech Lead · global billing, Durable Functions, Azure",
@@ -152,7 +152,6 @@ export const fatos: readonly Fato[] = [
     chave: { pt: "foco", en: "focus" },
     valor: { pt: "arquitetura · entrega com IA", en: "architecture · AI delivery" },
   },
-  { chave: { pt: "agora", en: "now" }, valor: { pt: "Avanade", en: "Avanade" } },
   {
     chave: { pt: "idiomas", en: "languages" },
     valor: { pt: "PT nativo · EN técnico", en: "PT native · EN technical" },

@@ -11,6 +11,15 @@ describe("SecaoExperiencia", () => {
     expect(container.querySelector('a[href$=".pdf"]')).toBeNull();
   });
 
+  it("nao afirma um empregador atual nos fatos", () => {
+    const { getAllByText, queryByText } = render(<SecaoExperiencia />);
+
+    // A Avanade aparece so na linha do tempo, nao mais como fato "agora".
+    expect(getAllByText("Avanade")).toHaveLength(1);
+    expect(queryByText("agora")).toBeNull();
+    expect(queryByText("now")).toBeNull();
+  });
+
   it("aceita o numero da secao vindo da home", () => {
     const { container } = render(<SecaoExperiencia numero="04" />);
 
