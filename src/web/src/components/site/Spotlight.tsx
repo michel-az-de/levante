@@ -35,6 +35,7 @@ export function Spotlight() {
       if (!ativo) {
         ativo = true;
         alvo.dataset.ativo = "true";
+        raf = requestAnimationFrame(loop);
       }
     }
     function loop() {
@@ -42,11 +43,15 @@ export function Spotlight() {
       y += (destinoY - y) * 0.12;
       alvo.style.setProperty("--spot-x", `${x}px`);
       alvo.style.setProperty("--spot-y", `${y}px`);
+
+      if (Math.abs(destinoX - x) < 0.5 && Math.abs(destinoY - y) < 0.5) {
+        ativo = false;
+        return;
+      }
       raf = requestAnimationFrame(loop);
     }
 
     window.addEventListener("pointermove", mover);
-    raf = requestAnimationFrame(loop);
     return () => {
       window.removeEventListener("pointermove", mover);
       cancelAnimationFrame(raf);

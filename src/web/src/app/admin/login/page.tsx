@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
         setErro("Credenciais invalidas.");
         return;
       }
-      router.push("/admin");
+      router.replace("/admin");
     } catch {
       setErro("Falha de conexao. Tente novamente.");
     } finally {
