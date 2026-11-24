@@ -64,7 +64,7 @@ Fonte: `hiram/deploy/stack/.env.example` (todos `CHANGE_ME`). Gerar com `openssl
 | `MAIL_FROM` | Remetente exibido; com Twilio, do domínio autenticado. |
 | **Credencial Twilio** | **Não vai no `.env`.** O provider do tenant é gravado por `PUT /v1/providers/email` (`{provider, settings:{from, api_key_sid}, secret}`), e o secret fica cifrado por Data Protection no Hiram. O payload viaja por **stdin**, porque o argv de um processo é legível por outros processos do host. |
 | `HIRAM_LEVANTE_API_KEY` | **Preenchido só após o passo 3** (provision). |
-| `HIRAM_IMAGE_TAG` / `LEVANTE_IMAGE_TAG` | Fixar em SHAs revisados no go-live (nunca `latest` em prod). |
+| `HIRAM_IMAGE_TAG` / `LEVANTE_IMAGE_TAG` | Só na stack do Hiram. O Levante fixa o SHA pelo `deploy/vps/deploy-imagens.sh` (nunca `latest` em prod). |
 
 ## Secrets e variables do GitHub (CD)
 
@@ -138,8 +138,8 @@ Hiram) estão em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). Seq
 ## Rollback
 
 Manual, em **par API/web** por SHA (o web assa o contrato da API no build). Procedimento e gatilhos em
-`plano-mvp-producao.md` (checklist item 12). Cada deploy guarda a imagem anterior em `<servico>:vps-pre-<sha7>`;
-voltar é `docker tag <servico>:vps-pre-<sha7> <servico>:vps` e `docker compose up -d --no-deps --pull never <servico>`
+`plano-mvp-producao.md` (checklist item 12). O primeiro deploy de cada SHA guarda a imagem anterior em `<servico>:vps-pre-<sha7>` (sha7 do deploy a desfazer);
+voltar é `docker tag <servico>:vps-pre-<sha7> <servico>:vps` e `docker compose up -d --no-deps --pull never --wait <servico>`
 em `/opt/stacks/levante`, ou rodar `deploy/vps/deploy-imagens.sh` com o SHA anterior.
 Rollback cobre código, não dados (disciplina forward-only para schema).
 

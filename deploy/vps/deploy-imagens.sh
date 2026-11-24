@@ -5,10 +5,14 @@
 #
 #   ssh <vm> bash -s -- <sha-40> levante-web [levante-api] < deploy/vps/deploy-imagens.sh
 #
-# Rollback: cada servico trocado guarda a imagem anterior em <servico>:vps-pre-<sha7 novo>.
+# Ordem: valida tudo, puxa TODAS as imagens e so depois mexe nas tags e nos containers. Falha no
+# pull nao deixa nenhuma tag trocada. O `compose up` roda sempre e decide pelo container que esta
+# rodando, entao um rerun completa um deploy que caiu no meio e nao recria o que ja esta certo.
+#
+# Rollback: o primeiro deploy de um <sha> guarda a imagem anterior em <servico>:vps-pre-<sha7>
+# (sha7 do deploy a desfazer; a tag nunca e sobrescrita):
 #   docker tag <servico>:vps-pre-<sha7> <servico>:vps
-#   cd /opt/stacks/levante && docker compose up -d --no-deps --pull never <servico>
-# Idempotente: servico que ja roda a imagem do <sha> nao e recriado.
+#   cd /opt/stacks/levante && docker compose up -d --no-deps --pull never --wait <servico>
 set -euo pipefail
 
 SHA="${1:-}"
@@ -24,8 +28,6 @@ if [ "$#" -eq 0 ]; then
   echo "informe ao menos um servico: levante-web, levante-api" >&2
   exit 2
 fi
-
-trocados=()
 for servico in "$@"; do
   case "$servico" in
     levante-web | levante-api) ;;
@@ -34,28 +36,32 @@ for servico in "$@"; do
       exit 2
       ;;
   esac
-
-  novo="$REGISTRO/$servico:$SHA"
-  docker pull -q "$novo"
-  alvo=$(docker image inspect "$novo" --format '{{.Id}}')
-  atual=$(docker image inspect "$servico:vps" --format '{{.Id}}' 2>/dev/null || true)
-
-  if [ "$atual" = "$alvo" ]; then
-    echo "$servico ja esta em ${SHA:0:7}; nada a fazer"
-    continue
-  fi
-  if [ -n "$atual" ]; then
-    docker tag "$servico:vps" "$servico:vps-pre-${SHA:0:7}"
-    echo "$servico: imagem anterior guardada em $servico:vps-pre-${SHA:0:7}"
-  fi
-  docker tag "$novo" "$servico:vps"
-  trocados+=("$servico")
 done
 
-if [ "${#trocados[@]}" -eq 0 ]; then
-  exit 0
-fi
-
 cd "$STACK"
-docker compose up -d --no-deps --pull never "${trocados[@]}"
-docker compose ps "${trocados[@]}"
+docker compose config -q
+
+# Um deploy por vez (job e manual nao se intercalam).
+exec 9> "$STACK/.deploy.lock"
+flock -w 600 9
+
+for servico in "$@"; do
+  docker pull -q "$REGISTRO/$servico:$SHA"
+done
+
+for servico in "$@"; do
+  novo="$REGISTRO/$servico:$SHA"
+  alvo=$(docker image inspect "$novo" --format '{{.Id}}')
+  atual=$(docker image inspect "$servico:vps" --format '{{.Id}}' 2>/dev/null || true)
+  backup="$servico:vps-pre-${SHA:0:7}"
+
+  if [ -n "$atual" ] && [ "$atual" != "$alvo" ] \
+    && ! docker image inspect "$backup" > /dev/null 2>&1; then
+    docker tag "$servico:vps" "$backup"
+    echo "$servico: imagem anterior guardada em $backup"
+  fi
+  docker tag "$novo" "$servico:vps"
+done
+
+docker compose up -d --no-deps --pull never --wait --wait-timeout 180 "$@"
+docker compose ps "$@"

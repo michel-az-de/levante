@@ -118,7 +118,7 @@ Semântica de disponibilidade: **`/health/ready` afirma Mongo, não Hiram** — 
 9. Search Console + Bing Webmaster.
 10. Verificar headers: A exceto CSP (que está em Report-Only).
 11. Backup automático + **restore testado em cluster scratch** (nunca em produção).
-12. **Rollback definido.** Gatilho: smoke falho, 5xx sustentado, `emissoes_falhadas` disparando (esse último só vale pós-D1). Procedimento no MVP: **o pipeline falha e um humano executa o runbook** (sem rollback automático condicional). Reverter **em par API/web** (o web assa o contrato da API no build; reverter um lado só exige checar compatibilidade), re-pinando o `LEVANTE_IMAGE_TAG` no SHA anterior + `up -d levante-api levante-web`. O **relay volta junto com a API** (é in-process na `levante-api`), sem procedimento separado. **Rollback cobre código, não dados**: disciplina forward-only para qualquer mudança de schema/collection nas fatias E.
+12. **Rollback definido.** Gatilho: smoke falho, 5xx sustentado, `emissoes_falhadas` disparando (esse último só vale pós-D1). Procedimento no MVP: **o pipeline falha e um humano executa o runbook** (sem rollback automático condicional). Reverter **em par API/web** (o web assa o contrato da API no build; reverter um lado só exige checar compatibilidade), rodando `deploy/vps/deploy-imagens.sh` com o SHA anterior para `levante-api levante-web`, ou retag de `<servico>:vps-pre-<sha7>` (ver runbook, Rollback). O **relay volta junto com a API** (é in-process na `levante-api`), sem procedimento separado. **Rollback cobre código, não dados**: disciplina forward-only para qualquer mudança de schema/collection nas fatias E.
 
 ## Riscos residuais aceitos
 

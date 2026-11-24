@@ -13,6 +13,8 @@ permissions:
 concurrency:
   group: ci-${{ github.ref }}
   # Em PR, push novo cancela o run velho. Na main nao: cancelar no meio deixaria o deploy pela metade.
+  # Na main os runs entram em fila; com varios merges seguidos o GitHub guarda so o mais novo
+  # pendente, e o deploy dele leva o estado mais recente.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -284,6 +286,9 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: deploy/vps
       - name: Deploy via SSH (imagens do sha na stack do Levante)
         env:
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
