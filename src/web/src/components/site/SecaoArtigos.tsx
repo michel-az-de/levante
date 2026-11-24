@@ -8,7 +8,8 @@ import { Botao } from "./Botao";
 import { Marca } from "./Marca";
 import { CabecalhoSecao, Secao } from "./Secao";
 
-async function listar(): Promise<Artigo[]> {
+/** Artigos publicados; lista vazia se a Content API falhar (a home esconde a secao). */
+export async function listarArtigos(): Promise<Artigo[]> {
   try {
     const { data } = await artigoApi.GET("/artigos");
     return data ?? [];
@@ -48,10 +49,10 @@ function ArtigoDestaque({ artigo }: { artigo: Artigo }) {
 }
 
 
-/** Secao 04 — artigos (destaque + lista), dados reais da Content API. */
-export async function SecaoArtigos() {
-  const artigos = await listar();
+/** Secao 04 — artigos (destaque + lista). Sem artigo publicado, nao renderiza nada. */
+export function SecaoArtigos({ artigos }: { artigos: Artigo[] }) {
   const destaque = artigos[0];
+  if (!destaque) return null;
   const resto = artigos.slice(1, 6);
 
   return (
@@ -71,13 +72,7 @@ export async function SecaoArtigos() {
         }
       />
 
-      {destaque ? (
-        <ArtigoDestaque artigo={destaque} />
-      ) : (
-        <p className="py-6 text-site-faint">
-          <Idioma pt="Nada publicado ainda." en="Nothing published yet." />
-        </p>
-      )}
+      <ArtigoDestaque artigo={destaque} />
 
       <div>
         {resto.map((artigo, i) => (

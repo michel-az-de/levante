@@ -4,7 +4,6 @@ import { Idioma } from "@/components/Idioma";
 import { site } from "@/lib/site";
 
 const EMAIL = "felipe.azevedoit@gmail.com";
-const LINKEDIN = "https://linkedin.com/in/felipe-azevedo-05493357";
 const GITHUB = "https://github.com/felipeazevedoit";
 
 export const metadata: Metadata = {
@@ -67,7 +66,7 @@ export default function SobrePage() {
         <a href={`mailto:${EMAIL}`} className={linkMono}>
           {EMAIL}
         </a>
-        <a href={LINKEDIN} target="_blank" rel="noopener noreferrer" className={linkMono}>
+        <a href={site.linkedin} target="_blank" rel="noopener noreferrer" className={linkMono}>
           linkedin ↗
         </a>
         <a href={GITHUB} target="_blank" rel="noopener noreferrer" className={linkMono}>

@@ -7,12 +7,13 @@ const siteUrlEnv = process.env.SITE_URL;
 // Identidade publica do Felipe (sameAs do Person). Configuravel via env; o
 // default e o perfil pessoal exibido no site (TODO GAP-K: confirmar as contas).
 const perfilGithub = process.env.GITHUB_PROFILE_ACCOUNT ?? "felipeazevedoit";
-const linkedin = process.env.LINKEDIN_URL ?? "https://linkedin.com/in/felipe-azevedo-05493357";
+const linkedin = process.env.LINKEDIN_URL ?? "https://www.linkedin.com/in/felipemichelazevedo";
 
 export const site = {
   url: (siteUrlEnv ?? "http://localhost:3000").replace(/\/$/, ""),
-  nome: "Levante",
+  nome: "Felipe Michel de Azevedo",
   autor: "Felipe Michel de Azevedo",
+  linkedin,
   jobTitle: "Arquiteto de solucoes e desenvolvedor senior .NET / full stack",
   descricao:
     "Plataforma pessoal e portfolio tecnico de Felipe Michel de Azevedo: blog tecnico, publicacoes e vitrine de projetos.",

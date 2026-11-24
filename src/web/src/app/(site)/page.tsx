@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { HeroTerminal } from "@/components/site/HeroTerminal";
-import { SecaoArtigos } from "@/components/site/SecaoArtigos";
+import { listarArtigos, SecaoArtigos } from "@/components/site/SecaoArtigos";
 import { SecaoCapacidades } from "@/components/site/SecaoCapacidades";
 import { SecaoCodigoAberto } from "@/components/site/SecaoCodigoAberto";
 import { SecaoConsultoria } from "@/components/site/SecaoConsultoria";
@@ -36,7 +36,11 @@ const website = {
   url: site.url,
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Sem artigo publicado a secao 04 some e as seguintes sobem um numero.
+  const artigos = await listarArtigos();
+  const temArtigos = artigos.length > 0;
+
   return (
     <>
       <JsonLd data={pessoa} />
@@ -45,9 +49,9 @@ export default function HomePage() {
       <SecaoConsultoria />
       <SecaoCapacidades />
       <SecaoCodigoAberto />
-      <SecaoArtigos />
-      <SecaoExperiencia />
-      <SecaoContato />
+      <SecaoArtigos artigos={artigos} />
+      <SecaoExperiencia numero={temArtigos ? "05" : "04"} />
+      <SecaoContato numero={temArtigos ? "06" : "05"} />
     </>
   );
 }

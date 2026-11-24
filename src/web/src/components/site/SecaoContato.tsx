@@ -1,21 +1,21 @@
 import { Idioma } from "@/components/Idioma";
+import { site } from "@/lib/site";
 import { Botao } from "./Botao";
 
 const EMAIL = "felipe.azevedoit@gmail.com";
 const WHATSAPP = "https://wa.me/5511982254398";
-const LINKEDIN = "https://linkedin.com/in/felipe-azevedo-05493357";
 const GITHUB = "https://github.com/felipeazevedoit";
 
 const linkEmail =
   "border-b-[3px] border-transparent text-site-acc transition-colors hover:border-site-acc";
 
-/** Secao 06 — contato. */
-export function SecaoContato() {
+/** Secao de contato (06, ou 05 quando a home esconde os artigos). */
+export function SecaoContato({ numero = "06" }: { numero?: string }) {
   return (
     <section id="contato" className="border-t border-site-line py-[clamp(70px,11vw,132px)]">
       <div className="mx-auto max-w-[1180px] px-[clamp(18px,4vw,40px)]">
         <div className="site-label mb-[22px]">
-          <b className="font-medium text-site-acc">06</b> / <Idioma pt="contato" en="contact" />
+          <b className="font-medium text-site-acc">{numero}</b> / <Idioma pt="contato" en="contact" />
         </div>
         <h2 className="mb-6 max-w-[14ch] text-[clamp(40px,8vw,92px)] leading-[0.96] font-bold tracking-[-0.035em] text-site-fg">
           <Idioma
@@ -58,7 +58,7 @@ export function SecaoContato() {
             {EMAIL}
           </a>
           <a
-            href={LINKEDIN}
+            href={site.linkedin}
             target="_blank"
             rel="noopener noreferrer"
             className="text-site-fg2 transition-colors hover:text-site-acc"
