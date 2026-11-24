@@ -4,7 +4,8 @@
 //
 // TODO(GAP-K): as contas abaixo sao placeholders configuraveis via env ate o
 // Felipe confirmar se `felipeazevedoit` (perfil pessoal) e `michel-az-de` (dono
-// do repo/CI) sao a mesma pessoa, e os owners reais de oracle-pack/easystock/hiram.
+// do repo/CI) sao a mesma pessoa. A vitrine so lista repositorio PUBLICO:
+// oracle-pack, easystock e hiram sairam em 24/11/2026 (404 sem login).
 
 export type ConfigGithub = {
   /** PAT de leitura publica (server-only). Ausente = integracao degrada. */
@@ -21,9 +22,6 @@ export type ConfigGithub = {
 
 const PADRAO_VITRINE = [
   "michel-az-de/levante",
-  "felipeazevedoit/oracle-pack",
-  "felipeazevedoit/easystock",
-  "felipeazevedoit/hiram",
 ];
 
 export function lerConfigGithub(): ConfigGithub {

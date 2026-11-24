@@ -17,7 +17,7 @@ describe("SecaoCodigoAberto", () => {
   });
   afterEach(cleanup);
 
-  it("so linka repositorio publico na vitrine", async () => {
+  it("nao linka os repositorios que respondiam 404", async () => {
     const { container } = render(await SecaoCodigoAberto());
 
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) => a.getAttribute("href"));
