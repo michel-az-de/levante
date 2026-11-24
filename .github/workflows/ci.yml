@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Em PR, push novo cancela o run velho. Na main nao: cancelar no meio deixaria o deploy pela metade.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DOTNET_NOLOGO: "true"
@@ -196,8 +197,8 @@ jobs:
 
   # 4) raise: valida os Dockerfiles buildando as DUAS imagens (ate em PR, sem publicar). Em push
   #    (so main/tag, conforme o gatilho on:) tambem roda NuGet audit + SBOM e publica no GHCR
-  #    (levante-api + levante-web, <sha> + latest). A stack conjunta (Hiram deploy/stack) consome
-  #    as duas pelo mesmo LEVANTE_IMAGE_TAG. Buildar em PR pega quebras de Dockerfile antes do merge.
+  #    (levante-api + levante-web, <sha> + latest). O job deploy fixa as duas pelo <sha> na stack
+  #    /opt/stacks/levante (ADR 0009). Buildar em PR pega quebras de Dockerfile antes do merge.
   raise:
     name: raise (build imagens; publica em merge/tag)
     needs: [polish, codeql]
@@ -270,32 +271,35 @@ jobs:
           docker push --all-tags ghcr.io/${{ github.repository_owner }}/levante-api
           docker push --all-tags ghcr.io/${{ github.repository_owner }}/levante-web
 
-  # 5) deploy: CD escopado na VM conjunta (so os servicos do Levante), apos raise, em push na
-  #    main, com environment protection. Inerte ate a variavel DEPLOY_ENABLED=true, para nao
-  #    quebrar o CI da main antes de a VM existir. A logica de deploy vive em
-  #    /opt/levante-hiram/deploy-app.sh (repo Hiram, deploy/stack): fixa LEVANTE_IMAGE_TAG=<sha>,
-  #    faz pull/up so de levante-api e levante-web (Hiram/Postgres/Caddy intactos). Rollback manual.
+  # 5) deploy: CD na VM (stack propria em /opt/stacks/levante, ADR 0009), apos raise, em push na
+  #    main, com environment protection. Inerte ate a variavel DEPLOY_ENABLED=true. A logica vive
+  #    em deploy/vps/deploy-imagens.sh, o MESMO script do deploy manual: puxa do GHCR as imagens do
+  #    <sha>, guarda a anterior em <servico>:vps-pre-<sha7> e recria so o servico que mudou.
+  #    Rollback manual, descrito no cabecalho do script.
   deploy:
-    name: deploy (VM conjunta, escopo Levante)
+    name: deploy (VM, stack do Levante)
     needs: raise
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Deploy escopado via SSH (pin do tag + recria so os 2 servicos)
+      - uses: actions/checkout@v7
+      - name: Deploy via SSH (imagens do sha na stack do Levante)
         env:
           SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
           SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # Par API/web: o web assa o contrato da API no build.
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "/opt/levante-hiram/deploy-app.sh levante ${{ github.sha }}"
+            bash -s -- "$SHA" levante-api levante-web < deploy/vps/deploy-imagens.sh
 
       - name: Smoke publico (gate; falha => runbook de rollback manual)
         env:
