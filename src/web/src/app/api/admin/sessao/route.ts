@@ -40,9 +40,21 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const credenciais = await request.text();
+
+  const cabecalhos = new Headers({ "Content-Type": "application/json" });
+  // Sem isto o rate limit do /auth/login (5 req/min, particionado por IP) ve o IP do
+  // container do Next em toda tentativa: um balde unico compartilhado por todos. Qualquer
+  // pessoa queima as 5 tentativas e tranca o admin legitimo para fora — alem de o limite
+  // deixar de isolar quem esta tentando brute-force. Mesmo repasse do BFF publico
+  // (ver api/publico/[...caminho]/route.ts).
+  const encaminhado = request.headers.get("x-forwarded-for");
+  if (encaminhado) {
+    cabecalhos.set("X-Forwarded-For", encaminhado);
+  }
+
   const resposta = await fetch(`${apiBaseUrl()}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: cabecalhos,
     body: credenciais,
     cache: "no-store",
   });

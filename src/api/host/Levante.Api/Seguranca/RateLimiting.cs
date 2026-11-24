@@ -12,6 +12,23 @@ public static class RateLimiting
     public const string PolicyAuth = "auth";
     public const string PolicyPublico = "publico";
 
+    /// <summary>
+    /// Chave da particao do trafego interno. Nao colide com nenhum IP nem com o
+    /// "desconhecido" de <see cref="OrigemDoCliente.Ip"/>.
+    /// </summary>
+    private const string ParticaoInterna = "interno";
+
+    /// <summary>
+    /// Teto do balde interno (SSR). Uma pagina de artigo custa 3 chamadas a API (artigo,
+    /// categorias, relacionados), a home 1 e o sitemap 2 — logo 2000/min cobre ~500 renders
+    /// por minuto, folgado para um site pessoal. Nao e ilimitado de proposito: um loop de
+    /// render nao deve conseguir martelar a API sem freio.
+    /// </summary>
+    private const int PermitLimitInterno = 2000;
+
+    /// <summary>Teto por visitante (fixed window de 1 minuto).</summary>
+    private const int PermitLimitCliente = 100;
+
     public static IServiceCollection AddLevanteRateLimiting(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -20,15 +37,23 @@ public static class RateLimiting
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-                RateLimitPartition.GetFixedWindowLimiter(
-                    context.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+            // Duas particoes, porque as duas origens tem perfil de volume incompativel:
+            // o visitante (via Caddy -> BFF) leva 100/min por IP; o SSR do Next, que chama a API
+            // container-a-container e nao carrega IP de cliente, tem balde proprio e folgado.
+            // Sem essa separacao TODO o trafego cai num balde unico (o IP do container do Next):
+            // o limite deixa de isolar cliente algum e um visitante ruidoso derruba os demais.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(contexto =>
+            {
+                var (chave, teto) = ParticaoGlobal(contexto);
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    chave,
                     _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,
+                        PermitLimit = teto,
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0,
-                    }));
+                    });
+            });
 
             // Readiness: por IP tambem — um cliente ruidoso nao deve esgotar o balde
             // para os demais. (AddFixedWindowLimiter cria um limiter global, nao particionado.)
@@ -68,4 +93,13 @@ public static class RateLimiting
                     }));
         });
     }
+
+    /// <summary>
+    /// Escolhe a particao do limiter global: IP do visitante quando a request atravessou o proxy
+    /// da borda, ou o balde interno quando e o SSR chamando a API container-a-container.
+    /// </summary>
+    internal static (string Chave, int Teto) ParticaoGlobal(HttpContext contexto)
+        => OrigemDoCliente.VeioDeCliente(contexto)
+            ? (OrigemDoCliente.Ip(contexto), PermitLimitCliente)
+            : (ParticaoInterna, PermitLimitInterno);
 }
