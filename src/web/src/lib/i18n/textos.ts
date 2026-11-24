@@ -10,6 +10,8 @@ export type Bilingue = { pt: string; en: string };
 export const textos = {
   mudarIdioma: { pt: "Mudar para inglês", en: "Switch to Portuguese" },
   alternarTema: { pt: "Alternar tema claro/escuro", en: "Toggle light/dark theme" },
+  menuAbrir: { pt: "Abrir menu de navegação", en: "Open navigation menu" },
+  menuFechar: { pt: "Fechar menu de navegação", en: "Close navigation menu" },
 } as const satisfies Record<string, Bilingue>;
 
 export type ChaveTexto = keyof typeof textos;
