@@ -14,6 +14,10 @@ runbook — preenche as lacunas dele.
 > deixaram de valer com o [ADR 0009](adr/0009-hospedagem-vps-stacks-separadas.md), que trocou o Atlas por
 > MongoDB self-hosted na própria máquina. Fica em issue própria, para não misturar duas reconciliações na
 > mesma entrega.
+>
+> **Deploy:** pelo mesmo ADR, a stack do Levante saiu de `hiram/deploy/stack/` e vive em
+> `/opt/stacks/levante/`. Os passos 1 e 3 abaixo (stack do Hiram, `LEVANTE_IMAGE_TAG`) ficam como
+> registro do cutover original; o deploy vigente é `deploy/vps/deploy-imagens.sh` (#177).
 
 ## Passo 0 — pré-requisitos que ainda faltam
 
@@ -136,7 +140,7 @@ do host, e o segredo está nele. O `deploy/jornada/provision.sh` do Hiram é o e
 ## Passo 4 — GitHub CD (opcional; hoje inerte)
 
 Só se quiser deploy automático pós-merge. Enquanto `DEPLOY_ENABLED` não for `true`, o deploy é manual
-(`./deploy-app.sh levante <sha>` na VM). Para armar:
+(`ssh <vm> bash -s -- <sha> levante-api levante-web < deploy/vps/deploy-imagens.sh`). Para armar:
 
 | Tipo | Nome | Valor |
 |---|---|---|

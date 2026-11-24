@@ -21,7 +21,7 @@ referencia-se — não se duplica.
 ## Pré-requisitos (uma vez)
 
 1. **Imagens no GHCR** — `levante-api`, `levante-web`, `hiram-api`, `hiram-dispatcher`, publicadas pelos CIs (push na `main`). Escape hatch de build local existe (bloco `build:` no compose).
-2. **VM Linux** com Docker + Compose, e `hiram/deploy/stack/` (+ `deploy/levante/`) em **`/opt/levante-hiram/`** (caminho fixo no CD — ver `.github/workflows/ci.yml`).
+2. **VM Linux** com Docker + Compose e a stack própria do Levante em **`/opt/stacks/levante/`** ([ADR 0009](adr/0009-hospedagem-vps-stacks-separadas.md); caminho fixo em `deploy/vps/deploy-imagens.sh`).
 3. **MongoDB Atlas** de produção: cluster criado, **usuário de privilégio mínimo** (sem role administrativa — o boot do `levante-api` aborta em Produção se tiver), **IP público da VM no allowlist**. Tier: M10+ para backup/PITR gerenciado (ver [portão D0.5](#portões-que-bloqueiam-o-go-live)).
 4. **Credencial Twilio**: `AccountSid`, `API Key SID` (`SK…`) e o secret da API Key — a **mesma** conta que serve SMS e WhatsApp (ADR-028 do Hiram). Remetente com **domínio autenticado** no Twilio (DKIM/SPF). Não se cria conta de SendGrid nem de Resend.
 
@@ -41,7 +41,7 @@ destacados. Ordem:
    Copie a API key impressa (`hk_live_…`, **mostrada uma única vez**) para `HIRAM_LEVANTE_API_KEY` no `.env` e recrie o serviço: `docker compose up -d levante-api`.
    Cria tenant + templates + routines (mapa evento→template em `deploy/levante/README.md`).
 4. **[Portão D0.5 — backup do keyring](#portões-que-bloqueiam-o-go-live)** antes de qualquer coisa pública.
-5. **CD no GitHub** — configurar o repositório do Levante (ver [tabela](#secrets-e-variables-do-github-cd)). Enquanto `DEPLOY_ENABLED` não for `true`, o job `deploy` fica **inerte** (deploy é manual via `deploy-app.sh levante <sha>`).
+5. **CD no GitHub** — configurar o repositório do Levante (ver [tabela](#secrets-e-variables-do-github-cd)). Enquanto `DEPLOY_ENABLED` não for `true`, o job `deploy` fica **inerte** (deploy é manual com o mesmo script do job: `ssh <vm> bash -s -- <sha> levante-api levante-web < deploy/vps/deploy-imagens.sh`).
 6. **Smoke** — `./evidence/run.sh` (conferir A4/A6/A7) + o smoke do pipeline (`/api/health` + `/`).
 7. **D1 no Grafana** (na VM, por túnel SSH) — fixar a retenção do Loki e criar o alerta de `emissoes_falhadas` (gatilho de rollback). O app já emite OTLP para o `lgtm`.
 8. **Cutover D0** — [domínio](#cutover-d0--domínio).
@@ -64,7 +64,7 @@ Fonte: `hiram/deploy/stack/.env.example` (todos `CHANGE_ME`). Gerar com `openssl
 | `MAIL_FROM` | Remetente exibido; com Twilio, do domínio autenticado. |
 | **Credencial Twilio** | **Não vai no `.env`.** O provider do tenant é gravado por `PUT /v1/providers/email` (`{provider, settings:{from, api_key_sid}, secret}`), e o secret fica cifrado por Data Protection no Hiram. O payload viaja por **stdin**, porque o argv de um processo é legível por outros processos do host. |
 | `HIRAM_LEVANTE_API_KEY` | **Preenchido só após o passo 3** (provision). |
-| `HIRAM_IMAGE_TAG` / `LEVANTE_IMAGE_TAG` | Fixar em SHAs revisados no go-live (nunca `latest` em prod). |
+| `HIRAM_IMAGE_TAG` / `LEVANTE_IMAGE_TAG` | Só na stack do Hiram. O Levante fixa o SHA pelo `deploy/vps/deploy-imagens.sh` (nunca `latest` em prod). |
 
 ## Secrets e variables do GitHub (CD)
 
@@ -138,7 +138,9 @@ Hiram) estão em [cutover-felipemichel-com.md](cutover-felipemichel-com.md). Seq
 ## Rollback
 
 Manual, em **par API/web** por SHA (o web assa o contrato da API no build). Procedimento e gatilhos em
-`plano-mvp-producao.md` (checklist item 12) e no `README.md` da stack (`deploy-app.sh <app> <sha-anterior>`).
+`plano-mvp-producao.md` (checklist item 12). O primeiro deploy de cada SHA guarda a imagem anterior em `<servico>:vps-pre-<sha7>` (sha7 do deploy a desfazer);
+voltar é `docker tag <servico>:vps-pre-<sha7> <servico>:vps` e `docker compose up -d --no-deps --pull never --wait <servico>`
+em `/opt/stacks/levante`, ou rodar `deploy/vps/deploy-imagens.sh` com o SHA anterior.
 Rollback cobre código, não dados (disciplina forward-only para schema).
 
 ## Referências
